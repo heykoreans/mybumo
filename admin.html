@@ -789,7 +789,7 @@ async function renderFacilities() {
         </div>
         <div style="display:flex;gap:8px;">
           <button onclick="openEditModal(${JSON.stringify(f).replace(/'/g, '&#39;').replace(/"/g, '&quot;')})" style="flex:1;padding:8px;background:#1f7a75;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;">정보 수정</button>
-          <button onclick="window.open('https://mybumo.com', '_blank')" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;cursor:pointer;">미리보기</button>
+          <button onclick="openPreviewModal(${JSON.stringify(f).replace(/'/g, '&#39;').replace(/"/g, '&quot;')})" style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;cursor:pointer;">미리보기</button>
         </div>
       </div>
     </div>
@@ -834,6 +834,35 @@ function openEditModal(f) {
 
 function closeEditModal() {
   document.getElementById('editFacModal').style.display = 'none';
+}
+
+function openPreviewModal(f) {
+  const img = document.getElementById('previewImg');
+  if (f.photo_url) {
+    img.style.backgroundImage = 'url(' + f.photo_url + ')';
+    img.textContent = '';
+  } else {
+    img.style.backgroundImage = 'none';
+    img.textContent = '🏥';
+  }
+  document.getElementById('previewBadge').textContent = f.status === 'active' ? '운영중' : '검토중';
+  document.getElementById('previewBadge').style.background = f.status === 'active' ? '#dcfce7' : '#fef3c7';
+  document.getElementById('previewBadge').style.color = f.status === 'active' ? '#16a34a' : '#d97706';
+  document.getElementById('previewCareType').textContent = f.care_type || '';
+  document.getElementById('previewNameKr').textContent = f.facility_name_kr || '-';
+  document.getElementById('previewNameEn').textContent = f.facility_name_en || '';
+  document.getElementById('previewLocation').textContent = '📍 ' + (f.city || '') + (f.state ? ', ' + f.state : '');
+  document.getElementById('previewVacancy').textContent = (f.vacancies || 0) + '/' + (f.capacity_total || f.capacity || '-');
+  document.getElementById('previewFeeMin').textContent = f.fee_min ? '$' + f.fee_min : '-';
+  document.getElementById('previewFeeMax').textContent = f.fee_max ? '$' + f.fee_max : '-';
+  document.getElementById('previewContact').textContent = '👤 ' + (f.contact_name || '-');
+  document.getElementById('previewPhone').textContent = '📞 ' + (f.contact_phone || '-');
+  document.getElementById('previewEmail').textContent = '✉️ ' + (f.contact_email || '-');
+  document.getElementById('previewModal').style.display = 'flex';
+}
+
+function closePreviewModal() {
+  document.getElementById('previewModal').style.display = 'none';
 }
 
 async function saveFacility() {
@@ -1010,6 +1039,35 @@ window.onload = async function() {
     <div style="display:flex;gap:10px;margin-top:24px;">
       <button onclick="saveFacility()" style="flex:1;padding:12px;background:#1f7a75;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">저장하기</button>
       <button onclick="closeEditModal()" style="padding:12px 20px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;cursor:pointer;">취소</button>
+    </div>
+  </div>
+</div>
+
+<div id="previewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:20px;width:480px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+    <div id="previewImg" style="height:200px;background:#e2e8f0;border-radius:20px 20px 0 0;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:60px;">🏥</div>
+    <div style="padding:24px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span id="previewBadge" style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;"></span>
+        <span id="previewCareType" style="font-size:12px;color:#64748b;"></span>
+      </div>
+      <div id="previewNameKr" style="font-size:22px;font-weight:800;margin-bottom:4px;"></div>
+      <div id="previewNameEn" style="font-size:14px;color:#64748b;margin-bottom:4px;"></div>
+      <div id="previewLocation" style="font-size:13px;color:#64748b;margin-bottom:20px;">📍</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;padding:16px;background:#f8fafc;border-radius:12px;">
+        <div style="text-align:center;"><div id="previewVacancy" style="font-size:22px;font-weight:800;"></div><div style="font-size:11px;color:#64748b;">입주가능</div></div>
+        <div style="text-align:center;"><div id="previewFeeMin" style="font-size:22px;font-weight:800;"></div><div style="font-size:11px;color:#64748b;">월 최저</div></div>
+        <div style="text-align:center;"><div id="previewFeeMax" style="font-size:22px;font-weight:800;"></div><div style="font-size:11px;color:#64748b;">월 최고</div></div>
+      </div>
+      <div style="padding:16px;background:#f0fdf4;border-radius:12px;margin-bottom:20px;">
+        <div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:8px;">담당자 정보</div>
+        <div id="previewContact" style="font-size:13px;color:#334155;"></div>
+        <div id="previewPhone" style="font-size:13px;color:#334155;"></div>
+        <div id="previewEmail" style="font-size:13px;color:#334155;"></div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button onclick="closePreviewModal()" style="flex:1;padding:12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;cursor:pointer;">닫기</button>
+      </div>
     </div>
   </div>
 </div>
