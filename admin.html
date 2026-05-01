@@ -669,6 +669,8 @@
 let adminLang = 'kr';
 let photoFiles = [];
 let existingPhotos = [];
+let previewSlideIdx = 0;
+let previewPhotos = [];
 
 function firstFacilityPhotoUrl(pu) {
   if (pu == null || pu === '') return null;
@@ -925,16 +927,60 @@ async function uploadPhotos(facilityId) {
   return uploadedUrls;
 }
 
+function applyPreviewSlideTransform() {
+  const slider = document.getElementById('previewSlider');
+  if (!slider) return;
+  const n = previewPhotos.length;
+  const pct = n > 0 ? (previewSlideIdx * 100) / n : 0;
+  slider.style.transform = `translateX(-${pct}%)`;
+}
+
+function slidePreview(dir) {
+  const n = previewPhotos.length;
+  if (!n) return;
+  previewSlideIdx = Math.max(0, Math.min(n - 1, previewSlideIdx + dir));
+  applyPreviewSlideTransform();
+  updatePreviewDots();
+}
+
+function goPreviewSlide(i) {
+  const n = previewPhotos.length;
+  if (!n) return;
+  previewSlideIdx = Math.max(0, Math.min(n - 1, i));
+  applyPreviewSlideTransform();
+  updatePreviewDots();
+}
+
+function updatePreviewDots() {
+  const dots = document.getElementById('previewDots');
+  if (!dots) return;
+  dots.innerHTML = previewPhotos.map((_, i) =>
+    `<div style="width:6px;height:6px;border-radius:50%;background:${i === previewSlideIdx ? 'white' : 'rgba(255,255,255,.5)'};cursor:pointer;" onclick="goPreviewSlide(${i})"></div>`
+  ).join('');
+}
+
 function openPreviewModal(f) {
-  const img = document.getElementById('previewImg');
-  const previewUrl = firstFacilityPhotoUrl(f.photo_url);
-  if (previewUrl) {
-    img.style.backgroundImage = 'url(' + previewUrl + ')';
-    img.textContent = '';
+  previewSlideIdx = 0;
+  previewPhotos = f.photo_urls && f.photo_urls.length > 0
+    ? f.photo_urls
+    : (f.photo_url ? [f.photo_url] : []);
+
+  const slider = document.getElementById('previewSlider');
+  const n = previewPhotos.length;
+  if (n > 0) {
+    slider.innerHTML = previewPhotos.map(url =>
+      `<div style="flex-shrink:0;width:${100 / n}%;height:200px;background:url(${url}) center/cover no-repeat;"></div>`
+    ).join('');
+    slider.style.width = `${n * 100}%`;
   } else {
-    img.style.backgroundImage = 'none';
-    img.textContent = '🏥';
+    slider.innerHTML = '<div style="min-width:100%;width:100%;height:200px;display:flex;align-items:center;justify-content:center;font-size:60px;">🏥</div>';
+    slider.style.width = '100%';
   }
+  slider.style.transform = 'translateX(0)';
+  document.getElementById('prevBtn').style.display = n > 1 ? 'flex' : 'none';
+  document.getElementById('nextBtn').style.display = n > 1 ? 'flex' : 'none';
+  updatePreviewDots();
+
   document.getElementById('previewBadge').textContent = f.status === 'active' ? '운영중' : '검토중';
   document.getElementById('previewBadge').style.background = f.status === 'active' ? '#dcfce7' : '#fef3c7';
   document.getElementById('previewBadge').style.color = f.status === 'active' ? '#16a34a' : '#d97706';
@@ -1159,7 +1205,12 @@ window.onload = async function() {
 
 <div id="previewModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;">
   <div style="background:white;border-radius:20px;width:480px;max-width:90vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);">
-    <div id="previewImg" style="height:200px;background:#e2e8f0;border-radius:20px 20px 0 0;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:60px;">🏥</div>
+    <div style="position:relative;height:200px;border-radius:20px 20px 0 0;overflow:hidden;background:#e2e8f0;">
+      <div id="previewSlider" style="display:flex;height:100%;transition:transform .3s ease;"></div>
+      <button type="button" onclick="slidePreview(-1)" id="prevBtn" style="display:none;position:absolute;left:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.5);color:white;border:none;font-size:16px;cursor:pointer;align-items:center;justify-content:center;">‹</button>
+      <button type="button" onclick="slidePreview(1)" id="nextBtn" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.5);color:white;border:none;font-size:16px;cursor:pointer;align-items:center;justify-content:center;">›</button>
+      <div id="previewDots" style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:4px;"></div>
+    </div>
     <div style="padding:24px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <span id="previewBadge" style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;"></span>
