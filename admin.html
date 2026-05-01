@@ -665,6 +665,33 @@
     </div>
 </div>
 
+<div id="editFacModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:16px;padding:32px;width:500px;max-width:90vw;max-height:90vh;overflow-y:auto;">
+    <h3 style="margin:0 0 20px;font-size:18px;">시설 정보 수정</h3>
+    <input type="hidden" id="editFacId">
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">시설명 (한국어)</label><input id="ef_name_kr" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">시설명 (영어)</label><input id="ef_name_en" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">도시</label><input id="ef_city" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">주 (State)</label><input id="ef_state" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">케어 유형</label><input id="ef_care_type" placeholder="어시스티드 리빙, 메모리 케어 등" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div><label style="font-size:13px;font-weight:600;color:#64748b;">총 정원</label><input id="ef_capacity" type="number" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+        <div><label style="font-size:13px;font-weight:600;color:#64748b;">현재 공실</label><input id="ef_vacancies" type="number" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      </div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">월 비용 (최저)</label><input id="ef_fee_min" placeholder="$5,000" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">월 비용 (최고)</label><input id="ef_fee_max" placeholder="$9,000" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">사진 URL</label><input id="ef_photo" placeholder="https://..." style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">담당자 이메일</label><input id="ef_email" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">담당자 연락처</label><input id="ef_phone" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:24px;">
+      <button onclick="saveFacility()" style="flex:1;padding:12px;background:#1f7a75;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">저장하기</button>
+      <button onclick="closeEditModal()" style="padding:12px 20px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;cursor:pointer;">취소</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let adminLang = 'kr';
 
@@ -788,12 +815,56 @@ async function renderFacilities() {
           <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${f.monthly_placements || 0}</div><div style="font-size:11px;color:#64748b;">이달입주</div></div>
         </div>
         <div style="display:flex;gap:8px;">
-          <button style="flex:1;padding:8px;background:#1f7a75;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;">정보 수정</button>
+          <button onclick='openEditModal(${JSON.stringify(f).replace(/'/g, "&#39;")})' style="flex:1;padding:8px;background:#1f7a75;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;">정보 수정</button>
           <button style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;cursor:pointer;">미리보기</button>
         </div>
       </div>
     </div>
   `).join('');
+}
+
+function openEditModal(f) {
+  document.getElementById('editFacId').value = f.id;
+  document.getElementById('ef_name_kr').value = f.facility_name_kr || '';
+  document.getElementById('ef_name_en').value = f.facility_name_en || '';
+  document.getElementById('ef_city').value = f.city || '';
+  document.getElementById('ef_state').value = f.state || '';
+  document.getElementById('ef_care_type').value = f.care_type || '';
+  document.getElementById('ef_capacity').value = f.capacity_total || f.capacity || '';
+  document.getElementById('ef_vacancies').value = f.vacancies || '';
+  document.getElementById('ef_fee_min').value = f.fee_min || '';
+  document.getElementById('ef_fee_max').value = f.fee_max || '';
+  document.getElementById('ef_photo').value = f.photo_url || '';
+  document.getElementById('ef_email').value = f.contact_email || '';
+  document.getElementById('ef_phone').value = f.contact_phone || '';
+  document.getElementById('editFacModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('editFacModal').style.display = 'none';
+}
+
+async function saveFacility() {
+  const id = document.getElementById('editFacId').value;
+  const { error } = await db.from('partners').update({
+    facility_name_kr: document.getElementById('ef_name_kr').value,
+    facility_name_en: document.getElementById('ef_name_en').value,
+    city: document.getElementById('ef_city').value,
+    state: document.getElementById('ef_state').value,
+    care_type: document.getElementById('ef_care_type').value,
+    capacity_total: parseInt(document.getElementById('ef_capacity').value) || 0,
+    vacancies: parseInt(document.getElementById('ef_vacancies').value) || 0,
+    fee_min: document.getElementById('ef_fee_min').value,
+    fee_max: document.getElementById('ef_fee_max').value,
+    photo_url: document.getElementById('ef_photo').value,
+    contact_email: document.getElementById('ef_email').value,
+    contact_phone: document.getElementById('ef_phone').value,
+  }).eq('id', id);
+
+  if (error) { console.error(error); alert('저장 중 오류가 발생했습니다.'); return; }
+  closeEditModal();
+  await renderFacilities();
+  alert('저장되었습니다!');
 }
 
 function renderBilling() {
