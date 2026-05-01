@@ -628,167 +628,142 @@ let lang = 'kr';
 let step = 1;
 let selectedCareType = '';
 let selectedLocation = '';
+let selectedBudget = '';
 let selectedFacIdx = -1;
 
-// ─── FACILITY DATA ───
-const FACILITIES = [
-    {
-        emoji:'🏡', nameKr:'한마음 어시스티드 리빙', nameEn:'Hanmaeum Assisted Living',
-        typeKr:'어시스티드 리빙', typeEn:'Assisted Living',
-        locationKr:'LA · 토런스', locationEn:'Torrance, CA',
-        fee:'$5,800/mo', feeRange:'$5,500~$6,800',
-        capacity:'45명', koreanRatio:'98%', rating:'4.9', stars:'★★★★★',
-        badge:'베스트 매칭', badgeEn:'Best Match',
-        reviews:{ kr:'리뷰 94건', en:'94 reviews' },
-        meta:{ kr:'한국어 구사 직원 100% · 한식 · 문화 프로그램', en:'100% Korean staff · Korean meals · Cultural programs' },
-        tags:[
-            {kr:'한국어 완전지원', en:'Full Korean Support'},
-            {kr:'한식 제공', en:'Korean Meals'},
-            {kr:'치매 케어 가능', en:'Memory Care Available'},
-            {kr:'야외 정원', en:'Outdoor Garden'},
-        ],
-        stats:[
-            {val:'98%', lKr:'한인 거주 비율', lEn:'Korean Residents'},
-            {val:'24hr', lKr:'간호 지원', lEn:'Nursing Care'},
-            {val:'4.9★', lKr:'가족 만족도', lEn:'Family Rating'},
-        ],
-        brief:{ kr:'토런스 한인타운 내 위치하여 가족 방문이 편리합니다. 한국어 구사 직원 100%, 하루 세 끼 한식 제공, 주 2회 노래방·화투 문화 프로그램 운영. 치매 초중기 케어 전문 인력이 상주합니다.',
-                en:'Located in the heart of Torrance\'s Korean community for easy family visits. 100% Korean-speaking staff, three Korean meals daily, and twice-weekly cultural programs including karaoke and card games. Dedicated memory care staff on-site.' },
-        review:{ kr:'"어머니가 한국 노래 부르고 미역국 드시면서 많이 편안해하세요. 직원분들이 전부 한국어로 대화해 주셔서 정말 다행입니다."', en:'"My mother feels so at home singing Korean songs and enjoying miyeok-guk. The staff all speak Korean — it makes such a difference."' },
-        reviewBy:{ kr:'김민준 · 어머니 입주 중 · LA', en:'Minjun K. · Mother in residence · LA' },
-        image:'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=800&q=80',
-        includes:[
-            {ico:'🍚', kr:'한식 3식 제공', en:'3 Korean meals/day'},
-            {ico:'🧠', kr:'인지 기능 프로그램', en:'Cognitive programs'},
-            {ico:'💊', kr:'투약 관리', en:'Medication management'},
-            {ico:'🛁', kr:'목욕·위생 지원', en:'Bathing & hygiene'},
-            {ico:'🚑', kr:'24시간 응급 대응', en:'24hr emergency response'},
-            {ico:'🎤', kr:'한국 문화 활동', en:'Korean cultural activities'},
-        ],
-        highlights:[
-            {kr:'한인 가정식 조리사 상주 — 미역국, 된장찌개, 불고기 등 제공', en:'Resident Korean home cook — miyeok-guk, doenjang jjigae, bulgogi and more'},
-            {kr:'가족 카카오톡 그룹을 통한 일일 근황 공유 서비스', en:'Daily KakaoTalk family update service'},
-            {kr:'인근 한인 교회 주일 예배 셔틀 운행', en:'Sunday shuttle to nearby Korean church'},
-        ],
-    },
-    {
-        emoji:'🧠', nameKr:'실버케어 메모리 센터', nameEn:'SilverCare Memory Center',
-        typeKr:'메모리 케어', typeEn:'Memory Care',
-        locationKr:'NJ · 포트리', locationEn:'Fort Lee, NJ',
-        fee:'$7,200/mo', feeRange:'$6,800~$8,500',
-        capacity:'32명', koreanRatio:'85%', rating:'4.8', stars:'★★★★★',
-        badge:'치매 전문', badgeEn:'Dementia Specialist',
-        reviews:{ kr:'리뷰 61건', en:'61 reviews' },
-        meta:{ kr:'알츠하이머·치매 전문 · 한국어 가능 직원 다수 · NJ 최다 한인 거주', en:'Alzheimer\'s & dementia specialist · Korean-speaking staff · Highest Korean resident ratio in NJ' },
-        tags:[
-            {kr:'치매 전문 시설', en:'Dementia Specialist'},
-            {kr:'보안 특화 설계', en:'Secure Design'},
-            {kr:'한국어 지원', en:'Korean Support'},
-            {kr:'뮤직 테라피', en:'Music Therapy'},
-        ],
-        stats:[
-            {val:'85%', lKr:'한인 거주 비율', lEn:'Korean Residents'},
-            {val:'1:4', lKr:'직원:환자 비율', lEn:'Staff-to-Resident'},
-            {val:'4.8★', lKr:'가족 만족도', lEn:'Family Rating'},
-        ],
-        brief:{ kr:'알츠하이머 및 치매 전문 시설로, 인지 기능 유지를 위한 뮤직 테라피와 회상 치료 프로그램을 운영합니다. 맨해튼·NJ 한인 밀집 지역에서 접근성이 높습니다.',
-                en:'Specialized in Alzheimer\'s and dementia care, offering music therapy and reminiscence therapy to support cognitive function. Easily accessible from Manhattan and NJ Korean communities.' },
-        review:{ kr:'"아버지 치매가 많이 진행됐는데, 이 시설 오신 후로 한국 노래 들으며 안정되셨어요. 직원분들이 한국어로 말 걸어주시는 게 큰 도움이 돼요."', en:'"My father\'s dementia had progressed significantly, but he calmed down listening to Korean songs here. The staff speaking Korean to him has been incredibly helpful."' },
-        reviewBy:{ kr:'박지수 · 아버지 입주 중 · NJ', en:'Jisoo P. · Father in residence · NJ' },
-        image:'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
-        includes:[
-            {ico:'🧠', kr:'인지 재활 프로그램', en:'Cognitive rehab programs'},
-            {ico:'🎵', kr:'뮤직·아트 테라피', en:'Music & art therapy'},
-            {ico:'🔒', kr:'24시간 보안 환경', en:'24hr secure environment'},
-            {ico:'🍚', kr:'한식 포함 식사', en:'Korean meals included'},
-            {ico:'👨‍⚕️', kr:'전문 치매 케어 팀', en:'Specialized dementia team'},
-            {ico:'📞', kr:'가족 화상 통화 지원', en:'Family video call support'},
-        ],
-        highlights:[
-            {kr:'한국 1970~80년대 음악 기반 뮤직 테라피 — 기억력 자극 효과 입증', en:'Music therapy based on Korean 70s–80s music — proven memory stimulation'},
-            {kr:'가족 상담 월 2회 무료 제공 (한국어·영어)', en:'Free monthly family consultations (Korean & English)'},
-            {kr:'배회 방지 GPS 시스템 전 공간 설치', en:'Anti-wandering GPS system installed throughout'},
-        ],
-    },
-    {
-        emoji:'🏥', nameKr:'한인 너싱홈 & 재활 센터', nameEn:'Korean American Nursing & Rehab',
-        typeKr:'너싱홈 / 스킬드 너싱', typeEn:'Skilled Nursing Facility',
-        locationKr:'GA · 둘루스', locationEn:'Duluth, GA',
-        fee:'$6,500/mo', feeRange:'$6,000~$9,500',
-        capacity:'80명', koreanRatio:'70%', rating:'4.7', stars:'★★★★½',
-        badge:'재활 전문', badgeEn:'Rehab Specialist',
-        reviews:{ kr:'리뷰 47건', en:'47 reviews' },
-        meta:{ kr:'물리·작업·언어치료 전문 · 병원 퇴원 후 회복 특화 · 메디케어 적용', en:'Physical, occupational & speech therapy · Post-hospital recovery · Medicare accepted' },
-        tags:[
-            {kr:'재활 치료 전문', en:'Rehab Specialist'},
-            {kr:'메디케어 적용', en:'Medicare Accepted'},
-            {kr:'한국어 지원', en:'Korean Support'},
-            {kr:'24시간 의료 케어', en:'24hr Medical Care'},
-        ],
-        stats:[
-            {val:'70%', lKr:'한인 거주 비율', lEn:'Korean Residents'},
-            {val:'3종', lKr:'재활 치료 제공', lEn:'Rehab Therapies'},
-            {val:'4.7★', lKr:'가족 만족도', lEn:'Family Rating'},
-        ],
-        brief:{ kr:'수술 후 회복, 뇌졸중 후 재활, 낙상 후 회복 등 의료적 케어가 필요한 시니어에게 최적화된 시설입니다. 애틀랜타 한인 커뮤니티 내에 위치하며 메디케어를 적용합니다.',
-                en:'Optimized for seniors needing medical care after surgery, stroke, or falls. Located within the Atlanta Korean community and accepts Medicare.' },
-        review:{ kr:'"어머니가 고관절 수술 후 이곳에서 재활하셨는데 3개월 만에 걸으셨어요. 물리치료사가 한국어로 설명해 주셔서 어머니가 치료에 적극적으로 참여하셨어요."', en:'"My mother rehabbed here after hip surgery and was walking again in 3 months. The physical therapist explaining in Korean made her so much more engaged in her recovery."' },
-        reviewBy:{ kr:'이승현 · 어머니 퇴원 후 입주 · 애틀랜타', en:'Seunghyun L. · Mother post-discharge · Atlanta' },
-        image:'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
-        includes:[
-            {ico:'🦵', kr:'물리치료 (PT)', en:'Physical therapy (PT)'},
-            {ico:'🖐️', kr:'작업치료 (OT)', en:'Occupational therapy (OT)'},
-            {ico:'🗣️', kr:'언어치료 (ST)', en:'Speech therapy (ST)'},
-            {ico:'💊', kr:'의사 정기 방문', en:'Regular physician visits'},
-            {ico:'🍚', kr:'영양 관리 한식', en:'Nutritional Korean meals'},
-            {ico:'✅', kr:'메디케어 B파트 적용', en:'Medicare Part B accepted'},
-        ],
-        highlights:[
-            {kr:'한국어 구사 물리치료사 전담 배치 — 지시 이해도 향상으로 회복 속도 개선', en:'Dedicated Korean-speaking physical therapist — faster recovery through better comprehension'},
-            {kr:'병원 퇴원 코디네이터와 직접 연계 — 이송 과정 원스톱 지원', en:'Direct coordination with hospital discharge planners — seamless one-stop transfer'},
-            {kr:'가족 재활 교육 프로그램 — 퇴원 후 재택 케어 준비 지원', en:'Family rehab education program — preparing for home care after discharge'},
-        ],
-    },
-    {
-        emoji:'🌿', nameKr:'그린힐 독립 생활 커뮤니티', nameEn:'GreenHill Independent Living',
-        typeKr:'독립 생활 (IL)', typeEn:'Independent Living',
-        locationKr:'TX · 플라노', locationEn:'Plano, TX',
-        fee:'$4,200/mo', feeRange:'$3,800~$5,500',
-        capacity:'120명', koreanRatio:'55%', rating:'4.8', stars:'★★★★★',
-        badge:'가성비 TOP', badgeEn:'Best Value',
-        reviews:{ kr:'리뷰 83건', en:'83 reviews' },
-        meta:{ kr:'건강한 시니어 대상 · 한국 문화 동아리 · 골프·수영 시설', en:'Active seniors · Korean culture clubs · Golf & swimming facilities' },
-        tags:[
-            {kr:'독립 생활', en:'Independent Living'},
-            {kr:'한국 문화 동아리', en:'Korean Culture Clubs'},
-            {kr:'수영·골프 시설', en:'Pool & Golf'},
-            {kr:'낮은 월 비용', en:'Affordable Rates'},
-        ],
-        stats:[
-            {val:'55%', lKr:'한인 거주 비율', lEn:'Korean Residents'},
-            {val:'15+', lKr:'동아리 프로그램', lEn:'Club Programs'},
-            {val:'4.8★', lKr:'거주자 만족도', lEn:'Resident Rating'},
-        ],
-        brief:{ kr:'비교적 건강하고 활동적인 시니어를 위한 독립 생활 커뮤니티입니다. 한국 요리 교실, 사물놀이, 댄스 동아리 등 다양한 한국 문화 프로그램과 수영장·골프 연습장을 갖추고 있습니다.',
-                en:'An independent living community for healthy, active seniors. Features Korean cooking classes, samulnori, dance clubs, plus a swimming pool and golf practice range.' },
-        review:{ kr:'"텍사스로 이사 온 후 외로울까 걱정했는데, 여기서 한국 친구들 많이 사귀고 매일 수영도 해요. 남편이 사물놀이 팀에 들어가서 너무 행복해해요."', en:'"We worried about being lonely after moving to Texas, but my husband made Korean friends and joined the samulnori drum team. He\'s so happy here."' },
-        reviewBy:{ kr:'강미숙 · 남편과 입주 중 · 댈러스', en:'Misook K. · With husband · Dallas' },
-        image:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80',
-        includes:[
-            {ico:'🏊', kr:'수영장 및 피트니스', en:'Pool & fitness center'},
-            {ico:'⛳', kr:'골프 연습장', en:'Golf practice range'},
-            {ico:'🎭', kr:'한국 문화 동아리 15+', en:'15+ Korean culture clubs'},
-            {ico:'🍱', kr:'선택식 한식/양식', en:'Korean/Western dining options'},
-            {ico:'🚌', kr:'쇼핑·병원 셔틀', en:'Shopping & medical shuttles'},
-            {ico:'🔐', kr:'24시간 보안', en:'24hr security'},
-        ],
-        highlights:[
-            {kr:'달라스 최대 한인 커뮤니티 인접 — H마트, 한인 마트 15분 거리', en:'Near DFW\'s largest Korean community — H Mart and Korean grocery 15 min away'},
-            {kr:'월별 한국 요리 교실 — 시니어 직접 운영하는 자율 프로그램', en:'Monthly Korean cooking classes — senior-led volunteer programs'},
-            {kr:'케어 단계 업그레이드 시 계열 어시스티드 리빙으로 전환 가능', en:'Pathway to affiliated assisted living if care needs increase'},
-        ],
-    },
-];
+let realFacilities = [];
+let displayedFacilities = [];
+
+function parseFeeNum(v) {
+  if (v == null || v === '') return 0;
+  const n = parseInt(String(v).replace(/[^0-9]/g, ''), 10);
+  return isNaN(n) ? 0 : n;
+}
+
+function inferCareTypeForMatch(need) {
+  const n = (need || '').toLowerCase();
+  if (!n) return '';
+  if (/memory|dementia|치매|기억/.test(n)) return '메모리 케어';
+  if (/hospital|recovery|병원|퇴원|회복/.test(n)) return '너싱홈';
+  if (/independent|독립/.test(n)) return '독립 생활';
+  if (/daily|일상|assistance|도움/.test(n)) return '어시스티드 리빙';
+  return '어시스티드 리빙';
+}
+
+function partnerPhotoUrl(f) {
+  if (!f) return '';
+  if (f.photo_urls && Array.isArray(f.photo_urls) && f.photo_urls.length) return f.photo_urls[0];
+  if (f.photo_url) return Array.isArray(f.photo_url) ? f.photo_url[0] : f.photo_url;
+  return '';
+}
+
+async function loadFacilities() {
+  const { data, error } = await db.from('partners')
+    .select('*')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+  if (!error && data) realFacilities = data;
+}
+
+function matchFacilities(facilities, userNeeds) {
+  return facilities.map(f => {
+    let score = 0;
+
+    if (userNeeds.careType && f.care_type) {
+      if (f.care_type.includes(userNeeds.careType) ||
+          userNeeds.careType.includes(f.care_type)) score += 40;
+    }
+
+    if (userNeeds.location && f.state) {
+      const locLower = userNeeds.location.toLowerCase();
+      const stateMap = {
+        '뉴저지': 'NJ', '뉴욕': 'NY', '캘리포니아': 'CA',
+        'nj': 'NJ', 'ny': 'NY', 'ca': 'CA',
+        '뉴저지주': 'NJ', '뉴욕주': 'NY',
+        'new jersey': 'NJ', 'new york': 'NY', 'california': 'CA',
+        '메릴랜드': 'MD', 'md': 'MD'
+      };
+      const mappedState = stateMap[locLower] || userNeeds.location.toUpperCase();
+      const cityLower = (f.city || '').toLowerCase();
+      const regionMatch =
+        f.state === mappedState ||
+        (/^\s*🌴|la\s*\/\s*oc|캘리포니아|california/.test(locLower) && f.state === 'CA') ||
+        (/뉴욕|new york|🗽/.test(locLower) && (f.state === 'NY' || f.state === 'NJ')) ||
+        (/뉴저지|new jersey/.test(locLower) && f.state === 'NJ') ||
+        (/애틀랜타|atlanta|조지아|georgia|🍑/.test(locLower) && f.state === 'GA') ||
+        (/텍사스|texas|달라스|dallas|휴스턴|houston|⭐/.test(locLower) && f.state === 'TX') ||
+        (/시애틀|seattle|워싱턴|washington|🌲/.test(locLower) && (f.state === 'WA' || f.state === 'OR'));
+      const locClean = locLower.replace(/[^\w\s가-힣·/]/g, '').trim();
+      if (regionMatch || (locClean && cityLower.includes(locClean))) score += 30;
+    }
+
+    if (userNeeds.budget && f.fee_min != null && f.fee_max != null) {
+      const budgetMap = {
+        '$5,000 이하': 5000, '$5,000~$7,000': 6000,
+        '$7,000~$10,000': 8500, '$10,000 이상': 12000,
+        '💰 $4,000~$5,500': 4750, '💳 $5,500~$7,500': 6500,
+        '✨ $7,500~$10,000': 8750, '🔍 예산 미정 / 최적 추천': 7000,
+        '🔍 No budget set / best match': 7000
+      };
+      const userBudget = budgetMap[userNeeds.budget] || 7000;
+      const feeMin = parseFeeNum(f.fee_min);
+      const feeMax = parseFeeNum(f.fee_max) || 99999;
+      if (userBudget >= feeMin && userBudget <= feeMax) score += 20;
+      else if (userBudget >= feeMin - 1000) score += 10;
+    }
+
+    const vac = parseInt(f.vacancies, 10) || 0;
+    if (vac > 0) score += 10;
+
+    return { ...f, matchScore: score };
+  })
+  .filter(f => f.matchScore > 0)
+  .sort((a, b) => b.matchScore - a.matchScore)
+  .slice(0, 4);
+}
+
+async function showMatchedFacilities(userNeeds) {
+  if (realFacilities.length === 0) await loadFacilities();
+  const needs = {
+    careType: inferCareTypeForMatch(userNeeds.careType),
+    location: userNeeds.location || '',
+    budget: userNeeds.budget || ''
+  };
+  const matched = matchFacilities(realFacilities, needs);
+
+  if (matched.length === 0) {
+    appendAiMsg('<p>현재 조건에 맞는 시설을 찾는 중입니다. 케어 플래너가 24시간 내 연락드립니다.</p>');
+    return;
+  }
+
+  displayedFacilities = matched;
+
+  const html = `
+    <p>✨ <strong>${matched.length}곳</strong>의 한인 케어 시설을 찾았습니다!</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+      ${matched.map((f, i) => {
+        const img = partnerPhotoUrl(f);
+        const feeMin = f.fee_min != null ? String(f.fee_min).replace(/\$/g, '') : '';
+        const feeMax = f.fee_max != null ? String(f.fee_max).replace(/\$/g, '') : '';
+        return `
+        <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:14px;cursor:pointer;" onclick="openFacDetail(${i})">
+          ${img ? `<img src="${img.replace(/"/g, '&quot;')}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:10px;">` : ''}
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            ${i === 0 ? '<span style="background:#fef3c7;color:#d97706;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">베스트 매칭</span>' : ''}
+            <span style="background:#e0f2fe;color:#0369a1;font-size:10px;padding:2px 8px;border-radius:10px;">${(f.care_type || '').replace(/</g, '&lt;')}</span>
+          </div>
+          <div style="font-weight:700;font-size:14px;">${(f.facility_name_kr || f.facility_name_en || '').replace(/</g, '&lt;')}</div>
+          <div style="font-size:12px;color:#64748b;">📍 ${f.city || ''}, ${f.state || ''}</div>
+          <div style="font-size:13px;font-weight:600;color:#1f7a75;margin-top:4px;">$${feeMin}~$${feeMax}/월</div>
+          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">매칭 점수: ${f.matchScore}점 · 공실 ${f.vacancies != null ? f.vacancies : 0}개</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+  appendAiMsg(html);
+  updateLang();
+  scrollBottom();
+}
 
 // ─── CHAT FLOW ───
 function step1Select(btn, val) {
@@ -854,6 +829,7 @@ function showStep3() {
 function step3Select(btn, val) {
     document.querySelectorAll('#step3Opts .btn-opt').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
+    selectedBudget = val;
     setTimeout(() => {
         document.getElementById('step3Opts').innerHTML = '';
         appendUserMsg(val);
@@ -861,112 +837,76 @@ function step3Select(btn, val) {
     }, 300);
 }
 
-function showResults() {
+async function showResults() {
     const isEn = lang === 'en';
     appendAiMsg(isEn
-        ? '✨ Great! I found <strong>4 Korean care facilities</strong> that match your needs. Here are your top recommendations:'
-        : '✨ 분석 완료! 조건에 맞는 <strong>한인 케어 시설 4곳</strong>을 찾았습니다. 추천 시설을 확인해보세요:');
+        ? '✨ Great! Here are <strong>Korean care facilities</strong> matched to your needs:'
+        : '✨ 분석 완료! 조건에 맞는 <strong>한인 케어 시설</strong>을 찾았습니다. 추천 시설을 확인해보세요:');
 
-    // Carousel
-    const wrap = document.createElement('div');
-    wrap.className = 'carousel-wrap'; wrap.id = 'facCarousel';
-    wrap.innerHTML = `
-        <button class="c-arrow left hidden" id="cLeft" onclick="slideCarousel(-1)">‹</button>
-        <div class="pkg-list" id="facList">${FACILITIES.map((f,i) => `
-            <div class="pkg-card" onclick="openFacDetail(${i})">
-                <div class="pkg-img" style="background-image:url('${f.image}')">
-                    <div class="pkg-badge">${isEn ? f.badgeEn : f.badge}</div>
-                </div>
-                <div class="pkg-info">
-                    <div class="pkg-price">${f.fee} <span>${isEn ? f.typeEn : f.typeKr}</span></div>
-                    <div class="pkg-title">${isEn ? f.nameEn : f.nameKr}<br><small style="font-weight:400;color:var(--muted)">${isEn ? f.locationEn : f.locationKr}</small></div>
-                    <button class="match-btn">${isEn ? 'View Details' : '자세히 보기'}</button>
-                </div>
-            </div>`).join('')}
-        </div>
-        <button class="c-arrow right" id="cRight" onclick="slideCarousel(1)">›</button>
-        <div class="c-dots">${FACILITIES.map((_,i) => `<div class="c-dot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('')}</div>`;
-    document.getElementById('chatBody').appendChild(wrap);
+    const userNeeds = {
+        careType: selectedCareType || '',
+        location: selectedLocation || '',
+        budget: selectedBudget || ''
+    };
+    await showMatchedFacilities(userNeeds);
 
-    // Facility list
     setTimeout(() => {
-        appendAiMsg(isEn
-            ? 'Or browse the list below — click any facility for full details and available rooms:'
-            : '아래 목록에서 바로 살펴보셔도 좋아요 — 시설 클릭 시 상세 정보와 입주 가능 여부를 확인하실 수 있습니다:');
-
-        const list = document.createElement('div');
-        list.className = 'agency-list';
-        list.innerHTML = FACILITIES.map((f,i) => `
-            <div class="agency-item" onclick="openFacDetail(${i})">
-                <div class="ag-top">
-                    <div class="ag-logo">${f.emoji}</div>
-                    <div class="ag-text">
-                        <h4>${isEn ? f.nameEn : f.nameKr}</h4>
-                        <p>${isEn ? f.locationEn : f.locationKr} · ${isEn ? f.typeEn : f.typeKr}</p>
-                    </div>
-                </div>
-                <div class="ai-tag">🤖 ${isEn ? f.brief.en.substring(0,90)+'...' : f.brief.kr.substring(0,70)+'...'}</div>
-                <div class="ag-bottom">
-                    <div class="price-est">
-                        <span>${isEn ? 'Monthly fee' : '월 비용'}</span>
-                        <strong>${f.feeRange}</strong>
-                    </div>
-                    <button class="sel-btn">${isEn ? 'View Details →' : '자세히 보기 →'}</button>
-                </div>
-            </div>`).join('');
-        document.getElementById('chatBody').appendChild(list);
-
-        // Additional note box
-        setTimeout(() => {
-            const box = document.createElement('div');
-            box.className = 'add-req-box';
-            box.innerHTML = `
-                <p>${isEn ? '💡 Any specific needs or questions? (e.g., Parkinson\'s care, near Korean church, Medicare coverage)' : '💡 특별히 더 필요한 사항이 있으신가요? (예: 파킨슨 케어, 한인 교회 인근, 메디케어 적용 여부 등)'}</p>
-                <textarea id="addNoteText" rows="3" placeholder="${isEn ? 'e.g., Father has Parkinson\'s, prefers Torrance area, Medicare coverage required...' : '예: 아버지 파킨슨 진단, 토런스 지역 선호, 메디케어 적용 필수...'}"></textarea>
-                <div class="add-req-row">
-                    <button class="skip-btn" onclick="skipNote()">${isEn ? 'Skip' : '건너뛰기'}</button>
-                    <button class="send-req-btn" onclick="sendNote()">${isEn ? 'Get Matched →' : '매칭 요청하기 →'}</button>
-                </div>`;
-            document.getElementById('chatBody').appendChild(box);
-            scrollBottom();
-        }, 800);
-
+        const box = document.createElement('div');
+        box.className = 'add-req-box';
+        box.innerHTML = `
+            <p>${isEn ? '💡 Any specific needs or questions? (e.g., Parkinson\'s care, near Korean church, Medicare coverage)' : '💡 특별히 더 필요한 사항이 있으신가요? (예: 파킨슨 케어, 한인 교회 인근, 메디케어 적용 여부 등)'}</p>
+            <textarea id="addNoteText" rows="3" placeholder="${isEn ? 'e.g., Father has Parkinson\'s, prefers Torrance area, Medicare coverage required...' : '예: 아버지 파킨슨 진단, 토런스 지역 선호, 메디케어 적용 필수...'}"></textarea>
+            <div class="add-req-row">
+                <button class="skip-btn" onclick="skipNote()">${isEn ? 'Skip' : '건너뛰기'}</button>
+                <button class="send-req-btn" onclick="sendNote()">${isEn ? 'Get Matched →' : '매칭 요청하기 →'}</button>
+            </div>`;
+        document.getElementById('chatBody').appendChild(box);
         scrollBottom();
     }, 900);
     scrollBottom();
 }
 
-let carouselPos = 0;
-function slideCarousel(dir) {
-    const list = document.getElementById('facList');
-    const cardW = 236;
-    carouselPos = Math.max(0, Math.min(FACILITIES.length - 2, carouselPos + dir));
-    list.scrollTo({ left: carouselPos * cardW, behavior:'smooth' });
-    document.getElementById('cLeft').classList.toggle('hidden', carouselPos === 0);
-    document.getElementById('cRight').classList.toggle('hidden', carouselPos >= FACILITIES.length - 2);
-    syncDots();
-}
-function goSlide(i) { carouselPos = i; slideCarousel(0); }
-function syncDots() {
-    document.querySelectorAll('.c-dot').forEach((d,i) => d.classList.toggle('active', i === carouselPos));
-}
-
 // ─── FACILITY DETAIL ───
 function openFacDetail(idx) {
     selectedFacIdx = idx;
-    const f = FACILITIES[idx];
+    const f = displayedFacilities[idx];
+    if (!f) return;
     const isEn = lang === 'en';
-    document.getElementById('facModalImg').style.backgroundImage = `url('${f.image}')`;
-    document.getElementById('facModalBadge').textContent = isEn ? f.badgeEn : f.badge;
-    document.getElementById('facModalName').textContent = isEn ? f.nameEn : f.nameKr;
-    document.getElementById('facModalFee').innerHTML = `${f.fee} <span style="font-size:14px;font-weight:400;color:var(--muted);">${isEn ? f.typeEn : f.typeKr}</span>`;
-    document.getElementById('facModalType').textContent = isEn ? f.typeEn : f.typeKr;
-    document.getElementById('facModalLoc').textContent = isEn ? f.locationEn : f.locationKr;
-    document.getElementById('facModalIncludes').innerHTML = f.includes.map(inc =>
-        `<div class="pkg-inc-item"><span class="ico">${inc.ico}</span>${isEn ? inc.en : inc.kr}</div>`).join('');
-    document.getElementById('facModalHighlights').innerHTML = f.highlights.map((h,i) =>
-        `<div class="pkg-hl"><div class="num">${i+1}</div><div>${isEn ? h.en : h.kr}</div></div>`).join('');
-    document.getElementById('facModalAiBrief').innerHTML = `<div class="br-title">🤖 AI ${isEn?'Recommendation':'추천 이유'}</div><p>${isEn ? f.brief.en : f.brief.kr}</p>`;
+    const img = partnerPhotoUrl(f);
+    const nameKr = f.facility_name_kr || '';
+    const nameEn = f.facility_name_en || nameKr;
+    const feeMin = f.fee_min != null ? String(f.fee_min) : '';
+    const feeMax = f.fee_max != null ? String(f.fee_max) : '';
+    document.getElementById('facModalImg').style.backgroundImage = img
+        ? `url('${img.replace(/'/g, "\\'")}')`
+        : 'none';
+    document.getElementById('facModalBadge').textContent = f.care_type || (isEn ? 'Partner' : '파트너');
+    document.getElementById('facModalName').textContent = isEn ? nameEn : nameKr;
+    document.getElementById('facModalFee').innerHTML = `$${feeMin}~$${feeMax}/월 <span style="font-size:14px;font-weight:400;color:var(--muted);">${f.care_type || ''}</span>`;
+    document.getElementById('facModalType').textContent = f.care_type || '';
+    document.getElementById('facModalLoc').textContent = [f.city, f.state].filter(Boolean).join(', ');
+    const incKr = [
+        { ico: '🏥', t: '등록 파트너 시설' },
+        { ico: '📞', t: '케어 플래너 상담 가능' },
+        { ico: '🏠', t: '공실 ' + (f.vacancies != null ? f.vacancies : '-') + '개' }
+    ];
+    const incEn = [
+        { ico: '🏥', t: 'Registered partner' },
+        { ico: '📞', t: 'Care planner available' },
+        { ico: '🏠', t: 'Vacancies: ' + (f.vacancies != null ? f.vacancies : '-') }
+    ];
+    const inc = isEn ? incEn : incKr;
+    document.getElementById('facModalIncludes').innerHTML = inc.map(x =>
+        `<div class="pkg-inc-item"><span class="ico">${x.ico}</span>${x.t}</div>`).join('');
+    const hlText = isEn
+        ? `Match score ${f.matchScore != null ? f.matchScore : '-'} · Monthly range $${feeMin}–$${feeMax}`
+        : `매칭 점수 ${f.matchScore != null ? f.matchScore : '-'}점 · 월 $${feeMin}~$${feeMax}`;
+    document.getElementById('facModalHighlights').innerHTML =
+        `<div class="pkg-hl"><div class="num">1</div><div>${hlText}</div></div>`;
+    const brief = isEn
+        ? `${nameEn} in ${f.city || ''}, ${f.state || ''}. ${f.care_type ? f.care_type + '.' : ''} Contact us for a detailed tour.`
+        : `${nameKr}은(는) ${f.city || ''}${f.state ? ', ' + f.state : ''}에 있는 파트너 시설입니다. ${f.care_type ? '케어 유형: ' + f.care_type + '.' : ''} 자세한 안내는 상담 시 안내드립니다.`;
+    document.getElementById('facModalAiBrief').innerHTML = `<div class="br-title">🤖 AI ${isEn ? 'Recommendation' : '추천 이유'}</div><p>${brief}</p>`;
     showOverlay('facDetailOverlay');
 }
 
@@ -1078,7 +1018,14 @@ function updateLang() {
     document.getElementById('chatInput').placeholder = isEn ? 'Enter a message...' : '메시지를 입력하세요...';
 }
 
-window.onload = function() { updateLang(); scrollBottom(); };
+document.addEventListener('DOMContentLoaded', function() {
+    loadFacilities();
+});
+
+window.onload = function() {
+    updateLang();
+    scrollBottom();
+};
 </script>
 </body>
 </html>
