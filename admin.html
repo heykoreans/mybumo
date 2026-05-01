@@ -667,6 +667,22 @@
 
 <script>
 let adminLang = 'kr';
+let photoFiles = [];
+let existingPhotos = [];
+
+function firstFacilityPhotoUrl(pu) {
+  if (pu == null || pu === '') return null;
+  if (Array.isArray(pu)) return pu[0] || null;
+  if (typeof pu === 'string' && pu.trim().startsWith('[')) {
+    try {
+      const parsed = JSON.parse(pu);
+      return Array.isArray(parsed) ? (parsed[0] || null) : pu;
+    } catch (e) {
+      return pu;
+    }
+  }
+  return pu;
+}
 
 // ─── DATA ───
 const LEADS = [
@@ -771,10 +787,12 @@ async function renderFacilities() {
     return;
   }
 
-  container.innerHTML = data.map(f => `
+  container.innerHTML = data.map(f => {
+    const coverUrl = firstFacilityPhotoUrl(f.photo_url);
+    return `
     <div class="fac-card">
-      <div class="fac-img" style="background:${f.photo_url ? 'url(' + f.photo_url + ') center/cover' : '#e2e8f0'}; height:160px; border-radius:12px 12px 0 0; display:flex; align-items:center; justify-content:center;">
-        ${!f.photo_url ? '<span style="font-size:40px;">🏥</span>' : ''}
+      <div class="fac-img" style="background:${coverUrl ? 'url(' + coverUrl + ') center/cover' : '#e2e8f0'}; height:160px; border-radius:12px 12px 0 0; display:flex; align-items:center; justify-content:center;">
+        ${!coverUrl ? '<span style="font-size:40px;">🏥</span>' : ''}
       </div>
       <div style="padding:16px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
@@ -793,7 +811,8 @@ async function renderFacilities() {
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function openNewFacModal() {
@@ -807,11 +826,11 @@ function openNewFacModal() {
   document.getElementById('ef_vacancies').value = '';
   document.getElementById('ef_fee_min').value = '';
   document.getElementById('ef_fee_max').value = '';
-  document.getElementById('ef_photo_file').value = '';
-  document.getElementById('ef_photo_img').src = '';
-  document.getElementById('ef_photo_img').style.display = 'none';
-  document.getElementById('ef_photo_placeholder').style.display = 'block';
-  document.getElementById('ef_photo').value = '';
+  photoFiles = [];
+  existingPhotos = [];
+  const phIn = document.getElementById('ef_photo_files');
+  if (phIn) phIn.value = '';
+  renderPhotoGrid();
   document.getElementById('ef_contact_name').value = '';
   document.getElementById('ef_email').value = '';
   document.getElementById('ef_phone').value = '';
@@ -831,16 +850,11 @@ function openEditModal(f) {
   document.getElementById('ef_vacancies').value = f.vacancies || '';
   document.getElementById('ef_fee_min').value = f.fee_min || '';
   document.getElementById('ef_fee_max').value = f.fee_max || '';
-  document.getElementById('ef_photo_file').value = '';
-  if (f.photo_url) {
-    document.getElementById('ef_photo_img').src = f.photo_url;
-    document.getElementById('ef_photo_img').style.display = 'block';
-    document.getElementById('ef_photo_placeholder').style.display = 'none';
-  } else {
-    document.getElementById('ef_photo_img').style.display = 'none';
-    document.getElementById('ef_photo_placeholder').style.display = 'block';
-  }
-  document.getElementById('ef_photo').value = f.photo_url || '';
+  photoFiles = [];
+  existingPhotos = f.photo_url ? (Array.isArray(f.photo_url) ? f.photo_url : [f.photo_url]) : [];
+  const phInEd = document.getElementById('ef_photo_files');
+  if (phInEd) phInEd.value = '';
+  renderPhotoGrid();
   document.getElementById('ef_contact_name').value = f.contact_name || '';
   document.getElementById('ef_email').value = f.contact_email || '';
   document.getElementById('ef_phone').value = f.contact_phone || '';
@@ -851,23 +865,71 @@ function closeEditModal() {
   document.getElementById('editFacModal').style.display = 'none';
 }
 
-function previewPhoto(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('ef_photo_img').src = e.target.result;
-      document.getElementById('ef_photo_img').style.display = 'block';
-      document.getElementById('ef_photo_placeholder').style.display = 'none';
-      document.getElementById('ef_photo').value = e.target.result;
-    };
-    reader.readAsDataURL(input.files[0]);
+function previewPhotos(input) {
+  const files = Array.from(input.files);
+  const total = photoFiles.length + existingPhotos.length + files.length;
+  if (total > 10) {
+    alert('사진은 최대 10장까지 가능합니다.');
+    input.value = '';
+    return;
   }
+  photoFiles = [...photoFiles, ...files];
+  input.value = '';
+  renderPhotoGrid();
+}
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('ef_photo_grid');
+  if (!grid) return;
+  const allPhotos = [
+    ...existingPhotos.map(url => ({ type: 'url', src: url })),
+    ...photoFiles.map(f => ({ type: 'file', src: URL.createObjectURL(f), file: f }))
+  ];
+  grid.innerHTML = allPhotos.map((p, i) => `
+    <div style="position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;background:#e2e8f0;">
+      <img src="${p.src}" style="width:100%;height:100%;object-fit:cover;">
+      <button type="button" onclick="removePhoto(${i})" style="position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,.6);color:white;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      ${i === 0 ? '<div style="position:absolute;bottom:4px;left:4px;background:#1f7a75;color:white;font-size:10px;padding:2px 6px;border-radius:4px;">대표</div>' : ''}
+    </div>
+  `).join('');
+  const hidden = document.getElementById('ef_photo');
+  if (allPhotos.length > 0) {
+    hidden.value = allPhotos[0].src;
+  } else {
+    hidden.value = '';
+  }
+}
+
+function removePhoto(idx) {
+  const existingCount = existingPhotos.length;
+  if (idx < existingCount) {
+    existingPhotos.splice(idx, 1);
+  } else {
+    photoFiles.splice(idx - existingCount, 1);
+  }
+  renderPhotoGrid();
+}
+
+async function uploadPhotos(facilityId) {
+  const uploadedUrls = [...existingPhotos];
+  for (let i = 0; i < photoFiles.length; i++) {
+    const file = photoFiles[i];
+    const ext = file.name.split('.').pop();
+    const path = `${facilityId}/${Date.now()}_${i}.${ext}`;
+    const { error } = await db.storage.from('facility-photos').upload(path, file, { upsert: true });
+    if (!error) {
+      const { data } = db.storage.from('facility-photos').getPublicUrl(path);
+      uploadedUrls.push(data.publicUrl);
+    }
+  }
+  return uploadedUrls;
 }
 
 function openPreviewModal(f) {
   const img = document.getElementById('previewImg');
-  if (f.photo_url) {
-    img.style.backgroundImage = 'url(' + f.photo_url + ')';
+  const previewUrl = firstFacilityPhotoUrl(f.photo_url);
+  if (previewUrl) {
+    img.style.backgroundImage = 'url(' + previewUrl + ')';
     img.textContent = '';
   } else {
     img.style.backgroundImage = 'none';
@@ -895,6 +957,11 @@ function closePreviewModal() {
 
 async function saveFacility() {
   const id = document.getElementById('editFacId').value;
+  let photoUrls = existingPhotos;
+  if (photoFiles.length > 0) {
+    const tempId = id || 'new_' + Date.now();
+    photoUrls = await uploadPhotos(tempId);
+  }
   const payload = {
     facility_name_kr: document.getElementById('ef_name_kr').value,
     facility_name_en: document.getElementById('ef_name_en').value,
@@ -905,20 +972,21 @@ async function saveFacility() {
     vacancies: parseInt(document.getElementById('ef_vacancies').value) || 0,
     fee_min: document.getElementById('ef_fee_min').value,
     fee_max: document.getElementById('ef_fee_max').value,
-    photo_url: document.getElementById('ef_photo').value,
+    photo_url: photoUrls[0] || null,
     contact_name: document.getElementById('ef_contact_name').value,
     contact_email: document.getElementById('ef_email').value,
     contact_phone: document.getElementById('ef_phone').value,
   };
-
   let error;
   if (id) {
     ({ error } = await db.from('partners').update(payload).eq('id', id));
   } else {
     ({ error } = await db.from('partners').insert([payload]));
   }
-
   if (error) { console.error(error); alert('저장 중 오류가 발생했습니다.'); return; }
+  photoFiles = [];
+  const phDone = document.getElementById('ef_photo_files');
+  if (phDone) phDone.value = '';
   closeEditModal();
   document.querySelector('#editFacModal h3').textContent = '시설 정보 수정';
   renderFacilities();
@@ -1071,18 +1139,11 @@ window.onload = async function() {
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">월 비용 (최저)</label><input id="ef_fee_min" placeholder="$5,000" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">월 비용 (최고)</label><input id="ef_fee_max" placeholder="$9,000" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
       <div>
-        <label style="font-size:13px;font-weight:600;color:#64748b;">시설 사진</label>
-        <div style="margin-top:4px;">
-          <input type="file" id="ef_photo_file" accept="image/*" style="display:none;" onchange="previewPhoto(this)">
-          <div id="ef_photo_preview" style="width:100%;height:160px;border:2px dashed #e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:#f8fafc;" onclick="document.getElementById('ef_photo_file').click()">
-            <div id="ef_photo_placeholder" style="text-align:center;color:#94a3b8;">
-              <div style="font-size:32px;">📷</div>
-              <div style="font-size:13px;margin-top:4px;">클릭하여 사진 업로드</div>
-            </div>
-            <img id="ef_photo_img" style="display:none;width:100%;height:100%;object-fit:cover;">
-          </div>
-          <input type="hidden" id="ef_photo">
-        </div>
+        <label style="font-size:13px;font-weight:600;color:#64748b;">시설 사진 (최대 10장)</label>
+        <input type="file" id="ef_photo_files" accept="image/*" multiple style="display:none;" onchange="previewPhotos(this)">
+        <div id="ef_photo_grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;"></div>
+        <button type="button" onclick="document.getElementById('ef_photo_files').click()" style="width:100%;margin-top:8px;padding:10px;border:2px dashed #e2e8f0;border-radius:8px;background:#f8fafc;color:#64748b;font-size:13px;cursor:pointer;">📷 사진 추가 (최대 10장)</button>
+        <input type="hidden" id="ef_photo">
       </div>
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">담당자 이름</label><input id="ef_contact_name" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">담당자 이메일</label><input id="ef_email" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
