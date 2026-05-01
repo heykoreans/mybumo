@@ -808,6 +808,7 @@ function openNewFacModal() {
   document.getElementById('ef_fee_min').value = '';
   document.getElementById('ef_fee_max').value = '';
   document.getElementById('ef_photo').value = '';
+  document.getElementById('ef_contact_name').value = '';
   document.getElementById('ef_email').value = '';
   document.getElementById('ef_phone').value = '';
   document.querySelector('#editFacModal h3').textContent = '새 시설 등록';
@@ -827,6 +828,7 @@ function openEditModal(f) {
   document.getElementById('ef_fee_min').value = f.fee_min || '';
   document.getElementById('ef_fee_max').value = f.fee_max || '';
   document.getElementById('ef_photo').value = f.photo_url || '';
+  document.getElementById('ef_contact_name').value = f.contact_name || '';
   document.getElementById('ef_email').value = f.contact_email || '';
   document.getElementById('ef_phone').value = f.contact_phone || '';
   document.getElementById('editFacModal').style.display = 'flex';
@@ -878,6 +880,7 @@ async function saveFacility() {
     fee_min: document.getElementById('ef_fee_min').value,
     fee_max: document.getElementById('ef_fee_max').value,
     photo_url: document.getElementById('ef_photo').value,
+    contact_name: document.getElementById('ef_contact_name').value,
     contact_email: document.getElementById('ef_email').value,
     contact_phone: document.getElementById('ef_phone').value,
   };
@@ -1033,6 +1036,7 @@ window.onload = async function() {
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">월 비용 (최저)</label><input id="ef_fee_min" placeholder="$5,000" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">월 비용 (최고)</label><input id="ef_fee_max" placeholder="$9,000" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">사진 URL</label><input id="ef_photo" placeholder="https://..." style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
+      <div><label style="font-size:13px;font-weight:600;color:#64748b;">담당자 이름</label><input id="ef_contact_name" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">담당자 이메일</label><input id="ef_email" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
       <div><label style="font-size:13px;font-weight:600;color:#64748b;">담당자 연락처</label><input id="ef_phone" style="width:100%;padding:10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;"></div>
     </div>
