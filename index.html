@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBumo — 한인 시니어 케어 매칭</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy: #0d2137;
+            --deep: #071525;
+            --sage: #2e9e98;
+            --sage-dk: #1f7a75;
+            --sage-lt: #7dd4cf;
+            --amber: #e8a838;
+            --offwhite: #f7f3ee;
+            --slate: #334155;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --white: #ffffff;
+            --panel: #fafaf8;
+            --rose: #e05c5c;
+            --green: #10b981;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans','Noto Sans KR',-apple-system,sans-serif; display: flex; min-height: 100vh; background: var(--offwhite); }
+
+        /* ══ LEFT PANEL ══ */
+        .left-panel {
+            position: sticky; top: 0; height: 100vh; flex: 1;
+            background: linear-gradient(160deg,rgba(7,21,37,.82) 0%,rgba(20,90,80,.45) 100%),
+                        url('https://images.unsplash.com/photo-1576765608622-067973a79f53?auto=format&fit=crop&w=2000&q=85') center/cover no-repeat;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 60px 56px; color: white; overflow: hidden; position: relative;
+        }
+        .left-panel::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 20% 80%,rgba(46,158,152,.2) 0%,transparent 55%); pointer-events:none; }
+
+        .top-nav { position:absolute; top:28px; left:56px; right:56px; display:flex; align-items:center; }
+        .brand { font-family:'DM Sans',sans-serif; font-size:24px; font-weight:800; color:var(--sage-lt); letter-spacing:-.5px; text-decoration:none; margin-right:auto; display:flex; align-items:center; gap:8px; }
+        .brand-icon { width:32px; height:32px; background:rgba(46,158,152,.3); border:1.5px solid rgba(125,212,207,.5); border-radius:9px; display:flex; justify-content:center; align-items:center; font-size:16px; }
+        .nav-links { display:flex; gap:4px; align-items:center; }
+        .nav-links a { color:rgba(255,255,255,.75); text-decoration:none; font-size:14px; font-weight:500; padding:7px 14px; border-radius:8px; transition:all .2s; cursor:pointer; }
+        .nav-links a:hover { color:white; background:rgba(255,255,255,.1); }
+        .lang-toggle { margin-left:16px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.3); color:white; padding:7px 16px; border-radius:30px; font-size:13px; font-weight:600; cursor:pointer; transition:background .2s; }
+        .lang-toggle:hover { background:rgba(255,255,255,.22); }
+
+        .hero-text { position:relative; z-index:1; }
+        .hero-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(46,158,152,.18); border:1px solid rgba(46,158,152,.45); color:var(--sage-lt); font-size:11.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; padding:7px 14px; border-radius:30px; margin-bottom:26px; }
+        .hero-pill .dot { width:6px; height:6px; background:var(--sage-lt); border-radius:50%; animation:blink 2s infinite; }
+        @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+        .hero-text h1 { font-size:48px; font-weight:800; line-height:1.14; margin-bottom:22px; letter-spacing:-1px; }
+        .hero-text h1 .ac { color:var(--sage-lt); }
+        .hero-text h1 .ag { color:var(--amber); }
+        .hero-text p { font-size:15.5px; font-weight:400; opacity:.85; max-width:430px; line-height:1.9; }
+
+        .trust-bar { position:absolute; bottom:40px; left:56px; right:56px; display:flex; align-items:center; z-index:1; }
+        .trust-item { display:flex; flex-direction:column; gap:3px; flex:1; }
+        .trust-item strong { font-size:20px; font-weight:800; color:var(--amber); }
+        .trust-item .tl { font-size:11.5px; color:rgba(255,255,255,.6); }
+        .trust-div { width:1px; height:36px; background:rgba(255,255,255,.18); margin:0 20px; }
+
+        /* ══ RIGHT PANEL ══ */
+        .right-panel { width:560px; background:var(--panel); display:flex; flex-direction:column; box-shadow:-16px 0 48px rgba(7,21,37,.08); min-height:100vh; }
+
+        .chat-header { position:sticky; top:0; padding:18px 26px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:13px; z-index:10; background:rgba(250,250,248,.97); backdrop-filter:blur(12px); }
+        .logo-circ { width:40px; height:40px; background:linear-gradient(135deg,var(--sage-dk),var(--navy)); border-radius:11px; display:flex; justify-content:center; align-items:center; color:white; font-size:18px; flex-shrink:0; box-shadow:0 4px 12px rgba(31,122,117,.3); }
+        .hdr-text h2 { font-size:15.5px; color:var(--navy); font-weight:700; }
+        .hdr-status { display:flex; align-items:center; gap:5px; margin-top:2px; }
+        .sdot { width:6px; height:6px; background:#22c55e; border-radius:50%; animation:blink 2s infinite; }
+        .hdr-text p { font-size:11.5px; color:var(--sage-dk); font-weight:600; }
+
+        .chat-body { flex:1; padding:26px 26px 14px; display:flex; flex-direction:column; gap:20px; }
+        .msg-row { display:flex; max-width:92%; align-items:flex-start; gap:10px; }
+        .ai-row { align-self:flex-start; animation:sli .35s ease; }
+        .user-row { align-self:flex-end; flex-direction:row-reverse; animation:slr .3s ease; }
+        @keyframes sli { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes slr { from{opacity:0;transform:translateX(8px)} to{opacity:1;transform:translateX(0)} }
+
+        .ai-av { width:33px; height:33px; background:linear-gradient(135deg,var(--sage-dk),#145e5b); border-radius:50%; display:flex; justify-content:center; align-items:center; color:white; font-size:15px; font-weight:800; flex-shrink:0; }
+        .bubble { padding:13px 17px; border-radius:18px; font-size:14.5px; line-height:1.65; }
+        .ai-row .bubble { background:var(--white); color:var(--slate); border-top-left-radius:4px; border:1px solid var(--border); box-shadow:0 2px 8px rgba(0,0,0,.04); }
+        .user-row .bubble { background:var(--navy); color:white; border-top-right-radius:4px; }
+
+        .options { display:flex; flex-wrap:wrap; gap:8px; margin-left:43px; margin-top:-10px; }
+        .btn-opt { background:white; border:1.5px solid var(--border); color:var(--slate); padding:8px 15px; border-radius:30px; font-size:13.5px; font-weight:500; cursor:pointer; transition:all .2s; }
+        .btn-opt:hover { border-color:var(--sage-dk); color:var(--sage-dk); }
+        .btn-opt.sel { background:var(--navy); border-color:var(--navy); color:white; }
+
+        /* ── Carousel ── */
+        .carousel-wrap { margin-left:43px; width:460px; position:relative; }
+        .c-arrow { position:absolute; top:calc(50% - 30px); transform:translateY(-50%); width:34px; height:34px; background:white; border:1.5px solid var(--border); border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; z-index:5; box-shadow:0 4px 14px rgba(0,0,0,.1); transition:all .2s; font-size:14px; color:var(--navy); }
+        .c-arrow:hover { background:var(--navy); color:white; border-color:var(--navy); }
+        .c-arrow.left { left:-16px; }
+        .c-arrow.right { right:-16px; }
+        .c-arrow.hidden { opacity:0; pointer-events:none; }
+
+        .pkg-list { display:flex; gap:14px; overflow-x:auto; padding-bottom:10px; scroll-snap-type:x mandatory; scrollbar-width:none; scroll-behavior:smooth; }
+        .pkg-list::-webkit-scrollbar { display:none; }
+
+        /* FACILITY CARD */
+        .pkg-card { background:white; border:1px solid var(--border); border-radius:18px; overflow:hidden; width:222px; flex-shrink:0; scroll-snap-align:start; box-shadow:0 4px 18px rgba(0,0,0,.06); transition:transform .25s,box-shadow .25s; cursor:pointer; }
+        .pkg-card:hover { transform:translateY(-4px); box-shadow:0 14px 34px rgba(13,33,55,.15); }
+        .pkg-img { height:148px; background-size:cover; background-position:center; position:relative; }
+        .pkg-img::after { content:''; position:absolute; inset:0; background:rgba(13,33,55,.3); opacity:0; transition:opacity .2s; }
+        .pkg-img::before { content:'자세히 보기 →'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:white; font-size:13px; font-weight:700; z-index:2; opacity:0; transition:opacity .2s; white-space:nowrap; background:rgba(13,33,55,.6); padding:8px 16px; border-radius:20px; }
+        .pkg-card:hover .pkg-img::before,.pkg-card:hover .pkg-img::after { opacity:1; }
+        .pkg-badge { position:absolute; top:10px; left:10px; background:var(--amber); color:#2a1a00; font-size:11px; font-weight:700; padding:4px 10px; border-radius:30px; z-index:1; }
+        .pkg-info { padding:15px; }
+        .pkg-price { font-size:20px; font-weight:800; color:var(--navy); margin-bottom:3px; }
+        .pkg-price span { font-size:11px; font-weight:400; color:var(--muted); }
+        .pkg-title { font-size:13px; font-weight:600; color:var(--slate); margin-bottom:13px; min-height:34px; line-height:1.4; }
+        .match-btn { width:100%; background:var(--navy); color:white; border:none; padding:10px; border-radius:10px; font-weight:700; cursor:pointer; font-size:13px; transition:background .2s; pointer-events:none; }
+
+        .c-dots { display:flex; justify-content:center; gap:6px; margin-top:10px; }
+        .c-dot { width:6px; height:6px; border-radius:50%; background:var(--border); transition:all .2s; cursor:pointer; }
+        .c-dot.active { background:var(--navy); width:18px; border-radius:3px; }
+
+        /* Facility list */
+        .agency-list { display:flex; flex-direction:column; gap:12px; margin-left:43px; width:440px; }
+        .agency-item { background:white; border:1.5px solid var(--border); border-radius:16px; padding:17px; cursor:pointer; transition:all .25s; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+        .agency-item:hover { border-color:var(--sage-dk); transform:translateY(-2px); box-shadow:0 10px 28px rgba(31,122,117,.12); }
+        .ag-top { display:flex; gap:11px; align-items:center; margin-bottom:10px; }
+        .ag-logo { width:42px; height:42px; background:var(--offwhite); border-radius:10px; border:1px solid var(--border); display:flex; justify-content:center; align-items:center; font-size:20px; flex-shrink:0; }
+        .ag-text h4 { font-size:14.5px; color:var(--navy); font-weight:700; margin-bottom:2px; }
+        .ag-text p { font-size:12px; color:var(--muted); }
+        .stars { color:var(--amber); }
+        .ai-tag { background:#f0fdfc; color:#1a7a75; font-size:12px; padding:8px 12px; border-radius:8px; font-weight:600; margin-bottom:12px; display:block; border:1px solid #b2e8e5; }
+        .ag-bottom { display:flex; justify-content:space-between; align-items:center; background:var(--offwhite); padding:11px 14px; border-radius:10px; }
+        .price-est { font-size:12px; color:var(--muted); }
+        .price-est strong { font-size:17px; color:var(--navy); font-weight:800; display:block; margin-top:2px; }
+        .sel-btn { background:var(--sage-dk); color:white; border:none; padding:10px 18px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; transition:background .2s; }
+        .agency-item:hover .sel-btn { background:var(--navy); }
+
+        /* Add req box */
+        .add-req-box { margin-left:43px; width:440px; background:white; border:1.5px solid var(--border); border-radius:16px; padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+        .add-req-box p { font-size:14px; color:var(--slate); margin-bottom:12px; line-height:1.6; }
+        .add-req-box textarea { width:100%; padding:12px 15px; border:1.5px solid var(--border); border-radius:10px; font-size:14px; font-family:inherit; resize:none; outline:none; transition:border-color .2s; color:var(--slate); background:var(--offwhite); }
+        .add-req-box textarea:focus { border-color:var(--sage-dk); background:white; }
+        .add-req-row { display:flex; gap:10px; margin-top:10px; justify-content:flex-end; }
+        .skip-btn { background:none; border:1.5px solid var(--border); color:var(--muted); padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
+        .send-req-btn { background:var(--navy); color:white; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+
+        /* Success */
+        .success-box { background:linear-gradient(135deg,#ecfdf5,#f0fdfc); border:1.5px solid #6ee7b7; border-radius:16px; padding:24px 20px; margin-left:43px; width:440px; text-align:center; }
+        .success-box .si { font-size:34px; margin-bottom:10px; }
+        .success-box h4 { color:#047857; margin-bottom:8px; font-size:16px; font-weight:700; }
+        .success-box p { color:#065f46; font-size:13px; line-height:1.6; }
+
+        /* Chat footer */
+        .chat-footer { position:sticky; bottom:0; padding:13px 18px; background:rgba(250,250,248,.97); border-top:1px solid var(--border); display:flex; gap:10px; z-index:10; backdrop-filter:blur(12px); }
+        .inp-box { flex:1; padding:12px 20px; border-radius:30px; border:1.5px solid var(--border); background:white; outline:none; font-size:14px; font-family:inherit; transition:border-color .2s; }
+        .inp-box:focus { border-color:var(--sage-dk); }
+        .send-btn { width:44px; height:44px; background:var(--navy); color:white; border:none; border-radius:50%; cursor:pointer; display:flex; justify-content:center; align-items:center; font-size:16px; flex-shrink:0; transition:background .2s; }
+        .send-btn:hover { background:var(--sage-dk); }
+
+        /* ══ OVERLAY SYSTEM ══ */
+        .overlay { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(7,21,37,.72); z-index:9999; justify-content:center; align-items:center; padding:20px; backdrop-filter:blur(5px); }
+        .overlay.show { display:flex; animation:fdi .2s ease; }
+        @keyframes fdi { from{opacity:0} to{opacity:1} }
+        .modal { background:white; border-radius:24px; max-width:100%; box-shadow:0 24px 60px rgba(7,21,37,.28); position:relative; animation:slu .3s ease; max-height:92vh; overflow-y:auto; }
+        @keyframes slu { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        .modal-close { position:absolute; top:16px; right:18px; background:none; border:none; font-size:20px; color:var(--muted); cursor:pointer; padding:4px 8px; border-radius:6px; transition:background .15s; z-index:10; }
+        .modal-close:hover { background:var(--offwhite); }
+
+        /* FACILITY DETAIL MODAL */
+        .pkg-modal { width:680px; }
+        .pkg-modal-img { height:280px; background-size:cover; background-position:center; border-radius:20px 20px 0 0; position:relative; }
+        .pkg-modal-img .pb { position:absolute; top:16px; left:16px; background:var(--amber); color:#2a1a00; font-size:12px; font-weight:700; padding:5px 12px; border-radius:20px; }
+        .pkg-modal-body { padding:28px 32px 32px; }
+        .pkg-modal-body h2 { font-size:24px; font-weight:800; color:var(--navy); margin-bottom:6px; }
+        .pkg-meta { display:flex; gap:16px; align-items:center; margin-bottom:22px; flex-wrap:wrap; }
+        .pkg-meta .price-big { font-size:28px; font-weight:800; color:var(--navy); }
+        .pkg-meta .price-big span { font-size:13px; font-weight:400; color:var(--muted); }
+        .pkg-meta-tag { background:var(--offwhite); border:1px solid var(--border); color:var(--slate); font-size:12.5px; font-weight:600; padding:5px 12px; border-radius:20px; }
+        .pkg-section-title { font-size:13px; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:.8px; margin-bottom:12px; margin-top:24px; }
+        .pkg-includes { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .pkg-inc-item { display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--slate); }
+        .pkg-highlights { display:flex; flex-direction:column; gap:7px; }
+        .pkg-hl { display:flex; gap:10px; font-size:13.5px; color:var(--slate); line-height:1.5; }
+        .pkg-hl .num { width:22px; height:22px; background:var(--navy); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:11px; font-weight:800; flex-shrink:0; }
+        .pkg-agencies-title { font-size:15px; font-weight:800; color:var(--navy); margin-bottom:14px; margin-top:28px; padding-top:24px; border-top:1px solid var(--border); }
+        .pam-mini { background:var(--offwhite); border:1.5px solid var(--border); border-radius:14px; padding:16px; cursor:pointer; transition:all .2s; margin-bottom:10px; }
+        .pam-mini:hover { border-color:var(--sage-dk); background:white; box-shadow:0 6px 20px rgba(31,122,117,.1); }
+        .pam-top { display:flex; gap:12px; align-items:center; margin-bottom:10px; }
+        .pam-logo { width:40px; height:40px; background:white; border-radius:9px; border:1px solid var(--border); display:flex; justify-content:center; align-items:center; font-size:18px; flex-shrink:0; }
+        .pam-info h4 { font-size:14px; font-weight:700; color:var(--navy); }
+        .pam-info p { font-size:12px; color:var(--muted); }
+        .pam-bottom { display:flex; justify-content:space-between; align-items:center; }
+        .pam-price strong { font-size:15px; color:var(--navy); font-weight:800; display:block; }
+        .pam-btn { background:var(--sage-dk); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+        .pkg-cta-row { display:flex; gap:12px; margin-top:28px; }
+        .pkg-cta { flex:1; background:var(--navy); color:white; border:none; padding:15px; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:background .2s; }
+        .pkg-cta:hover { background:var(--sage-dk); }
+        .pkg-cta-sec { flex:0 0 auto; background:white; color:var(--navy); border:1.5px solid var(--border); padding:15px 20px; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; }
+
+        /* FACILITY DETAIL MODAL */
+        .ag-modal { width:560px; }
+        .ag-modal-header { padding:32px 32px 24px; border-bottom:1px solid var(--border); }
+        .ag-modal-hd { display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; }
+        .ag-modal-logo { width:60px; height:60px; background:var(--offwhite); border-radius:14px; border:1px solid var(--border); display:flex; justify-content:center; align-items:center; font-size:28px; flex-shrink:0; }
+        .ag-modal-info h2 { font-size:21px; font-weight:800; color:var(--navy); margin-bottom:4px; }
+        .ag-modal-info .stars { font-size:14px; }
+        .ag-modal-info p { font-size:12.5px; color:var(--muted); margin-top:3px; }
+        .ag-tags { display:flex; flex-wrap:wrap; gap:7px; }
+        .ag-tag { background:var(--offwhite); border:1px solid var(--border); color:var(--slate); font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px; }
+        .ag-modal-body { padding:24px 32px 32px; }
+        .ag-stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:22px; }
+        .ag-stat { background:var(--offwhite); border-radius:12px; padding:14px; text-align:center; border:1px solid var(--border); }
+        .ag-stat strong { font-size:20px; font-weight:800; color:var(--navy); display:block; }
+        .ag-stat span { font-size:11.5px; color:var(--muted); margin-top:3px; display:block; }
+        .ag-brief { background:#f0fdfc; border:1px solid #b2e8e5; border-radius:12px; padding:16px; margin-bottom:20px; }
+        .ag-brief .br-title { font-size:12px; font-weight:800; color:var(--sage-dk); text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; }
+        .ag-brief p { font-size:13.5px; color:var(--slate); line-height:1.65; }
+        .ag-review { background:var(--offwhite); border-radius:12px; padding:16px; margin-bottom:24px; border:1px solid var(--border); }
+        .ag-review .rv-stars { color:var(--amber); font-size:13px; margin-bottom:8px; }
+        .ag-review p { font-size:13px; color:var(--slate); line-height:1.6; font-style:italic; }
+        .ag-review .rv-by { font-size:12px; color:var(--muted); margin-top:8px; font-style:normal; }
+        .ag-quote { background:var(--navy); border-radius:14px; padding:20px 22px; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+        .q-label { font-size:12px; color:rgba(255,255,255,.6); margin-bottom:5px; }
+        .q-price { font-size:28px; font-weight:900; color:var(--amber); }
+        .ag-cta { width:100%; background:var(--sage-dk); color:white; border:none; padding:15px; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; transition:background .2s; }
+        .ag-cta:hover { background:var(--sage); }
+
+        /* LEAD MODAL */
+        .lead-modal { width:460px; padding:40px; }
+        .fbadge { display:inline-block; background:#ecfdf5; color:#059669; border:1px solid #6ee7b7; font-size:12px; font-weight:700; padding:5px 12px; border-radius:30px; margin-bottom:18px; }
+        .step-con h3 { font-size:26px; font-weight:800; color:var(--navy); margin-bottom:10px; line-height:1.3; }
+        .step-con .sub { font-size:14px; color:var(--muted); margin-bottom:24px; line-height:1.7; }
+        .fg { display:flex; flex-direction:column; gap:7px; margin-bottom:16px; }
+        .fg label { font-size:13px; font-weight:700; color:var(--navy); }
+        .fg input, .fg select, .fg textarea { padding:13px 16px; border:1.5px solid var(--border); border-radius:12px; font-size:14px; font-family:inherit; outline:none; transition:border-color .2s; color:var(--navy); }
+        .fg input:focus, .fg select:focus, .fg textarea:focus { border-color:var(--sage-dk); }
+        .fg-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .sbtn { width:100%; background:var(--navy); color:white; border:none; padding:15px; border-radius:12px; font-weight:800; font-size:15px; cursor:pointer; transition:background .2s; margin-top:6px; }
+        .sbtn:hover { background:var(--sage-dk); }
+        .np { font-size:12.5px; color:var(--muted); margin-top:14px; line-height:1.6; background:var(--offwhite); border-radius:10px; padding:12px 14px; }
+        .np .hl { color:var(--sage-dk); font-weight:700; }
+
+        /* HOW MODAL */
+        .how-modal { width:540px; padding:40px; }
+        .how-modal h2 { font-size:24px; font-weight:800; color:var(--navy); margin-bottom:10px; }
+        .how-modal > p { font-size:14px; color:var(--muted); margin-bottom:28px; line-height:1.7; }
+        .steps { display:flex; flex-direction:column; gap:20px; }
+        .step-r { display:flex; gap:16px; align-items:flex-start; }
+        .step-n { width:36px; height:36px; background:var(--navy); color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:14px; font-weight:800; flex-shrink:0; }
+        .step-r h4 { font-size:15px; font-weight:700; color:var(--navy); margin-bottom:5px; }
+        .step-r p { font-size:13.5px; color:var(--muted); line-height:1.6; }
+
+        /* PARTNER APPLICATION MODAL */
+        .partner-modal { width:580px; padding:36px; }
+        .partner-modal h2 { font-size:22px; font-weight:800; color:var(--navy); margin-bottom:6px; }
+        .partner-modal > p { font-size:13.5px; color:var(--muted); margin-bottom:28px; }
+        .p-step-bar { display:flex; gap:8px; margin-bottom:32px; }
+        .p-step-ind { flex:1; height:5px; border-radius:3px; background:var(--border); transition:background .3s; }
+        .p-step-ind.active { background:var(--sage-dk); }
+        .p-step-ind.done { background:var(--navy); }
+        .p-step { display:none; }
+        .p-step.active { display:block; }
+        .p-step h3 { font-size:17px; font-weight:800; color:var(--navy); margin-bottom:18px; }
+        .p-next { background:var(--navy); color:white; border:none; padding:13px 28px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; float:right; transition:background .2s; margin-top:18px; }
+        .p-next:hover { background:var(--sage-dk); }
+        .p-done { text-align:center; display:none; padding:20px 0 10px; }
+        .p-done.active { display:block; }
+        .p-done .big-check { font-size:52px; margin-bottom:16px; }
+        .p-done h3 { font-size:22px; font-weight:800; color:var(--navy); margin-bottom:10px; }
+        .p-done p { font-size:14px; color:var(--muted); line-height:1.7; }
+        .check-row { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--offwhite); }
+        .check-row input[type=checkbox] { margin-top:2px; width:16px; height:16px; accent-color:var(--sage-dk); flex-shrink:0; }
+        .check-row label { font-size:13px; color:var(--slate); line-height:1.55; }
+        .type-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+        .type-opt { border:1.5px solid var(--border); border-radius:12px; padding:14px; cursor:pointer; transition:all .2s; }
+        .type-opt:hover { border-color:var(--sage-dk); }
+        .type-opt.sel { border-color:var(--navy); background:#f0fdfc; }
+        .type-opt .t-ico { font-size:22px; margin-bottom:6px; }
+        .type-opt strong { display:block; font-size:13px; font-weight:700; color:var(--navy); }
+        .type-opt span { font-size:11.5px; color:var(--muted); }
+
+        /* Responsive */
+        @media(max-width:1100px) { .left-panel { display:none; } .right-panel { width:100%; } }
+        @media(max-width:600px) { .pkg-modal,.ag-modal,.how-modal,.lead-modal,.partner-modal { width:calc(100vw - 40px); } }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const SUPABASE_URL = 'https://tlpzztuxtsobhqprosk.supabase.co';
+      const SUPABASE_KEY = 'sb_publishable_TjVcFMDYPGeBHZ82YuQrYw_YJTr44iz';
+      const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
+</head>
+<body>
+
+<!-- ══ LEFT PANEL ══ -->
+<div class="left-panel">
+    <nav class="top-nav">
+        <a class="brand" href="#">
+            <div class="brand-icon">🤝</div>
+            MyBumo
+        </a>
+        <div class="nav-links">
+            <a onclick="showOverlay('howOverlay')" class="kr">서비스 소개</a>
+            <a onclick="showOverlay('howOverlay')" class="en" style="display:none">How It Works</a>
+            <a onclick="showOverlay('partnerOverlay')" class="kr">시설 파트너 신청</a>
+            <a onclick="showOverlay('partnerOverlay')" class="en" style="display:none">Partner With Us</a>
+        </div>
+        <button class="lang-toggle" id="langBtn" onclick="toggleLang()">🇺🇸 English</button>
+    </nav>
+
+    <div class="hero-text">
+        <div class="hero-pill">
+            <span class="dot"></span>
+            <span class="kr">AI 케어 매칭 · 가족 수수료 $0</span>
+            <span class="en" style="display:none">AI Care Matching · $0 Family Fee</span>
+        </div>
+        <h1>
+            <span class="kr">부모님의<br><span class="ac">새로운 보금자리</span>를<br>찾아드립니다 <span class="ag">💙</span></span>
+            <span class="en" style="display:none">Finding the <span class="ac">Right Care Home</span><br>for Your <span class="ag">Loved Ones 💙</span></span>
+        </h1>
+        <p>
+            <span class="kr">한국어 구사 직원, 한식 제공, 문화 프로그램까지.<br>한인 시니어를 위한 최적의 케어 시설을 AI가 1분 안에 연결해 드립니다.</span>
+            <span class="en" style="display:none">Korean-speaking staff, Korean meals, and cultural activities — our AI connects Korean seniors with the perfect care facility in under 60 seconds.</span>
+        </p>
+    </div>
+
+    <div class="trust-bar">
+        <div class="trust-item">
+            <strong>1,200+</strong>
+            <div class="tl kr">연결된 한인 가족</div>
+            <div class="tl en" style="display:none">Families Helped</div>
+        </div>
+        <div class="trust-div"></div>
+        <div class="trust-item">
+            <strong>180+</strong>
+            <div class="tl kr">한인 케어 시설</div>
+            <div class="tl en" style="display:none">Korean Care Facilities</div>
+        </div>
+        <div class="trust-div"></div>
+        <div class="trust-item">
+            <strong>$0</strong>
+            <div class="tl kr">가족 부담 수수료</div>
+            <div class="tl en" style="display:none">Fee to Families</div>
+        </div>
+        <div class="trust-div"></div>
+        <div class="trust-item">
+            <strong>4.9★</strong>
+            <div class="tl kr">평균 가족 만족도</div>
+            <div class="tl en" style="display:none">Avg Family Rating</div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ RIGHT PANEL ══ -->
+<div class="right-panel">
+    <div class="chat-header">
+        <div class="logo-circ">🤝</div>
+        <div class="hdr-text">
+            <h2>MyBumo AI <span class="kr">케어 플래너</span><span class="en" style="display:none">Care Planner</span></h2>
+            <div class="hdr-status">
+                <div class="sdot"></div>
+                <p class="kr">지금 상담 가능 · 한국어/영어 지원</p>
+                <p class="en" style="display:none">Available Now · Korean & English</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-body" id="chatBody">
+
+        <!-- Step 1: Welcome -->
+        <div class="msg-row ai-row">
+            <div class="ai-av">🤝</div>
+            <div class="bubble">
+                <span class="kr">안녕하세요! 저는 MyBumo AI 케어 플래너입니다 😊<br><br>부모님이나 가족분의 시니어 케어 시설 탐색을 도와드릴게요. 현재 어떤 상황이신가요?</span>
+                <span class="en" style="display:none">Hello! I'm your MyBumo AI Care Planner 😊<br><br>I'll help you find the perfect Korean senior care facility. What's your current situation?</span>
+            </div>
+        </div>
+        <div class="options" id="step1Opts">
+            <button class="btn-opt kr" onclick="step1Select(this,'일상 도움이 필요해요')">🏠 일상 도움이 필요해요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'Needs daily assistance')">🏠 Needs daily assistance</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'기억력·치매 증상이 있어요')">🧠 기억력·치매 증상이 있어요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'Memory/dementia concerns')">🧠 Memory/dementia concerns</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'병원 퇴원 후 회복이 필요해요')">🏥 병원 퇴원 후 회복이 필요해요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'Post-hospital recovery')">🏥 Post-hospital recovery</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'독립적이지만 안전한 환경 원해요')">✨ 독립적이지만 안전한 환경 원해요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'Independent but safe environment')">✨ Independent but safe environment</button>
+        </div>
+
+    </div>
+
+    <div class="chat-footer">
+        <input type="text" class="inp-box" id="chatInput" placeholder="메시지를 입력하세요...">
+        <button class="send-btn" onclick="sendMsg()">➤</button>
+    </div>
+</div>
+
+<!-- ══ FACILITY DETAIL OVERLAY ══ -->
+<div class="overlay" id="facDetailOverlay">
+    <div class="modal pkg-modal">
+        <button class="modal-close" onclick="closeOverlay('facDetailOverlay')">✕</button>
+        <div class="pkg-modal-img" id="facModalImg">
+            <div class="pb" id="facModalBadge"></div>
+        </div>
+        <div class="pkg-modal-body">
+            <h2 id="facModalName"></h2>
+            <div class="pkg-meta">
+                <div class="price-big" id="facModalFee"></div>
+                <span class="pkg-meta-tag" id="facModalType"></span>
+                <span class="pkg-meta-tag" id="facModalLoc"></span>
+            </div>
+
+            <div class="pkg-section-title kr">✅ 포함 서비스</div>
+            <div class="pkg-section-title en" style="display:none">✅ Included Services</div>
+            <div class="pkg-includes" id="facModalIncludes"></div>
+
+            <div class="pkg-section-title kr" style="margin-top:24px">🌟 주요 특징</div>
+            <div class="pkg-section-title en" style="display:none" style="margin-top:24px">🌟 Highlights</div>
+            <div class="pkg-highlights" id="facModalHighlights"></div>
+
+            <div class="pkg-agencies-title kr">🤖 AI 추천 이유</div>
+            <div class="pkg-agencies-title en" style="display:none">🤖 Why AI Recommends This</div>
+            <div class="ag-brief" id="facModalAiBrief" style="margin-bottom:0; margin-top:0;"></div>
+
+            <div class="pkg-cta-row">
+                <button class="pkg-cta" onclick="closeOverlay('facDetailOverlay'); showOverlay('leadOverlay')">
+                    <span class="kr">무료 방문 상담 신청하기 →</span>
+                    <span class="en" style="display:none">Request Free Tour →</span>
+                </button>
+                <button class="pkg-cta-sec" onclick="closeOverlay('facDetailOverlay')">
+                    <span class="kr">다른 시설 보기</span>
+                    <span class="en" style="display:none">See Others</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ LEAD OVERLAY ══ -->
+<div class="overlay" id="leadOverlay">
+    <div class="modal lead-modal">
+        <button class="modal-close" onclick="closeOverlay('leadOverlay')">✕</button>
+        <div id="lstep1" class="step-con">
+            <div class="fbadge kr">🎉 방문 투어 · 상담 100% 무료</div>
+            <div class="fbadge en">🎉 Free Tour & Consultation</div>
+            <h3 class="kr">시설과<br>연결해 드릴까요?</h3>
+            <h3 class="en">Ready to connect with<br>a care facility?</h3>
+            <p class="sub kr">이메일로 맞춤 시설 정보와 방문 일정을 안내해 드립니다. 가족 부담 비용은 없습니다.</p>
+            <p class="sub en">We'll send you a personalized facility recommendation and tour schedule. Zero cost to families.</p>
+            <div class="fg"><label class="kr">이메일 주소</label><label class="en">Email</label><input type="email" id="userEmail" placeholder="name@example.com"></div>
+            <button class="sbtn" onclick="goLStep2()"><span class="kr">무료 상담 받아보기 →</span><span class="en">Get My Free Consultation →</span></button>
+            <div class="np">
+                <span class="kr">💡 <strong>가족 비용 $0.</strong> 저희 서비스는 <span class="hl">케어 시설에서 수수료를 받는 구조</span>이므로, 가족분께는 어떠한 비용도 청구되지 않습니다.</span>
+                <span class="en">💡 <strong>$0 to families.</strong> We are compensated by care facilities — <span class="hl">there is never any cost to you or your family.</span></span>
+            </div>
+        </div>
+        <div id="lstep2" class="step-con" style="display:none;">
+            <div class="fbadge kr">거의 다 됐어요 🎉</div>
+            <div class="fbadge en">Almost there! 🎉</div>
+            <h3 class="kr">어르신 정보를<br>알려주세요</h3>
+            <h3 class="en">Tell us about<br>your loved one</h3>
+            <p class="sub kr">케어 플래너가 최적의 시설을 매칭하는 데 사용합니다.</p>
+            <p class="sub en">Your care planner will use this to find the best match.</p>
+            <div class="fg-row">
+                <div class="fg"><label class="kr">문의자 성함</label><label class="en">Your Name</label><input type="text" placeholder="홍길동"></div>
+                <div class="fg"><label class="kr">연락처</label><label class="en">Phone</label><input type="tel" placeholder="+1 (000) 000-0000"></div>
+            </div>
+            <div class="fg-row">
+                <div class="fg"><label class="kr">어르신 연령</label><label class="en">Senior's Age</label><input type="number" placeholder="75"></div>
+                <div class="fg"><label class="kr">입주 희망 시기</label><label class="en">Move-in Timeline</label>
+                    <select>
+                        <option class="kr">즉시 (1개월 이내)</option>
+                        <option class="en" style="display:none">Within 1 month</option>
+                        <option class="kr">1~3개월</option>
+                        <option class="en" style="display:none">1~3 months</option>
+                        <option class="kr">3~6개월</option>
+                        <option class="en" style="display:none">3~6 months</option>
+                        <option class="kr">탐색 중</option>
+                        <option class="en" style="display:none">Just exploring</option>
+                    </select>
+                </div>
+            </div>
+            <div class="fg"><label class="kr">추가 요청사항 (선택)</label><label class="en">Additional Notes (Optional)</label>
+                <textarea rows="3" placeholder="예: 파킨슨병 진단, 한식 필수, LA 또는 OC 지역 선호..." style="resize:none;"></textarea>
+            </div>
+            <button class="sbtn" onclick="submitLead()"><span class="kr">상담 신청 완료 →</span><span class="en">Complete Request →</span></button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ HOW IT WORKS ══ -->
+<div class="overlay" id="howOverlay">
+    <div class="modal how-modal">
+        <button class="modal-close" onclick="closeOverlay('howOverlay')">✕</button>
+        <h2><span class="kr">🤖 MyBumo는 어떻게 작동하나요?</span><span class="en">🤖 How MyBumo Works</span></h2>
+        <p><span class="kr">AI 케어 플래너가 어르신의 상황을 분석해 최적의 한인 케어 시설을 찾아드립니다. 전 과정 무료, 가족 비용 $0.</span><span class="en">Our AI Care Planner analyzes your loved one's needs and matches them with the best Korean care facility. Completely free for families.</span></p>
+        <div class="steps">
+            <div class="step-r"><div class="step-n">1</div><div><h4><span class="kr">케어 니즈 파악</span><span class="en">Assess Care Needs</span></h4><p><span class="kr">일상 지원, 기억력 케어, 회복 지원 등 어르신의 상황을 간단한 버튼 클릭으로 입력합니다.</span><span class="en">Enter your loved one's care needs — daily assistance, memory care, post-hospital recovery — with simple button clicks.</span></p></div></div>
+            <div class="step-r"><div class="step-n">2</div><div><h4><span class="kr">AI 시설 매칭</span><span class="en">AI Facility Matching</span></h4><p><span class="kr">180개 이상의 한인 케어 시설 데이터베이스에서 케어 유형, 위치, 예산, 한국어 지원 여부를 분석해 최적의 3곳을 추천합니다.</span><span class="en">AI analyzes our database of 180+ Korean care facilities by care type, location, budget, and Korean language support to recommend your top matches.</span></p></div></div>
+            <div class="step-r"><div class="step-n">3</div><div><h4><span class="kr">무료 방문 투어 연결</span><span class="en">Free Facility Tour</span></h4><p><span class="kr">전담 케어 플래너가 시설 방문 일정을 잡아드리고 계약 전 모든 궁금증을 해결해 드립니다. 가족 비용은 $0입니다.</span><span class="en">A dedicated care planner schedules your facility tour and answers all questions before any commitment. Zero cost to families.</span></p></div></div>
+            <div class="step-r"><div class="step-n">4</div><div><h4><span class="kr">입주 & 정착 지원</span><span class="en">Move-in Support</span></h4><p><span class="kr">입주 이후에도 케어 플래너가 첫 30일간 적응을 도와드리며, 필요 시 시설 변경도 무상으로 지원합니다.</span><span class="en">Your care planner supports the first 30 days of transition and assists with any facility changes at no additional cost.</span></p></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ PARTNER APPLICATION ══ -->
+<div class="overlay" id="partnerOverlay">
+    <div class="modal partner-modal">
+        <button class="modal-close" onclick="closeOverlay('partnerOverlay')">✕</button>
+        <h2 class="kr">🏥 시설 파트너 신청</h2>
+        <h2 class="en" style="display:none">🏥 Facility Partner Application</h2>
+        <p class="kr">MyBumo와 파트너십을 맺고 한인 시니어 가족과 연결되세요. 월 평균 3~8명의 입주 리드를 제공합니다.</p>
+        <p class="en" style="display:none">Partner with MyBumo and connect with Korean senior families. We deliver an average of 3–8 qualified placement leads per month.</p>
+        <div class="p-step-bar">
+            <div class="p-step-ind active" id="pbar1"></div>
+            <div class="p-step-ind" id="pbar2"></div>
+            <div class="p-step-ind" id="pbar3"></div>
+            <div class="p-step-ind" id="pbar4"></div>
+        </div>
+
+        <div class="p-step active" id="ps1">
+            <h3 class="kr">1단계: 시설 유형 선택</h3>
+            <h3 class="en" style="display:none">Step 1: Facility Type</h3>
+            <div class="type-grid">
+                <div class="type-opt" onclick="toggleType(this)"><div class="t-ico">🏡</div><strong class="kr">어시스티드 리빙</strong><strong class="en" style="display:none">Assisted Living</strong><span class="kr">일상 지원 중심</span><span class="en" style="display:none">Daily living support</span></div>
+                <div class="type-opt" onclick="toggleType(this)"><div class="t-ico">🧠</div><strong class="kr">메모리 케어</strong><strong class="en" style="display:none">Memory Care</strong><span class="kr">치매·알츠하이머 전문</span><span class="en" style="display:none">Dementia & Alzheimer's</span></div>
+                <div class="type-opt" onclick="toggleType(this)"><div class="t-ico">🏥</div><strong class="kr">너싱홈·요양원</strong><strong class="en" style="display:none">Skilled Nursing</strong><span class="kr">의료 케어 포함</span><span class="en" style="display:none">Medical care included</span></div>
+                <div class="type-opt" onclick="toggleType(this)"><div class="t-ico">🌿</div><strong class="kr">독립 생활 (IL)</strong><strong class="en" style="display:none">Independent Living</strong><span class="kr">건강한 시니어 대상</span><span class="en" style="display:none">Active seniors</span></div>
+                <div class="type-opt" onclick="toggleType(this)"><div class="t-ico">🏠</div><strong class="kr">보드 앤 케어</strong><strong class="en" style="display:none">Board & Care</strong><span class="kr">소규모 가정형 케어</span><span class="en" style="display:none">Small residential care</span></div>
+                <div class="type-opt" onclick="toggleType(this)"><div class="t-ico">🔄</div><strong class="kr">복합형 (CCRC)</strong><strong class="en" style="display:none">CCRC</strong><span class="kr">단계별 종합 케어</span><span class="en" style="display:none">Continuing care</span></div>
+            </div>
+            <button class="p-next" onclick="pNext(2)"><span class="kr">다음 →</span><span class="en" style="display:none">Next →</span></button>
+        </div>
+
+        <div class="p-step" id="ps2">
+            <h3 class="kr">2단계: 시설 기본 정보</h3>
+            <h3 class="en" style="display:none">Step 2: Facility Details</h3>
+            <div class="fg"><label class="kr">시설명 (한국어)</label><label class="en">Facility Name (Korean)</label><input type="text" placeholder="한마음 어시스티드 리빙"></div>
+            <div class="fg"><label class="kr">시설명 (영어)</label><label class="en">Facility Name (English)</label><input type="text" placeholder="Hanmaeum Assisted Living"></div>
+            <div class="fg-row">
+                <div class="fg"><label class="kr">주(State)</label><label class="en">State</label><select><option>California</option><option>New Jersey</option><option>New York</option><option>Texas</option><option>Georgia</option><option>Illinois</option><option>Washington</option><option>Virginia</option><option>Other</option></select></div>
+                <div class="fg"><label class="kr">도시</label><label class="en">City</label><input type="text" placeholder="Torrance"></div>
+            </div>
+            <div class="fg-row">
+                <div class="fg"><label class="kr">수용 정원</label><label class="en">Capacity</label><input type="number" placeholder="45"></div>
+                <div class="fg"><label class="kr">면허 번호</label><label class="en">License #</label><input type="text" placeholder="CA-123456"></div>
+            </div>
+            <button class="p-next" onclick="pNext(3)"><span class="kr">다음 →</span><span class="en" style="display:none">Next →</span></button>
+        </div>
+
+        <div class="p-step" id="ps3">
+            <h3 class="kr">3단계: 서비스 및 비용</h3>
+            <h3 class="en" style="display:none">Step 3: Services & Pricing</h3>
+            <div class="fg-row">
+                <div class="fg"><label class="kr">월 기본 비용 (최저)</label><label class="en">Monthly Fee (Min)</label><input type="text" placeholder="$5,000"></div>
+                <div class="fg"><label class="kr">월 기본 비용 (최고)</label><label class="en">Monthly Fee (Max)</label><input type="text" placeholder="$9,000"></div>
+            </div>
+            <div class="fg"><label class="kr">한국어 지원 수준</label><label class="en">Korean Language Support</label>
+                <select>
+                    <option class="kr">100% 한국어 가능 직원 (전체)</option>
+                    <option class="en" style="display:none">100% Korean-speaking staff</option>
+                    <option class="kr">한국어 가능 직원 다수 (50% 이상)</option>
+                    <option class="en" style="display:none">Majority Korean-speaking (50%+)</option>
+                    <option class="kr">한국어 가능 직원 일부 있음</option>
+                    <option class="en" style="display:none">Some Korean-speaking staff</option>
+                    <option class="kr">한국어 통역 서비스 제공</option>
+                    <option class="en" style="display:none">Korean interpreter available</option>
+                </select>
+            </div>
+            <div class="fg"><label class="kr">주요 서비스 (해당 항목 모두 체크)</label><label class="en">Services Offered</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+                    <div class="check-row"><input type="checkbox" checked><label class="kr">한식 제공</label><label class="en">Korean meals</label></div>
+                    <div class="check-row"><input type="checkbox"><label class="kr">한국 문화 프로그램</label><label class="en">Korean cultural activities</label></div>
+                    <div class="check-row"><input type="checkbox" checked><label class="kr">치매 케어</label><label class="en">Memory care</label></div>
+                    <div class="check-row"><input type="checkbox"><label class="kr">물리치료</label><label class="en">Physical therapy</label></div>
+                    <div class="check-row"><input type="checkbox" checked><label class="kr">24시간 간호</label><label class="en">24hr nursing</label></div>
+                    <div class="check-row"><input type="checkbox"><label class="kr">교통 서비스</label><label class="en">Transportation</label></div>
+                </div>
+            </div>
+            <button class="p-next" onclick="pNext(4)"><span class="kr">다음 →</span><span class="en" style="display:none">Next →</span></button>
+        </div>
+
+        <div class="p-step" id="ps4">
+            <h3 class="kr">4단계: 파트너 계약 동의</h3>
+            <h3 class="en" style="display:none">Step 4: Partnership Agreement</h3>
+            <div class="fg"><label class="kr">담당자 성함</label><label class="en">Contact Name</label><input type="text" placeholder="김관리자 / Manager Kim"></div>
+            <div class="fg-row">
+                <div class="fg"><label>Email</label><input type="email" placeholder="admin@facility.com"></div>
+                <div class="fg"><label class="kr">연락처</label><label class="en">Phone</label><input type="tel" placeholder="+1 (000) 000-0000"></div>
+            </div>
+            <div style="background:var(--offwhite); border-radius:12px; padding:16px; margin:16px 0; font-size:13px; color:var(--muted); line-height:1.7;">
+                <strong style="color:var(--navy); display:block; margin-bottom:8px;" class="kr">📋 수수료 구조</strong>
+                <strong style="color:var(--navy); display:block; margin-bottom:8px;" class="en">📋 Referral Fee Structure</strong>
+                <span class="kr">입주 확정 시, 해당 월 시설 이용료의 <strong style="color:var(--sage-dk);">75~100%</strong>를 레퍼럴 수수료로 지급합니다. 상담·리드 제공은 무상이며, 입주 성사 시에만 수수료가 발생합니다.</span>
+                <span class="en">Upon confirmed placement, a referral fee of <strong style="color:var(--sage-dk);">75–100%</strong> of one month's facility fee is due. Consultation and leads are provided at no cost — fees apply only upon successful placement.</span>
+            </div>
+            <div class="check-row"><input type="checkbox" id="agreeCheck"><label class="kr">위 수수료 구조 및 MyBumo 파트너 이용약관에 동의합니다.</label><label class="en">I agree to the referral fee structure and MyBumo Partner Terms.</label></div>
+            <button class="p-next" onclick="submitPartner()"><span class="kr">파트너 신청 완료 →</span><span class="en" style="display:none">Submit Application →</span></button>
+        </div>
+
+        <div class="p-done" id="ps-done">
+            <div class="big-check">🎉</div>
+            <h3 class="kr">신청이 완료되었습니다!</h3>
+            <h3 class="en" style="display:none">Application Submitted!</h3>
+            <p class="kr">영업일 기준 1~2일 내에 파트너십 팀에서 연락드립니다. 함께 한인 시니어 케어를 발전시켜 나가요.</p>
+            <p class="en" style="display:none">Our partnership team will reach out within 1–2 business days. We look forward to growing with you.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+let lang = 'kr';
+let step = 1;
+let selectedCareType = '';
+let selectedLocation = '';
+let selectedFacIdx = -1;
+
+// ─── FACILITY DATA ───
+const FACILITIES = [
+    {
+        emoji:'🏡', nameKr:'한마음 어시스티드 리빙', nameEn:'Hanmaeum Assisted Living',
+        typeKr:'어시스티드 리빙', typeEn:'Assisted Living',
+        locationKr:'LA · 토런스', locationEn:'Torrance, CA',
+        fee:'$5,800/mo', feeRange:'$5,500~$6,800',
+        capacity:'45명', koreanRatio:'98%', rating:'4.9', stars:'★★★★★',
+        badge:'베스트 매칭', badgeEn:'Best Match',
+        reviews:{ kr:'리뷰 94건', en:'94 reviews' },
+        meta:{ kr:'한국어 구사 직원 100% · 한식 · 문화 프로그램', en:'100% Korean staff · Korean meals · Cultural programs' },
+        tags:[
+            {kr:'한국어 완전지원', en:'Full Korean Support'},
+            {kr:'한식 제공', en:'Korean Meals'},
+            {kr:'치매 케어 가능', en:'Memory Care Available'},
+            {kr:'야외 정원', en:'Outdoor Garden'},
+        ],
+        stats:[
+            {val:'98%', lKr:'한인 거주 비율', lEn:'Korean Residents'},
+            {val:'24hr', lKr:'간호 지원', lEn:'Nursing Care'},
+            {val:'4.9★', lKr:'가족 만족도', lEn:'Family Rating'},
+        ],
+        brief:{ kr:'토런스 한인타운 내 위치하여 가족 방문이 편리합니다. 한국어 구사 직원 100%, 하루 세 끼 한식 제공, 주 2회 노래방·화투 문화 프로그램 운영. 치매 초중기 케어 전문 인력이 상주합니다.',
+                en:'Located in the heart of Torrance\'s Korean community for easy family visits. 100% Korean-speaking staff, three Korean meals daily, and twice-weekly cultural programs including karaoke and card games. Dedicated memory care staff on-site.' },
+        review:{ kr:'"어머니가 한국 노래 부르고 미역국 드시면서 많이 편안해하세요. 직원분들이 전부 한국어로 대화해 주셔서 정말 다행입니다."', en:'"My mother feels so at home singing Korean songs and enjoying miyeok-guk. The staff all speak Korean — it makes such a difference."' },
+        reviewBy:{ kr:'김민준 · 어머니 입주 중 · LA', en:'Minjun K. · Mother in residence · LA' },
+        image:'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=800&q=80',
+        includes:[
+            {ico:'🍚', kr:'한식 3식 제공', en:'3 Korean meals/day'},
+            {ico:'🧠', kr:'인지 기능 프로그램', en:'Cognitive programs'},
+            {ico:'💊', kr:'투약 관리', en:'Medication management'},
+            {ico:'🛁', kr:'목욕·위생 지원', en:'Bathing & hygiene'},
+            {ico:'🚑', kr:'24시간 응급 대응', en:'24hr emergency response'},
+            {ico:'🎤', kr:'한국 문화 활동', en:'Korean cultural activities'},
+        ],
+        highlights:[
+            {kr:'한인 가정식 조리사 상주 — 미역국, 된장찌개, 불고기 등 제공', en:'Resident Korean home cook — miyeok-guk, doenjang jjigae, bulgogi and more'},
+            {kr:'가족 카카오톡 그룹을 통한 일일 근황 공유 서비스', en:'Daily KakaoTalk family update service'},
+            {kr:'인근 한인 교회 주일 예배 셔틀 운행', en:'Sunday shuttle to nearby Korean church'},
+        ],
+    },
+    {
+        emoji:'🧠', nameKr:'실버케어 메모리 센터', nameEn:'SilverCare Memory Center',
+        typeKr:'메모리 케어', typeEn:'Memory Care',
+        locationKr:'NJ · 포트리', locationEn:'Fort Lee, NJ',
+        fee:'$7,200/mo', feeRange:'$6,800~$8,500',
+        capacity:'32명', koreanRatio:'85%', rating:'4.8', stars:'★★★★★',
+        badge:'치매 전문', badgeEn:'Dementia Specialist',
+        reviews:{ kr:'리뷰 61건', en:'61 reviews' },
+        meta:{ kr:'알츠하이머·치매 전문 · 한국어 가능 직원 다수 · NJ 최다 한인 거주', en:'Alzheimer\'s & dementia specialist · Korean-speaking staff · Highest Korean resident ratio in NJ' },
+        tags:[
+            {kr:'치매 전문 시설', en:'Dementia Specialist'},
+            {kr:'보안 특화 설계', en:'Secure Design'},
+            {kr:'한국어 지원', en:'Korean Support'},
+            {kr:'뮤직 테라피', en:'Music Therapy'},
+        ],
+        stats:[
+            {val:'85%', lKr:'한인 거주 비율', lEn:'Korean Residents'},
+            {val:'1:4', lKr:'직원:환자 비율', lEn:'Staff-to-Resident'},
+            {val:'4.8★', lKr:'가족 만족도', lEn:'Family Rating'},
+        ],
+        brief:{ kr:'알츠하이머 및 치매 전문 시설로, 인지 기능 유지를 위한 뮤직 테라피와 회상 치료 프로그램을 운영합니다. 맨해튼·NJ 한인 밀집 지역에서 접근성이 높습니다.',
+                en:'Specialized in Alzheimer\'s and dementia care, offering music therapy and reminiscence therapy to support cognitive function. Easily accessible from Manhattan and NJ Korean communities.' },
+        review:{ kr:'"아버지 치매가 많이 진행됐는데, 이 시설 오신 후로 한국 노래 들으며 안정되셨어요. 직원분들이 한국어로 말 걸어주시는 게 큰 도움이 돼요."', en:'"My father\'s dementia had progressed significantly, but he calmed down listening to Korean songs here. The staff speaking Korean to him has been incredibly helpful."' },
+        reviewBy:{ kr:'박지수 · 아버지 입주 중 · NJ', en:'Jisoo P. · Father in residence · NJ' },
+        image:'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
+        includes:[
+            {ico:'🧠', kr:'인지 재활 프로그램', en:'Cognitive rehab programs'},
+            {ico:'🎵', kr:'뮤직·아트 테라피', en:'Music & art therapy'},
+            {ico:'🔒', kr:'24시간 보안 환경', en:'24hr secure environment'},
+            {ico:'🍚', kr:'한식 포함 식사', en:'Korean meals included'},
+            {ico:'👨‍⚕️', kr:'전문 치매 케어 팀', en:'Specialized dementia team'},
+            {ico:'📞', kr:'가족 화상 통화 지원', en:'Family video call support'},
+        ],
+        highlights:[
+            {kr:'한국 1970~80년대 음악 기반 뮤직 테라피 — 기억력 자극 효과 입증', en:'Music therapy based on Korean 70s–80s music — proven memory stimulation'},
+            {kr:'가족 상담 월 2회 무료 제공 (한국어·영어)', en:'Free monthly family consultations (Korean & English)'},
+            {kr:'배회 방지 GPS 시스템 전 공간 설치', en:'Anti-wandering GPS system installed throughout'},
+        ],
+    },
+    {
+        emoji:'🏥', nameKr:'한인 너싱홈 & 재활 센터', nameEn:'Korean American Nursing & Rehab',
+        typeKr:'너싱홈 / 스킬드 너싱', typeEn:'Skilled Nursing Facility',
+        locationKr:'GA · 둘루스', locationEn:'Duluth, GA',
+        fee:'$6,500/mo', feeRange:'$6,000~$9,500',
+        capacity:'80명', koreanRatio:'70%', rating:'4.7', stars:'★★★★½',
+        badge:'재활 전문', badgeEn:'Rehab Specialist',
+        reviews:{ kr:'리뷰 47건', en:'47 reviews' },
+        meta:{ kr:'물리·작업·언어치료 전문 · 병원 퇴원 후 회복 특화 · 메디케어 적용', en:'Physical, occupational & speech therapy · Post-hospital recovery · Medicare accepted' },
+        tags:[
+            {kr:'재활 치료 전문', en:'Rehab Specialist'},
+            {kr:'메디케어 적용', en:'Medicare Accepted'},
+            {kr:'한국어 지원', en:'Korean Support'},
+            {kr:'24시간 의료 케어', en:'24hr Medical Care'},
+        ],
+        stats:[
+            {val:'70%', lKr:'한인 거주 비율', lEn:'Korean Residents'},
+            {val:'3종', lKr:'재활 치료 제공', lEn:'Rehab Therapies'},
+            {val:'4.7★', lKr:'가족 만족도', lEn:'Family Rating'},
+        ],
+        brief:{ kr:'수술 후 회복, 뇌졸중 후 재활, 낙상 후 회복 등 의료적 케어가 필요한 시니어에게 최적화된 시설입니다. 애틀랜타 한인 커뮤니티 내에 위치하며 메디케어를 적용합니다.',
+                en:'Optimized for seniors needing medical care after surgery, stroke, or falls. Located within the Atlanta Korean community and accepts Medicare.' },
+        review:{ kr:'"어머니가 고관절 수술 후 이곳에서 재활하셨는데 3개월 만에 걸으셨어요. 물리치료사가 한국어로 설명해 주셔서 어머니가 치료에 적극적으로 참여하셨어요."', en:'"My mother rehabbed here after hip surgery and was walking again in 3 months. The physical therapist explaining in Korean made her so much more engaged in her recovery."' },
+        reviewBy:{ kr:'이승현 · 어머니 퇴원 후 입주 · 애틀랜타', en:'Seunghyun L. · Mother post-discharge · Atlanta' },
+        image:'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80',
+        includes:[
+            {ico:'🦵', kr:'물리치료 (PT)', en:'Physical therapy (PT)'},
+            {ico:'🖐️', kr:'작업치료 (OT)', en:'Occupational therapy (OT)'},
+            {ico:'🗣️', kr:'언어치료 (ST)', en:'Speech therapy (ST)'},
+            {ico:'💊', kr:'의사 정기 방문', en:'Regular physician visits'},
+            {ico:'🍚', kr:'영양 관리 한식', en:'Nutritional Korean meals'},
+            {ico:'✅', kr:'메디케어 B파트 적용', en:'Medicare Part B accepted'},
+        ],
+        highlights:[
+            {kr:'한국어 구사 물리치료사 전담 배치 — 지시 이해도 향상으로 회복 속도 개선', en:'Dedicated Korean-speaking physical therapist — faster recovery through better comprehension'},
+            {kr:'병원 퇴원 코디네이터와 직접 연계 — 이송 과정 원스톱 지원', en:'Direct coordination with hospital discharge planners — seamless one-stop transfer'},
+            {kr:'가족 재활 교육 프로그램 — 퇴원 후 재택 케어 준비 지원', en:'Family rehab education program — preparing for home care after discharge'},
+        ],
+    },
+    {
+        emoji:'🌿', nameKr:'그린힐 독립 생활 커뮤니티', nameEn:'GreenHill Independent Living',
+        typeKr:'독립 생활 (IL)', typeEn:'Independent Living',
+        locationKr:'TX · 플라노', locationEn:'Plano, TX',
+        fee:'$4,200/mo', feeRange:'$3,800~$5,500',
+        capacity:'120명', koreanRatio:'55%', rating:'4.8', stars:'★★★★★',
+        badge:'가성비 TOP', badgeEn:'Best Value',
+        reviews:{ kr:'리뷰 83건', en:'83 reviews' },
+        meta:{ kr:'건강한 시니어 대상 · 한국 문화 동아리 · 골프·수영 시설', en:'Active seniors · Korean culture clubs · Golf & swimming facilities' },
+        tags:[
+            {kr:'독립 생활', en:'Independent Living'},
+            {kr:'한국 문화 동아리', en:'Korean Culture Clubs'},
+            {kr:'수영·골프 시설', en:'Pool & Golf'},
+            {kr:'낮은 월 비용', en:'Affordable Rates'},
+        ],
+        stats:[
+            {val:'55%', lKr:'한인 거주 비율', lEn:'Korean Residents'},
+            {val:'15+', lKr:'동아리 프로그램', lEn:'Club Programs'},
+            {val:'4.8★', lKr:'거주자 만족도', lEn:'Resident Rating'},
+        ],
+        brief:{ kr:'비교적 건강하고 활동적인 시니어를 위한 독립 생활 커뮤니티입니다. 한국 요리 교실, 사물놀이, 댄스 동아리 등 다양한 한국 문화 프로그램과 수영장·골프 연습장을 갖추고 있습니다.',
+                en:'An independent living community for healthy, active seniors. Features Korean cooking classes, samulnori, dance clubs, plus a swimming pool and golf practice range.' },
+        review:{ kr:'"텍사스로 이사 온 후 외로울까 걱정했는데, 여기서 한국 친구들 많이 사귀고 매일 수영도 해요. 남편이 사물놀이 팀에 들어가서 너무 행복해해요."', en:'"We worried about being lonely after moving to Texas, but my husband made Korean friends and joined the samulnori drum team. He\'s so happy here."' },
+        reviewBy:{ kr:'강미숙 · 남편과 입주 중 · 댈러스', en:'Misook K. · With husband · Dallas' },
+        image:'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&w=800&q=80',
+        includes:[
+            {ico:'🏊', kr:'수영장 및 피트니스', en:'Pool & fitness center'},
+            {ico:'⛳', kr:'골프 연습장', en:'Golf practice range'},
+            {ico:'🎭', kr:'한국 문화 동아리 15+', en:'15+ Korean culture clubs'},
+            {ico:'🍱', kr:'선택식 한식/양식', en:'Korean/Western dining options'},
+            {ico:'🚌', kr:'쇼핑·병원 셔틀', en:'Shopping & medical shuttles'},
+            {ico:'🔐', kr:'24시간 보안', en:'24hr security'},
+        ],
+        highlights:[
+            {kr:'달라스 최대 한인 커뮤니티 인접 — H마트, 한인 마트 15분 거리', en:'Near DFW\'s largest Korean community — H Mart and Korean grocery 15 min away'},
+            {kr:'월별 한국 요리 교실 — 시니어 직접 운영하는 자율 프로그램', en:'Monthly Korean cooking classes — senior-led volunteer programs'},
+            {kr:'케어 단계 업그레이드 시 계열 어시스티드 리빙으로 전환 가능', en:'Pathway to affiliated assisted living if care needs increase'},
+        ],
+    },
+];
+
+// ─── CHAT FLOW ───
+function step1Select(btn, val) {
+    document.querySelectorAll('#step1Opts .btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selectedCareType = val;
+    setTimeout(() => {
+        document.getElementById('step1Opts').innerHTML = '';
+        appendUserMsg(val);
+        setTimeout(() => showStep2(), 600);
+    }, 300);
+}
+
+function showStep2() {
+    appendAiMsg(lang === 'kr'
+        ? '네, 이해했습니다 😊 어느 지역에서 시설을 찾고 계신가요?'
+        : 'Understood! 😊 Which area are you looking in?');
+    const opts = document.createElement('div');
+    opts.className = 'options'; opts.id = 'step2Opts';
+    const locations = lang === 'kr'
+        ? ['🌴 LA / OC (캘리포니아)', '🗽 뉴욕 / 뉴저지', '🍑 애틀랜타 (조지아)', '⭐ 텍사스 (달라스·휴스턴)', '🌲 시애틀 / 워싱턴', '📍 기타 지역']
+        : ['🌴 LA / OC (California)', '🗽 New York / New Jersey', '🍑 Atlanta (Georgia)', '⭐ Texas (Dallas·Houston)', '🌲 Seattle / Washington', '📍 Other'];
+    locations.forEach((loc, i) => {
+        const b = document.createElement('button');
+        b.className = 'btn-opt'; b.textContent = loc;
+        b.onclick = () => step2Select(b, loc, i);
+        opts.appendChild(b);
+    });
+    document.getElementById('chatBody').appendChild(opts);
+    scrollBottom();
+}
+
+function step2Select(btn, val, idx) {
+    document.querySelectorAll('#step2Opts .btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selectedLocation = val;
+    setTimeout(() => {
+        document.getElementById('step2Opts').innerHTML = '';
+        appendUserMsg(val);
+        setTimeout(() => showStep3(), 600);
+    }, 300);
+}
+
+function showStep3() {
+    appendAiMsg(lang === 'kr'
+        ? '알겠습니다! 한 가지만 더 — 월 예산은 어느 정도 생각하고 계신가요?'
+        : 'Got it! One more thing — what\'s your approximate monthly budget?');
+    const opts = document.createElement('div');
+    opts.className = 'options'; opts.id = 'step3Opts';
+    const budgets = lang === 'kr'
+        ? ['💰 $4,000~$5,500', '💳 $5,500~$7,500', '✨ $7,500~$10,000', '🔍 예산 미정 / 최적 추천']
+        : ['💰 $4,000~$5,500', '💳 $5,500~$7,500', '✨ $7,500~$10,000', '🔍 No budget set / best match'];
+    budgets.forEach(b => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-opt'; btn.textContent = b;
+        btn.onclick = () => step3Select(btn, b);
+        opts.appendChild(btn);
+    });
+    document.getElementById('chatBody').appendChild(opts);
+    scrollBottom();
+}
+
+function step3Select(btn, val) {
+    document.querySelectorAll('#step3Opts .btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    setTimeout(() => {
+        document.getElementById('step3Opts').innerHTML = '';
+        appendUserMsg(val);
+        setTimeout(() => showResults(), 700);
+    }, 300);
+}
+
+function showResults() {
+    const isEn = lang === 'en';
+    appendAiMsg(isEn
+        ? '✨ Great! I found <strong>4 Korean care facilities</strong> that match your needs. Here are your top recommendations:'
+        : '✨ 분석 완료! 조건에 맞는 <strong>한인 케어 시설 4곳</strong>을 찾았습니다. 추천 시설을 확인해보세요:');
+
+    // Carousel
+    const wrap = document.createElement('div');
+    wrap.className = 'carousel-wrap'; wrap.id = 'facCarousel';
+    wrap.innerHTML = `
+        <button class="c-arrow left hidden" id="cLeft" onclick="slideCarousel(-1)">‹</button>
+        <div class="pkg-list" id="facList">${FACILITIES.map((f,i) => `
+            <div class="pkg-card" onclick="openFacDetail(${i})">
+                <div class="pkg-img" style="background-image:url('${f.image}')">
+                    <div class="pkg-badge">${isEn ? f.badgeEn : f.badge}</div>
+                </div>
+                <div class="pkg-info">
+                    <div class="pkg-price">${f.fee} <span>${isEn ? f.typeEn : f.typeKr}</span></div>
+                    <div class="pkg-title">${isEn ? f.nameEn : f.nameKr}<br><small style="font-weight:400;color:var(--muted)">${isEn ? f.locationEn : f.locationKr}</small></div>
+                    <button class="match-btn">${isEn ? 'View Details' : '자세히 보기'}</button>
+                </div>
+            </div>`).join('')}
+        </div>
+        <button class="c-arrow right" id="cRight" onclick="slideCarousel(1)">›</button>
+        <div class="c-dots">${FACILITIES.map((_,i) => `<div class="c-dot${i===0?' active':''}" onclick="goSlide(${i})"></div>`).join('')}</div>`;
+    document.getElementById('chatBody').appendChild(wrap);
+
+    // Facility list
+    setTimeout(() => {
+        appendAiMsg(isEn
+            ? 'Or browse the list below — click any facility for full details and available rooms:'
+            : '아래 목록에서 바로 살펴보셔도 좋아요 — 시설 클릭 시 상세 정보와 입주 가능 여부를 확인하실 수 있습니다:');
+
+        const list = document.createElement('div');
+        list.className = 'agency-list';
+        list.innerHTML = FACILITIES.map((f,i) => `
+            <div class="agency-item" onclick="openFacDetail(${i})">
+                <div class="ag-top">
+                    <div class="ag-logo">${f.emoji}</div>
+                    <div class="ag-text">
+                        <h4>${isEn ? f.nameEn : f.nameKr}</h4>
+                        <p>${isEn ? f.locationEn : f.locationKr} · ${isEn ? f.typeEn : f.typeKr}</p>
+                    </div>
+                </div>
+                <div class="ai-tag">🤖 ${isEn ? f.brief.en.substring(0,90)+'...' : f.brief.kr.substring(0,70)+'...'}</div>
+                <div class="ag-bottom">
+                    <div class="price-est">
+                        <span>${isEn ? 'Monthly fee' : '월 비용'}</span>
+                        <strong>${f.feeRange}</strong>
+                    </div>
+                    <button class="sel-btn">${isEn ? 'View Details →' : '자세히 보기 →'}</button>
+                </div>
+            </div>`).join('');
+        document.getElementById('chatBody').appendChild(list);
+
+        // Additional note box
+        setTimeout(() => {
+            const box = document.createElement('div');
+            box.className = 'add-req-box';
+            box.innerHTML = `
+                <p>${isEn ? '💡 Any specific needs or questions? (e.g., Parkinson\'s care, near Korean church, Medicare coverage)' : '💡 특별히 더 필요한 사항이 있으신가요? (예: 파킨슨 케어, 한인 교회 인근, 메디케어 적용 여부 등)'}</p>
+                <textarea id="addNoteText" rows="3" placeholder="${isEn ? 'e.g., Father has Parkinson\'s, prefers Torrance area, Medicare coverage required...' : '예: 아버지 파킨슨 진단, 토런스 지역 선호, 메디케어 적용 필수...'}"></textarea>
+                <div class="add-req-row">
+                    <button class="skip-btn" onclick="skipNote()">${isEn ? 'Skip' : '건너뛰기'}</button>
+                    <button class="send-req-btn" onclick="sendNote()">${isEn ? 'Get Matched →' : '매칭 요청하기 →'}</button>
+                </div>`;
+            document.getElementById('chatBody').appendChild(box);
+            scrollBottom();
+        }, 800);
+
+        scrollBottom();
+    }, 900);
+    scrollBottom();
+}
+
+let carouselPos = 0;
+function slideCarousel(dir) {
+    const list = document.getElementById('facList');
+    const cardW = 236;
+    carouselPos = Math.max(0, Math.min(FACILITIES.length - 2, carouselPos + dir));
+    list.scrollTo({ left: carouselPos * cardW, behavior:'smooth' });
+    document.getElementById('cLeft').classList.toggle('hidden', carouselPos === 0);
+    document.getElementById('cRight').classList.toggle('hidden', carouselPos >= FACILITIES.length - 2);
+    syncDots();
+}
+function goSlide(i) { carouselPos = i; slideCarousel(0); }
+function syncDots() {
+    document.querySelectorAll('.c-dot').forEach((d,i) => d.classList.toggle('active', i === carouselPos));
+}
+
+// ─── FACILITY DETAIL ───
+function openFacDetail(idx) {
+    selectedFacIdx = idx;
+    const f = FACILITIES[idx];
+    const isEn = lang === 'en';
+    document.getElementById('facModalImg').style.backgroundImage = `url('${f.image}')`;
+    document.getElementById('facModalBadge').textContent = isEn ? f.badgeEn : f.badge;
+    document.getElementById('facModalName').textContent = isEn ? f.nameEn : f.nameKr;
+    document.getElementById('facModalFee').innerHTML = `${f.fee} <span style="font-size:14px;font-weight:400;color:var(--muted);">${isEn ? f.typeEn : f.typeKr}</span>`;
+    document.getElementById('facModalType').textContent = isEn ? f.typeEn : f.typeKr;
+    document.getElementById('facModalLoc').textContent = isEn ? f.locationEn : f.locationKr;
+    document.getElementById('facModalIncludes').innerHTML = f.includes.map(inc =>
+        `<div class="pkg-inc-item"><span class="ico">${inc.ico}</span>${isEn ? inc.en : inc.kr}</div>`).join('');
+    document.getElementById('facModalHighlights').innerHTML = f.highlights.map((h,i) =>
+        `<div class="pkg-hl"><div class="num">${i+1}</div><div>${isEn ? h.en : h.kr}</div></div>`).join('');
+    document.getElementById('facModalAiBrief').innerHTML = `<div class="br-title">🤖 AI ${isEn?'Recommendation':'추천 이유'}</div><p>${isEn ? f.brief.en : f.brief.kr}</p>`;
+    showOverlay('facDetailOverlay');
+}
+
+// ─── LEAD FORM ───
+function goLStep2() {
+    const email = document.getElementById('userEmail').value;
+    if (!email) { alert(lang === 'kr' ? '이메일을 입력해주세요.' : 'Please enter your email.'); return; }
+    document.getElementById('lstep1').style.display = 'none';
+    document.getElementById('lstep2').style.display = 'block';
+}
+async function submitLead() {
+  const email = document.getElementById('userEmail').value;
+  const name  = document.querySelector('#lstep2 input[type=text]')?.value || '';
+  const phone = document.querySelector('#lstep2 input[type=tel]')?.value  || '';
+  const age   = document.querySelector('#lstep2 input[type=number]')?.value || '';
+  const note  = document.getElementById('addNoteText')?.value || '';
+  const { error } = await db.from('leads').insert([{ email, name, phone, senior_age: age, note }]);
+  if (error) { console.error(error); alert('저장 중 오류가 발생했습니다.'); return; }
+  closeOverlay('leadOverlay');
+  document.getElementById('lstep1').style.display = 'block';
+  document.getElementById('lstep2').style.display = 'none';
+  const sbox = document.createElement('div');
+  sbox.className = 'success-box';
+  sbox.innerHTML = `<div class="si">🎉</div><h4 class="kr">상담 신청이 완료되었습니다!</h4><h4 class="en" style="display:none">Request submitted!</h4><p class="kr">24시간 이내 케어 플래너가 연락드립니다.</p>`;
+  document.getElementById('chatBody').appendChild(sbox);
+  updateLang(); scrollBottom();
+}
+
+function skipNote() { showOverlay('leadOverlay'); }
+function sendNote() { showOverlay('leadOverlay'); }
+
+// ─── PARTNER ───
+let pStep = 1;
+function pNext(n) {
+    document.getElementById('ps' + pStep).classList.remove('active');
+    pStep = n;
+    document.getElementById('ps' + n).classList.add('active');
+    ['pbar1','pbar2','pbar3','pbar4'].forEach((id,i) => {
+        const el = document.getElementById(id);
+        if (i < n-1) el.className = 'p-step-ind done';
+        else if (i === n-1) el.className = 'p-step-ind active';
+        else el.className = 'p-step-ind';
+    });
+}
+function submitPartner() {
+    if (!document.getElementById('agreeCheck').checked) {
+        alert(lang === 'kr' ? '약관에 동의해 주세요.' : 'Please agree to the terms.'); return;
+    }
+    document.getElementById('ps4').classList.remove('active');
+    document.getElementById('ps-done').classList.add('active');
+    ['pbar1','pbar2','pbar3','pbar4'].forEach(id => document.getElementById(id).className = 'p-step-ind done');
+}
+function toggleType(el) { el.classList.toggle('sel'); }
+
+// ─── CHAT HELPERS ───
+function appendAiMsg(html) {
+    const row = document.createElement('div');
+    row.className = 'msg-row ai-row';
+    row.innerHTML = `<div class="ai-av">🤝</div><div class="bubble">${html}</div>`;
+    document.getElementById('chatBody').appendChild(row);
+    scrollBottom();
+}
+function appendUserMsg(text) {
+    const row = document.createElement('div');
+    row.className = 'msg-row user-row';
+    row.innerHTML = `<div class="bubble">${text}</div>`;
+    document.getElementById('chatBody').appendChild(row);
+    scrollBottom();
+}
+function sendMsg() {
+    const inp = document.getElementById('chatInput');
+    const val = inp.value.trim();
+    if (!val) return;
+    appendUserMsg(val);
+    inp.value = '';
+    setTimeout(() => appendAiMsg(lang === 'kr'
+        ? '감사합니다! 전담 케어 플래너가 24시간 내 연락드릴 예정입니다. 지금 바로 무료 상담을 신청하시겠어요?'
+        : 'Thank you! A dedicated care planner will be in touch within 24 hours. Would you like to request a free consultation now?'), 700);
+}
+function scrollBottom() { setTimeout(() => { const b = document.getElementById('chatBody'); b.scrollTop = b.scrollHeight; }, 100); }
+
+// ─── OVERLAY ───
+function showOverlay(id) { const el = document.getElementById(id); el.style.display='flex'; setTimeout(()=>el.classList.add('show'),10); }
+function closeOverlay(id) { const el = document.getElementById(id); el.classList.remove('show'); setTimeout(()=>el.style.display='none',200); }
+
+// ─── LANG ───
+function toggleLang() {
+    lang = lang === 'kr' ? 'en' : 'kr';
+    updateLang();
+}
+function updateLang() {
+    const isEn = lang === 'en';
+    document.querySelectorAll('.kr').forEach(el => { el.style.display = isEn ? 'none' : (el.tagName==='SPAN'?'inline':'block'); });
+    document.querySelectorAll('.en').forEach(el => { el.style.display = isEn ? (el.tagName==='SPAN'?'inline':'block') : 'none'; });
+    document.getElementById('langBtn').innerHTML = isEn ? '🇰🇷 한국어' : '🇺🇸 English';
+    document.getElementById('chatInput').placeholder = isEn ? 'Enter a message...' : '메시지를 입력하세요...';
+}
+
+window.onload = function() { updateLang(); scrollBottom(); };
+</script>
+</body>
+</html>

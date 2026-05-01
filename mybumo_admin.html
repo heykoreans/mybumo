@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBumo — 시설 파트너 어드민</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'DM Sans', 'Noto Sans KR', -apple-system, sans-serif; }
+        body { display: flex; min-height: 100vh; background-color: #f1f5f9; color: #1e293b; overflow-x: hidden; }
+
+        /* ── Sidebar ── */
+        .sidebar { width: 260px; background: #0d2137; color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; top: 0; left: 0; z-index: 50; }
+        .sidebar-header { padding: 22px 24px; border-bottom: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: 10px; }
+        .brand { font-size: 22px; font-weight: 800; color: #7dd4cf; letter-spacing: -.5px; display: flex; align-items: center; gap: 8px; }
+        .brand-icon { width: 28px; height: 28px; background: rgba(46,158,152,.3); border: 1px solid rgba(125,212,207,.4); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 14px; }
+        .partner-badge { font-size: 10px; background: #1f7a75; padding: 3px 8px; border-radius: 4px; font-weight: 700; letter-spacing: .3px; }
+        .sidebar-menu { padding: 16px 0; flex: 1; display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+        .menu-item { padding: 12px 24px; display: flex; align-items: center; gap: 12px; color: rgba(255,255,255,.6); font-weight: 600; font-size: 14px; cursor: pointer; transition: .18s; border-left: 3px solid transparent; }
+        .menu-item:hover { background: rgba(255,255,255,.06); color: white; }
+        .menu-item.active { background: rgba(125,212,207,.1); color: #7dd4cf; border-left-color: #7dd4cf; }
+        .menu-icon { font-size: 16px; width: 20px; text-align: center; }
+        .menu-badge { margin-left: auto; background: #e8a838; color: #2a1a00; padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 800; }
+        .facility-profile { padding: 18px 24px; border-top: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,.2); }
+        .fac-avatar { width: 38px; height: 38px; background: #1f7a75; border-radius: 9px; display: flex; justify-content: center; align-items: center; font-size: 18px; flex-shrink: 0; }
+        .fac-info h4 { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+        .fac-info p { font-size: 11px; color: rgba(255,255,255,.4); }
+
+        /* ── Main ── */
+        .main-content { margin-left: 260px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; width: calc(100% - 260px); }
+        .top-header { height: 64px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; padding: 0 32px; position: sticky; top: 0; z-index: 10; }
+        .page-title { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; color: #0d2137; }
+        .header-actions { display: flex; align-items: center; gap: 14px; }
+        .notif-bell { position: relative; cursor: pointer; font-size: 18px; width: 36px; height: 36px; background: #f1f5f9; border-radius: 50%; display: flex; justify-content: center; align-items: center; }
+        .bell-dot { position: absolute; top: 5px; right: 6px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; border: 2px solid white; }
+        .logout-btn { padding: 7px 16px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 13px; transition: .18s; }
+        .logout-btn:hover { background: #e2e8f0; }
+        .lang-toggle-admin { padding: 7px 14px; background: white; border: 1.5px solid #e2e8f0; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 13px; transition: .18s; color: #334155; }
+        .lang-toggle-admin:hover { border-color: #1f7a75; color: #1f7a75; }
+
+        /* ── Alert Banner ── */
+        .global-alert { padding: 11px 32px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 600; border-bottom: 1px solid transparent; }
+        .global-alert.warning { background: #fffbeb; color: #854d0e; border-bottom-color: #fde68a; }
+        .global-alert.success { background: #ecfdf5; color: #065f46; border-bottom-color: #6ee7b7; }
+        .alert-btn { background: rgba(0,0,0,.06); border: 1px solid currentColor; color: inherit; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+        /* ── Sections ── */
+        .view-section { display: none; padding: 32px; flex: 1; }
+        .view-section.active { display: block; animation: fadeIn .3s ease; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+        .section-header h2 { font-size: 20px; font-weight: 800; color: #0d2137; }
+
+        /* ── Buttons ── */
+        .btn-primary { padding: 9px 18px; background: #1f7a75; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; transition: .18s; }
+        .btn-primary:hover { background: #0d5e5a; }
+        .btn-secondary { padding: 9px 16px; background: white; color: #334155; border: 1px solid #e2e8f0; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: .18s; }
+        .btn-secondary:hover { border-color: #1f7a75; color: #1f7a75; }
+
+        /* ── Status badges ── */
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; display: inline-block; white-space: nowrap; }
+        .badge-new { background: #dbeafe; color: #1d4ed8; }
+        .badge-contact { background: #fef3c7; color: #b45309; }
+        .badge-tour { background: #ede9fe; color: #7c3aed; }
+        .badge-placed { background: #d1fae5; color: #047857; }
+        .badge-lost { background: #f3f4f6; color: #6b7280; }
+
+        /* ── Dashboard KPI Cards ── */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 28px; }
+        .kpi-card { background: white; border-radius: 16px; padding: 22px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,.03); position: relative; overflow: hidden; }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 4px 0 0 4px; }
+        .kpi-card.blue::before { background: #3b82f6; }
+        .kpi-card.green::before { background: #10b981; }
+        .kpi-card.amber::before { background: #e8a838; }
+        .kpi-card.sage::before { background: #1f7a75; }
+        .kpi-label { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+        .kpi-value { font-size: 34px; font-weight: 900; color: #0d2137; line-height: 1; margin-bottom: 8px; }
+        .kpi-change { font-size: 12.5px; font-weight: 600; }
+        .kpi-change.up { color: #10b981; }
+        .kpi-change.down { color: #ef4444; }
+        .kpi-icon { position: absolute; top: 18px; right: 20px; font-size: 26px; opacity: .2; }
+
+        /* ── Dashboard grid ── */
+        .dash-grid { display: grid; grid-template-columns: 1fr 360px; gap: 22px; }
+        .card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,.03); }
+        .card-header { padding: 18px 22px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h3 { font-size: 15px; font-weight: 800; color: #0d2137; }
+        .card-body { padding: 20px 22px; }
+
+        /* ── Lead Kanban ── */
+        .kanban-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 4px; }
+        .kanban-col { background: #f8fafc; border-radius: 14px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; min-height: 520px; }
+        .kanban-col-header { padding: 13px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 800; font-size: 13.5px; color: #1e293b; display: flex; justify-content: space-between; align-items: center; }
+        .col-count { background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 700; }
+        .kanban-cards { padding: 12px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+        .k-card { background: white; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 2px 6px rgba(0,0,0,.03); cursor: pointer; transition: .2s; border-left: 4px solid #1f7a75; }
+        .k-card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); transform: translateY(-2px); }
+        .k-card.urgent { border-left-color: #ef4444; }
+        .k-card.won { border-left-color: #10b981; }
+        .k-card.cold { border-left-color: #cbd5e1; }
+        .k-card-meta { display: flex; justify-content: space-between; margin-bottom: 7px; font-size: 11px; color: #94a3b8; }
+        .k-card-name { font-weight: 800; color: #0f172a; margin-bottom: 3px; font-size: 14px; }
+        .k-card-info { font-size: 12px; color: #475569; margin-bottom: 8px; line-height: 1.4; }
+        .k-card-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #e2e8f0; padding-top: 8px; margin-top: 2px; }
+        .k-fee { font-weight: 800; color: #0d2137; font-size: 13px; }
+        .k-date { font-size: 11px; color: #94a3b8; }
+
+        /* ── Recent Leads Table ── */
+        .leads-table { width: 100%; border-collapse: collapse; }
+        .leads-table th { text-align: left; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+        .leads-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; color: #1e293b; vertical-align: middle; }
+        .leads-table tr:last-child td { border-bottom: none; }
+        .leads-table tr:hover td { background: #fafafa; }
+        .td-name { font-weight: 700; color: #0d2137; }
+        .td-care { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .urgency-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .urgency-dot.high { background: #ef4444; }
+        .urgency-dot.med { background: #f59e0b; }
+        .urgency-dot.low { background: #10b981; }
+        .action-link { color: #1f7a75; font-weight: 700; font-size: 12.5px; cursor: pointer; text-decoration: none; padding: 5px 10px; border-radius: 6px; background: #f0fdfc; border: 1px solid #b2e8e5; transition: .15s; }
+        .action-link:hover { background: #ccfbf1; }
+
+        /* ── Revenue chart bars ── */
+        .rev-bars { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin: 16px 0 8px; }
+        .rev-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .rev-bar { width: 100%; background: linear-gradient(to top, #1f7a75, #7dd4cf); border-radius: 6px 6px 0 0; transition: height .5s ease; cursor: pointer; position: relative; }
+        .rev-bar:hover { opacity: .85; }
+        .rev-bar-val { font-size: 10px; font-weight: 700; color: #64748b; white-space: nowrap; }
+        .rev-bar-mo { font-size: 11px; color: #94a3b8; font-weight: 600; }
+
+        /* ── Activity feed ── */
+        .activity-feed { display: flex; flex-direction: column; gap: 0; }
+        .activity-item { display: flex; gap: 12px; padding: 13px 0; border-bottom: 1px solid #f1f5f9; align-items: flex-start; }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-dot { width: 32px; height: 32px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; flex-shrink: 0; }
+        .a-green { background: #d1fae5; }
+        .a-blue { background: #dbeafe; }
+        .a-amber { background: #fef3c7; }
+        .a-purple { background: #ede9fe; }
+        .activity-text { flex: 1; }
+        .activity-text strong { font-size: 13.5px; color: #0d2137; display: block; margin-bottom: 2px; }
+        .activity-text span { font-size: 12px; color: #64748b; }
+        .activity-time { font-size: 11px; color: #94a3b8; flex-shrink: 0; margin-top: 2px; }
+
+        /* ── Facilities Management ── */
+        .fac-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+        .fac-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.03); transition: .2s; }
+        .fac-card:hover { box-shadow: 0 10px 28px rgba(0,0,0,.07); transform: translateY(-2px); }
+        .fac-img { height: 160px; background-size: cover; background-position: center; position: relative; }
+        .fac-status-badge { position: absolute; top: 10px; left: 10px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; backdrop-filter: blur(4px); }
+        .fac-status-active { background: rgba(16,185,129,.9); color: white; }
+        .fac-status-paused { background: rgba(245,158,11,.9); color: white; }
+        .fac-body { padding: 18px; }
+        .fac-body h4 { font-size: 16px; font-weight: 800; color: #0d2137; margin-bottom: 4px; }
+        .fac-meta-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+        .fac-tag { background: #f0fdfc; color: #1f7a75; border: 1px solid #b2e8e5; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+        .fac-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .fac-stat { text-align: center; background: #f8fafc; border-radius: 10px; padding: 11px 8px; }
+        .fac-stat strong { font-size: 18px; font-weight: 800; color: #0d2137; display: block; }
+        .fac-stat span { font-size: 11px; color: #64748b; }
+        .fac-actions { display: flex; gap: 8px; }
+
+        /* ── Billing ── */
+        .billing-hero { background: linear-gradient(135deg, #0d2137, #1f7a75); border-radius: 18px; padding: 28px 32px; color: white; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+        .billing-hero-l h3 { font-size: 13px; color: rgba(255,255,255,.6); font-weight: 700; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+        .billing-balance { font-size: 48px; font-weight: 900; color: #e8a838; line-height: 1; margin-bottom: 6px; }
+        .billing-sub { font-size: 13px; color: rgba(255,255,255,.65); }
+        .billing-hero-r { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; }
+        .billing-note { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); padding: 8px 14px; border-radius: 10px; font-size: 12.5px; color: rgba(255,255,255,.8); }
+        .billing-note strong { color: #7dd4cf; }
+        .billing-kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 24px; }
+        .b-card { background: white; padding: 22px; border-radius: 16px; border: 1px solid #e2e8f0; }
+        .b-card h3 { font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+        .b-card .amount { font-size: 28px; font-weight: 900; color: #0d2137; margin-bottom: 6px; }
+        .b-card p { font-size: 12.5px; color: #64748b; }
+        .fee-badge { background: #fee2e2; color: #dc2626; padding: 4px 9px; border-radius: 6px; font-size: 12px; font-weight: 800; }
+        .paid-badge { background: #d1fae5; color: #047857; padding: 4px 9px; border-radius: 6px; font-size: 12px; font-weight: 800; }
+        .pending-badge { background: #fef3c7; color: #b45309; padding: 4px 9px; border-radius: 6px; font-size: 12px; font-weight: 800; }
+        .txn-table { width: 100%; border-collapse: collapse; }
+        .txn-table th { text-align: left; font-size: 12px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; padding: 10px 16px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+        .txn-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; font-size: 13.5px; color: #1e293b; vertical-align: middle; }
+        .txn-table tr:last-child td { border-bottom: none; }
+        .txn-name { font-weight: 700; }
+        .txn-care { font-size: 12px; color: #64748b; }
+        .txn-amount-pos { font-weight: 800; color: #10b981; font-size: 15px; }
+        .txn-amount-neg { font-weight: 800; color: #ef4444; font-size: 15px; }
+
+        /* ── Settings ── */
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .settings-card { background: white; border-radius: 16px; border: 1px solid #e2e8f0; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,.03); }
+        .settings-card h3 { font-size: 15.5px; font-weight: 800; margin-bottom: 18px; color: #0d2137; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; }
+        .field-group { margin-bottom: 14px; }
+        .field-group label { display: block; font-size: 13px; font-weight: 700; color: #0d2137; margin-bottom: 7px; }
+        .field-group input, .field-group select, .field-group textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: border-color .2s; color: #0d2137; }
+        .field-group input:focus, .field-group select:focus, .field-group textarea:focus { border-color: #1f7a75; }
+        .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 0; border-bottom: 1px solid #f8fafc; }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-info strong { display: block; font-size: 13.5px; color: #0d2137; margin-bottom: 2px; }
+        .toggle-info span { font-size: 12px; color: #64748b; line-height: 1.4; display: block; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: #1f7a75; }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .save-btn { background: #0d2137; color: white; border: none; padding: 13px; border-radius: 8px; font-weight: 800; font-size: 14px; cursor: pointer; width: 100%; margin-top: 18px; transition: .18s; }
+        .save-btn:hover { background: #1f7a75; }
+        .tag-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+        .stag { background: #f0fdfc; color: #1f7a75; border: 1px solid #b2e8e5; padding: 5px 11px; border-radius: 20px; font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .stag .rm { cursor: pointer; color: #1f7a75; font-weight: 900; }
+
+        /* ── Lead Detail Modal ── */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(13,33,55,.6); z-index: 100; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
+        .modal-overlay.show { display: flex; animation: fadeIn .2s ease; }
+        .modal-box { background: white; border-radius: 20px; box-shadow: 0 25px 50px rgba(0,0,0,.2); max-height: 90vh; overflow-y: auto; position: relative; }
+        .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 20px; color: #64748b; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+        .modal-close:hover { background: #f1f5f9; }
+
+        .lead-modal { width: 560px; padding: 32px; }
+        .lead-modal h2 { font-size: 22px; font-weight: 800; color: #0d2137; margin-bottom: 6px; }
+        .lead-modal-meta { font-size: 13px; color: #64748b; margin-bottom: 24px; }
+        .lead-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 22px; }
+        .lead-info-box { background: #f8fafc; border-radius: 12px; padding: 14px; border: 1px solid #e2e8f0; }
+        .lead-info-box label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; display: block; margin-bottom: 5px; }
+        .lead-info-box span { font-size: 14px; font-weight: 700; color: #0d2137; }
+        .lead-notes { background: #f0fdfc; border: 1px solid #b2e8e5; border-radius: 12px; padding: 14px; margin-bottom: 20px; }
+        .lead-notes label { font-size: 12px; color: #1f7a75; font-weight: 700; display: block; margin-bottom: 6px; }
+        .lead-notes p { font-size: 13.5px; color: #334155; line-height: 1.6; }
+        .lead-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .status-select { padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; font-weight: 600; background: white; }
+        .status-select:focus { border-color: #1f7a75; }
+
+        /* responsive */
+        @media(max-width:1200px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } .kanban-board { grid-template-columns: repeat(3, 1fr); } }
+        @media(max-width:900px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; width: 100%; } }
+    </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div class="brand"><div class="brand-icon">🤝</div>MyBumo</div>
+        <span class="partner-badge">PARTNER</span>
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-item active" onclick="showSection('dashboard')">
+            <span class="menu-icon">📊</span> 대시보드
+        </div>
+        <div class="menu-item" onclick="showSection('leads')">
+            <span class="menu-icon">👥</span> 신규 문의 · 리드
+            <span class="menu-badge">5</span>
+        </div>
+        <div class="menu-item" onclick="showSection('kanban')">
+            <span class="menu-icon">📋</span> 리드 파이프라인
+        </div>
+        <div class="menu-item" onclick="showSection('facilities')">
+            <span class="menu-icon">🏥</span> 시설 관리
+        </div>
+        <div class="menu-item" onclick="showSection('billing')">
+            <span class="menu-icon">💰</span> 수수료 정산
+        </div>
+        <div class="menu-item" onclick="showSection('settings')">
+            <span class="menu-icon">⚙️</span> 설정
+        </div>
+    </div>
+    <div class="facility-profile">
+        <div class="fac-avatar">🏡</div>
+        <div class="fac-info">
+            <h4>한마음 어시스티드 리빙</h4>
+            <p>Torrance, CA · Top Partner</p>
+        </div>
+    </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="main-content">
+    <div class="top-header">
+        <div class="page-title">📊 <span id="pageTitle">대시보드</span></div>
+        <div class="header-actions">
+            <button class="lang-toggle-admin" id="adminLangBtn" onclick="toggleAdminLang()">🇺🇸 English</button>
+            <div class="notif-bell">🔔<span class="bell-dot"></span></div>
+            <button class="logout-btn">로그아웃</button>
+        </div>
+    </div>
+
+    <!-- Alert Banner -->
+    <div class="global-alert warning" id="alertBanner">
+        <span class="kr">⚠️ 미응답 신규 리드 <strong>3건</strong>이 있습니다. 48시간 이내 응답하지 않으면 다른 시설로 재배정될 수 있습니다.</span>
+        <span class="en" style="display:none">⚠️ You have <strong>3 new unresponded leads</strong>. Respond within 48 hours or they may be reassigned.</span>
+        <button class="alert-btn" onclick="showSection('leads')">리드 확인하기</button>
+    </div>
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="view-section active" id="sec-dashboard">
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card blue">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-label kr">이번 달 신규 리드</div>
+                <div class="kpi-label en" style="display:none">New Leads This Month</div>
+                <div class="kpi-value">14</div>
+                <div class="kpi-change up">↑ 전월 대비 +3건</div>
+            </div>
+            <div class="kpi-card green">
+                <div class="kpi-icon">🏠</div>
+                <div class="kpi-label kr">이번 달 입주 확정</div>
+                <div class="kpi-label en" style="display:none">Placements This Month</div>
+                <div class="kpi-value">3</div>
+                <div class="kpi-change up">↑ 목표 달성 (목표 3건)</div>
+            </div>
+            <div class="kpi-card amber">
+                <div class="kpi-icon">💰</div>
+                <div class="kpi-label kr">이번 달 레퍼럴 수수료</div>
+                <div class="kpi-label en" style="display:none">Referral Fees This Month</div>
+                <div class="kpi-value">$18,400</div>
+                <div class="kpi-change up">↑ 전월 대비 +$3,200</div>
+            </div>
+            <div class="kpi-card sage">
+                <div class="kpi-icon">📈</div>
+                <div class="kpi-label kr">리드 전환율 (입주 성공)</div>
+                <div class="kpi-label en" style="display:none">Lead Conversion Rate</div>
+                <div class="kpi-value">21%</div>
+                <div class="kpi-change up">↑ 업계 평균 대비 +7%</div>
+            </div>
+        </div>
+
+        <div class="dash-grid">
+            <!-- Revenue chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="kr">📈 월별 레퍼럴 수수료 추이</h3>
+                    <h3 class="en" style="display:none">📈 Monthly Referral Revenue</h3>
+                    <span style="font-size:12px;color:#64748b;font-weight:600;">2025.07 — 2026.01</span>
+                </div>
+                <div class="card-body">
+                    <div class="rev-bars" id="revBars"></div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="font-size:12px;color:#94a3b8;">Jul</span>
+                        <span style="font-size:12px;color:#94a3b8;">Aug</span>
+                        <span style="font-size:12px;color:#94a3b8;">Sep</span>
+                        <span style="font-size:12px;color:#94a3b8;">Oct</span>
+                        <span style="font-size:12px;color:#94a3b8;">Nov</span>
+                        <span style="font-size:12px;color:#94a3b8;">Dec</span>
+                        <span style="font-size:12px;color:#0d2137;font-weight:800;">Jan★</span>
+                    </div>
+                    <div style="margin-top:18px;padding:14px;background:#f0fdfc;border-radius:12px;border:1px solid #b2e8e5;">
+                        <div style="font-size:12px;color:#1f7a75;font-weight:700;margin-bottom:6px;">🤖 AI 수익 분석</div>
+                        <p style="font-size:13px;color:#334155;line-height:1.6;" class="kr">11월~1월 입주율이 높은 시즌입니다. 현재 투어 단계에 있는 <strong>2건</strong>이 이달 내 확정되면 추가 <strong>$12,000+</strong> 예상됩니다. 투어 미완료 리드에 대한 팔로업을 권장합니다.</p>
+                        <p style="font-size:13px;color:#334155;line-height:1.6;display:none;" class="en">Nov–Jan is peak move-in season. With <strong>2 leads</strong> currently in the tour stage, an additional <strong>$12,000+</strong> is projected this month if both convert. We recommend following up with incomplete tour leads.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity feed -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>🔔 최근 활동</h3>
+                    <button class="btn-secondary" style="font-size:12px;padding:6px 12px;">모두 보기</button>
+                </div>
+                <div class="card-body" style="padding-top:6px;">
+                    <div class="activity-feed">
+                        <div class="activity-item">
+                            <div class="activity-dot a-green">✅</div>
+                            <div class="activity-text">
+                                <strong class="kr">김순희 어르신 입주 확정</strong>
+                                <strong class="en" style="display:none">Placement confirmed: Soon-hee K.</strong>
+                                <span class="kr">어시스티드 리빙 · 레퍼럴 수수료 $6,200</span>
+                                <span class="en" style="display:none">Assisted Living · Referral fee $6,200</span>
+                            </div>
+                            <div class="activity-time">2시간 전</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-dot a-blue">👥</div>
+                            <div class="activity-text">
+                                <strong class="kr">신규 리드 3건 배정</strong>
+                                <strong class="en" style="display:none">3 new leads assigned</strong>
+                                <span class="kr">LA·OC 지역 · 어시스티드 리빙 2건, 메모리 케어 1건</span>
+                                <span class="en" style="display:none">LA/OC area · 2 AL, 1 Memory Care</span>
+                            </div>
+                            <div class="activity-time">5시간 전</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-dot a-amber">📅</div>
+                            <div class="activity-text">
+                                <strong class="kr">시설 투어 완료 — 이정호 가족</strong>
+                                <strong class="en" style="display:none">Tour completed — Jung-ho L. family</strong>
+                                <span class="kr">결정 보류 중 · 2주 내 회신 예정</span>
+                                <span class="en" style="display:none">Decision pending · Reply expected in 2 weeks</span>
+                            </div>
+                            <div class="activity-time">어제</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-dot a-purple">⭐</div>
+                            <div class="activity-text">
+                                <strong class="kr">새 리뷰 등록 (★★★★★)</strong>
+                                <strong class="en" style="display:none">New 5-star review received</strong>
+                                <span class="kr">"직원 모두 한국어로 대화해 주셔서 감사해요" — 박미영</span>
+                                <span class="en" style="display:none">"All staff speak Korean, so grateful" — Mi-young P.</span>
+                            </div>
+                            <div class="activity-time">2일 전</div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-dot a-green">💰</div>
+                            <div class="activity-text">
+                                <strong class="kr">레퍼럴 수수료 입금 완료</strong>
+                                <strong class="en" style="display:none">Referral fee payment received</strong>
+                                <span class="kr">$5,800 — 최순자 어르신 (12월 입주)</span>
+                                <span class="en" style="display:none">$5,800 — Soon-ja C. (December move-in)</span>
+                            </div>
+                            <div class="activity-time">3일 전</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Leads Table -->
+        <div class="card" style="margin-top:22px;">
+            <div class="card-header">
+                <h3 class="kr">📋 최근 배정된 리드</h3>
+                <h3 class="en" style="display:none">📋 Recent Assigned Leads</h3>
+                <button class="btn-primary" onclick="showSection('leads')">전체 보기 →</button>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="leads-table">
+                    <thead>
+                        <tr>
+                            <th class="kr">문의 가족</th><th class="en" style="display:none">Family</th>
+                            <th class="kr">케어 유형</th><th class="en" style="display:none">Care Type</th>
+                            <th class="kr">입주 희망</th><th class="en" style="display:none">Timeline</th>
+                            <th class="kr">예상 수수료</th><th class="en" style="display:none">Est. Fee</th>
+                            <th class="kr">상태</th><th class="en" style="display:none">Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentLeadsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ LEADS ══ -->
+    <div class="view-section" id="sec-leads">
+        <div class="section-header">
+            <h2 class="kr">👥 신규 문의 · 리드 관리</h2>
+            <h2 class="en" style="display:none">👥 Leads Management</h2>
+            <div style="display:flex;gap:10px;">
+                <select style="padding:8px 14px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-weight:600;outline:none;background:white;">
+                    <option class="kr">전체 상태</option><option class="en" style="display:none">All Status</option>
+                    <option class="kr">신규</option><option class="en" style="display:none">New</option>
+                    <option class="kr">연락 중</option><option class="en" style="display:none">Contacting</option>
+                    <option class="kr">투어 예약</option><option class="en" style="display:none">Tour Scheduled</option>
+                </select>
+                <button class="btn-primary">내보내기 (CSV)</button>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body" style="padding:0;">
+                <table class="leads-table">
+                    <thead>
+                        <tr>
+                            <th class="kr">문의 가족 / 어르신</th><th class="en" style="display:none">Family / Senior</th>
+                            <th class="kr">케어 유형</th><th class="en" style="display:none">Care Type</th>
+                            <th class="kr">지역</th><th class="en" style="display:none">Location</th>
+                            <th class="kr">긴급도</th><th class="en" style="display:none">Urgency</th>
+                            <th class="kr">예산</th><th class="en" style="display:none">Budget</th>
+                            <th class="kr">예상 수수료</th><th class="en" style="display:none">Est. Fee</th>
+                            <th class="kr">상태</th><th class="en" style="display:none">Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="allLeadsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ KANBAN ══ -->
+    <div class="view-section" id="sec-kanban">
+        <div class="section-header">
+            <h2 class="kr">📋 리드 파이프라인</h2>
+            <h2 class="en" style="display:none">📋 Lead Pipeline</h2>
+            <div style="font-size:13px;color:#64748b;font-weight:600;" class="kr">총 예상 수수료: <strong style="color:#0d2137;font-size:16px;">$47,200</strong></div>
+            <div style="font-size:13px;color:#64748b;font-weight:600;display:none;" class="en">Total Projected Fees: <strong style="color:#0d2137;font-size:16px;">$47,200</strong></div>
+        </div>
+        <div class="kanban-board" id="kanbanBoard"></div>
+    </div>
+
+    <!-- ══ FACILITIES ══ -->
+    <div class="view-section" id="sec-facilities">
+        <div class="section-header">
+            <h2 class="kr">🏥 시설 관리</h2>
+            <h2 class="en" style="display:none">🏥 Facility Management</h2>
+            <button class="btn-primary">+ 새 시설 등록</button>
+        </div>
+        <div class="fac-grid" id="facGrid"></div>
+    </div>
+
+    <!-- ══ BILLING ══ -->
+    <div class="view-section" id="sec-billing">
+        <div class="section-header">
+            <h2 class="kr">💰 수수료 정산 현황</h2>
+            <h2 class="en" style="display:none">💰 Referral Fee Settlement</h2>
+            <button class="btn-secondary">정산 내역 다운로드</button>
+        </div>
+        <div class="billing-hero">
+            <div class="billing-hero-l">
+                <h3 class="kr">2026년 1월 레퍼럴 수수료 (확정)</h3>
+                <h3 class="en" style="display:none">January 2026 Referral Fees (Confirmed)</h3>
+                <div class="billing-balance">$18,400</div>
+                <div class="billing-sub kr">전월 $15,200 대비 +21% ↑ · 입주 확정 3건</div>
+                <div class="billing-sub en" style="display:none">+21% vs. last month · 3 confirmed placements</div>
+            </div>
+            <div class="billing-hero-r">
+                <div class="billing-note kr">💡 투어 중 2건 추가 확정 시 <strong>+$12,400</strong> 예상</div>
+                <div class="billing-note en" style="display:none">💡 2 pending tours could add <strong>+$12,400</strong></div>
+                <button class="btn-primary" style="background:white;color:#1f7a75;" class="kr">정산 요청하기</button>
+            </div>
+        </div>
+        <div class="billing-kpi">
+            <div class="b-card">
+                <h3 class="kr">2025 연간 수수료 (누계)</h3>
+                <h3 class="en" style="display:none">2025 Annual Fees (YTD)</h3>
+                <div class="amount">$127,800</div>
+                <p class="kr">총 입주 확정 22건</p>
+                <p class="en">22 total confirmed placements</p>
+            </div>
+            <div class="b-card">
+                <h3 class="kr">정산 완료</h3>
+                <h3 class="en" style="display:none">Paid to Date</h3>
+                <div class="amount">$109,400</div>
+                <p><span class="paid-badge">PAID</span></p>
+            </div>
+            <div class="b-card">
+                <h3 class="kr">정산 대기 중</h3>
+                <h3 class="en" style="display:none">Pending Settlement</h3>
+                <div class="amount">$18,400</div>
+                <p><span class="pending-badge">PENDING</span></p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <h3 class="kr">📄 레퍼럴 수수료 내역</h3>
+                <h3 class="en" style="display:none">📄 Referral Fee History</h3>
+            </div>
+            <div class="card-body" style="padding:0;">
+                <table class="txn-table">
+                    <thead>
+                        <tr>
+                            <th class="kr">어르신/가족</th><th class="en" style="display:none">Senior/Family</th>
+                            <th class="kr">케어 유형</th><th class="en" style="display:none">Care Type</th>
+                            <th class="kr">월 시설비</th><th class="en" style="display:none">Monthly Fee</th>
+                            <th class="kr">레퍼럴 수수료</th><th class="en" style="display:none">Referral Fee</th>
+                            <th class="kr">입주일</th><th class="en" style="display:none">Move-in Date</th>
+                            <th class="kr">정산 상태</th><th class="en" style="display:none">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="billingBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="view-section" id="sec-settings">
+        <div class="section-header">
+            <h2 class="kr">⚙️ 시설 설정</h2>
+            <h2 class="en" style="display:none">⚙️ Facility Settings</h2>
+        </div>
+        <div class="settings-grid">
+            <div class="settings-card">
+                <h3 class="kr">🏥 시설 기본 정보</h3>
+                <h3 class="en" style="display:none">🏥 Facility Info</h3>
+                <div class="field-group"><label class="kr">시설명 (한국어)</label><label class="en">Name (Korean)</label><input value="한마음 어시스티드 리빙"></div>
+                <div class="field-group"><label class="kr">시설명 (영어)</label><label class="en">Name (English)</label><input value="Hanmaeum Assisted Living"></div>
+                <div class="field-group"><label class="kr">주소</label><label class="en">Address</label><input value="1234 Western Ave, Torrance, CA 90501"></div>
+                <div class="field-group"><label class="kr">전화번호</label><label class="en">Phone</label><input value="+1 (310) 555-0192"></div>
+                <button class="save-btn kr">변경 사항 저장</button>
+                <button class="save-btn en" style="display:none">Save Changes</button>
+            </div>
+            <div class="settings-card">
+                <h3 class="kr">🔔 알림 설정</h3>
+                <h3 class="en" style="display:none">🔔 Notification Settings</h3>
+                <div class="toggle-row">
+                    <div class="toggle-info"><strong class="kr">신규 리드 즉시 알림</strong><strong class="en" style="display:none">New lead instant alert</strong><span class="kr">리드 배정 즉시 문자+이메일 발송</span><span class="en" style="display:none">SMS+email on every new lead</span></div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info"><strong class="kr">48시간 미응답 경고</strong><strong class="en" style="display:none">48hr unresponded warning</strong><span class="kr">리드 응답 기한 초과 시 알림</span><span class="en" style="display:none">Alert when response deadline passes</span></div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info"><strong class="kr">주간 리드 요약 리포트</strong><strong class="en" style="display:none">Weekly lead summary report</strong><span class="kr">매주 월요일 오전 성과 리포트</span><span class="en" style="display:none">Performance report every Monday morning</span></div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info"><strong class="kr">입주 후 30일 체크인 알림</strong><strong class="en" style="display:none">30-day post move-in check-in</strong><span class="kr">입주 확정 가족 만족도 팔로업</span><span class="en" style="display:none">Follow up with placed families</span></div>
+                    <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                </div>
+            </div>
+            <div class="settings-card">
+                <h3 class="kr">✅ 제공 서비스 태그</h3>
+                <h3 class="en" style="display:none">✅ Service Tags</h3>
+                <p style="font-size:13px;color:#64748b;margin-bottom:12px;" class="kr">플랫폼에 표시되는 서비스 특징 태그입니다.</p>
+                <div class="tag-wrap">
+                    <div class="stag">🍚 한식 제공 <span class="rm" onclick="this.parentNode.remove()">✕</span></div>
+                    <div class="stag">🗣️ 한국어 100% <span class="rm" onclick="this.parentNode.remove()">✕</span></div>
+                    <div class="stag">🧠 치매 케어 <span class="rm" onclick="this.parentNode.remove()">✕</span></div>
+                    <div class="stag">⛪ 교회 셔틀 <span class="rm" onclick="this.parentNode.remove()">✕</span></div>
+                    <div class="stag">🎤 문화 프로그램 <span class="rm" onclick="this.parentNode.remove()">✕</span></div>
+                    <div class="stag">📱 카카오톡 소통 <span class="rm" onclick="this.parentNode.remove()">✕</span></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:14px;">
+                    <input id="newTagInput" type="text" placeholder="태그 추가..." style="flex:1;padding:9px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;">
+                    <button class="btn-primary" onclick="addTag()">추가</button>
+                </div>
+            </div>
+            <div class="settings-card">
+                <h3 class="kr">🛏️ 입주 가능 현황</h3>
+                <h3 class="en" style="display:none">🛏️ Availability</h3>
+                <div class="field-group"><label class="kr">현재 입주 가능 인원</label><label class="en">Current Vacancies</label><input type="number" value="4"></div>
+                <div class="field-group"><label class="kr">최대 수용 인원</label><label class="en">Total Capacity</label><input type="number" value="45"></div>
+                <div class="toggle-row">
+                    <div class="toggle-info"><strong class="kr">신규 리드 수신 중</strong><strong class="en" style="display:none">Accepting new leads</strong><span class="kr">비활성화 시 신규 리드 배정이 중단됩니다</span><span class="en" style="display:none">Disable to pause new lead assignments</span></div>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <button class="save-btn kr">저장</button>
+                <button class="save-btn en" style="display:none">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Lead Detail Modal ── -->
+<div class="modal-overlay" id="leadDetailModal">
+    <div class="modal-box lead-modal">
+        <button class="modal-close" onclick="closeModal('leadDetailModal')">✕</button>
+        <div class="badge badge-new" id="modalStatus" style="margin-bottom:14px;"></div>
+        <h2 id="modalName"></h2>
+        <div class="lead-modal-meta" id="modalMeta"></div>
+        <div class="lead-info-grid" id="modalInfoGrid"></div>
+        <div class="lead-notes" id="modalNotes"></div>
+        <div class="lead-actions">
+            <select class="status-select" id="modalStatusSel">
+                <option class="kr">신규</option><option class="en" style="display:none">New</option>
+                <option class="kr">연락 중</option><option class="en" style="display:none">Contacting</option>
+                <option class="kr">투어 예약</option><option class="en" style="display:none">Tour Scheduled</option>
+                <option class="kr">입주 확정</option><option class="en" style="display:none">Placed</option>
+                <option class="kr">보류</option><option class="en" style="display:none">On Hold</option>
+            </select>
+            <button class="btn-primary" onclick="closeModal('leadDetailModal')">
+                <span class="kr">저장하기</span><span class="en" style="display:none">Save</span>
+            </button>
+            <button class="btn-secondary">
+                <span class="kr">📞 연락하기</span><span class="en" style="display:none">📞 Contact</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let adminLang = 'kr';
+
+// ─── DATA ───
+const LEADS = [
+    { id:1, nameKr:'박정수 (어르신: 박영희, 82세)', nameEn:'Jung-soo Park (Senior: Young-hee P., 82)', care:'어시스티드 리빙', careEn:'Assisted Living', loc:'LA/OC', urgency:'high', budget:'$5,500~$7,000', fee:'$6,200', status:'new', date:'2026.01.15', notes:'파킨슨 초기 증상, 한식 필수, 토런스 선호. 딸이 영어 불편.' },
+    { id:2, nameKr:'이민정 (어르신: 이창호, 78세)', nameEn:'Min-jung Lee (Senior: Chang-ho L., 78)', care:'어시스티드 리빙', careEn:'Assisted Living', loc:'LA/OC', urgency:'med', budget:'$5,000~$6,500', fee:'$5,800', status:'contacting', date:'2026.01.14', notes:'당뇨 관리 필수. 교회 셔틀 중요. 가든그로브 선호.' },
+    { id:3, nameKr:'최현우 (어르신: 최순자, 85세)', nameEn:'Hyun-woo Choi (Senior: Soon-ja C., 85)', care:'메모리 케어', careEn:'Memory Care', loc:'LA/OC', urgency:'high', budget:'$7,000~$9,000', fee:'$7,800', status:'tour', date:'2026.01.12', notes:'알츠하이머 중기. 배회 방지 필수. 한국어 직원 100% 요청.' },
+    { id:4, nameKr:'강지영 (어르신: 강병국, 80세)', nameEn:'Ji-young Kang (Senior: Byung-guk K., 80)', care:'어시스티드 리빙', careEn:'Assisted Living', loc:'NJ/NY', urgency:'low', budget:'$6,000~$8,000', fee:'$6,500', status:'new', date:'2026.01.13', notes:'포트리 또는 팰리세이즈파크 선호. 2개월 내 입주 예정.' },
+    { id:5, nameKr:'윤상훈 (어르신: 윤복순, 77세)', nameEn:'Sang-hoon Yun (Senior: Bok-soon Y., 77)', care:'독립 생활', careEn:'Independent Living', loc:'TX', urgency:'low', budget:'$3,800~$5,000', fee:'$4,200', status:'placed', date:'2026.01.08', notes:'건강하고 활동적. 한국 커뮤니티 중요. 플라노 선호.' },
+    { id:6, nameKr:'신미래 (어르신: 신동구, 89세)', nameEn:'Mi-rae Shin (Senior: Dong-gu S., 89)', care:'너싱홈', careEn:'Skilled Nursing', loc:'GA', urgency:'high', budget:'$6,500~$9,500', fee:'$8,200', status:'contacting', date:'2026.01.10', notes:'뇌졸중 후 재활 필요. 메디케어 적용 요청. 애틀랜타 한인 지역 선호.' },
+];
+
+const KANBAN_COLS = [
+    { id:'new', krLabel:'🆕 신규', enLabel:'🆕 New', filterFn: l => l.status==='new' },
+    { id:'contacting', krLabel:'📞 연락 중', enLabel:'📞 Contacting', filterFn: l => l.status==='contacting' },
+    { id:'tour', krLabel:'🏠 투어 예약', enLabel:'🏠 Tour Scheduled', filterFn: l => l.status==='tour' },
+    { id:'placed', krLabel:'✅ 입주 확정', enLabel:'✅ Placed', filterFn: l => l.status==='placed' },
+    { id:'lost', krLabel:'❄️ 보류/종결', enLabel:'❄️ On Hold', filterFn: l => l.status==='lost' },
+];
+
+const FAC_DATA = [
+    { nameKr:'한마음 어시스티드 리빙', nameEn:'Hanmaeum Assisted Living', type:'어시스티드 리빙', typeEn:'Assisted Living', loc:'Torrance, CA', status:'active', capacity:45, vacancies:4, rating:'4.9', leads:14, placements:3, img:'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=600&q=80' },
+    { nameKr:'서울 메모리 케어 유닛', nameEn:'Seoul Memory Care Unit', type:'메모리 케어', typeEn:'Memory Care', loc:'Torrance, CA', status:'active', capacity:18, vacancies:2, rating:'4.8', leads:6, placements:1, img:'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80' },
+];
+
+const BILLING_ROWS = [
+    { nameKr:'김순희 어르신', nameEn:'Soon-hee K.', care:'어시스티드 리빙', careEn:'Assisted Living', monthlyFee:'$6,200', referral:'$6,200', date:'2026.01.15', status:'pending' },
+    { nameKr:'홍미경 어르신', nameEn:'Mi-kyung H.', care:'어시스티드 리빙', careEn:'Assisted Living', monthlyFee:'$6,000', referral:'$6,000', date:'2026.01.03', status:'pending' },
+    { nameKr:'나경남 어르신', nameEn:'Kyung-nam N.', care:'메모리 케어', careEn:'Memory Care', monthlyFee:'$6,200', referral:'$6,200', date:'2025.12.20', status:'paid' },
+    { nameKr:'최순자 어르신', nameEn:'Soon-ja C.', care:'어시스티드 리빙', careEn:'Assisted Living', monthlyFee:'$5,800', referral:'$5,800', date:'2025.12.01', status:'paid' },
+    { nameKr:'박영후 어르신', nameEn:'Young-hoo P.', care:'어시스티드 리빙', careEn:'Assisted Living', monthlyFee:'$5,500', referral:'$5,500', date:'2025.11.15', status:'paid' },
+];
+
+// ─── RENDER ───
+const statusMap = { new:'badge-new', contacting:'badge-contact', tour:'badge-tour', placed:'badge-placed', lost:'badge-lost' };
+const statusKr = { new:'신규', contacting:'연락중', tour:'투어예약', placed:'입주확정', lost:'보류' };
+const statusEn = { new:'New', contacting:'Contacting', tour:'Tour', placed:'Placed', lost:'On Hold' };
+
+function renderRecentLeads() {
+    const isEn = adminLang === 'en';
+    document.getElementById('recentLeadsBody').innerHTML = LEADS.slice(0,5).map(l => `
+        <tr onclick="openLeadDetail(${l.id})" style="cursor:pointer;">
+            <td><div class="td-name">${isEn ? l.nameEn : l.nameKr}</div></td>
+            <td><span class="badge ${statusMap[l.status]}">${isEn ? l.careEn : l.care}</span></td>
+            <td>${isEn ? 'Within 1-3 mo' : '1~3개월 내'}</td>
+            <td style="font-weight:800;color:#0d2137;">${l.fee}</td>
+            <td><span class="badge ${statusMap[l.status]}">${isEn ? statusEn[l.status] : statusKr[l.status]}</span></td>
+            <td><a class="action-link">${isEn ? 'View →' : '보기 →'}</a></td>
+        </tr>`).join('');
+}
+
+function renderAllLeads() {
+    const isEn = adminLang === 'en';
+    const urgLabel = { high: isEn ? 'Urgent' : '긴급', med: isEn ? 'Med' : '보통', low: isEn ? 'Low' : '여유' };
+    document.getElementById('allLeadsBody').innerHTML = LEADS.map(l => `
+        <tr onclick="openLeadDetail(${l.id})" style="cursor:pointer;">
+            <td><div class="td-name">${isEn ? l.nameEn : l.nameKr}</div><div class="td-care">${isEn ? l.careEn : l.care}</div></td>
+            <td>${isEn ? l.careEn : l.care}</td>
+            <td>${l.loc}</td>
+            <td><span class="urgency-dot ${l.urgency}"></span>${urgLabel[l.urgency]}</td>
+            <td>${l.budget}</td>
+            <td style="font-weight:800;">${l.fee}</td>
+            <td><span class="badge ${statusMap[l.status]}">${isEn ? statusEn[l.status] : statusKr[l.status]}</span></td>
+            <td><a class="action-link">${isEn ? 'View →' : '상세 →'}</a></td>
+        </tr>`).join('');
+}
+
+function renderKanban() {
+    const isEn = adminLang === 'en';
+    document.getElementById('kanbanBoard').innerHTML = KANBAN_COLS.map(col => {
+        const cards = LEADS.filter(col.filterFn);
+        return `<div class="kanban-col">
+            <div class="kanban-col-header">${isEn ? col.enLabel : col.krLabel} <span class="col-count">${cards.length}</span></div>
+            <div class="kanban-cards">${cards.map(l => `
+                <div class="k-card ${l.urgency==='high'?'urgent':l.status==='placed'?'won':l.status==='lost'?'cold':''}" onclick="openLeadDetail(${l.id})">
+                    <div class="k-card-meta"><span>${l.date}</span><span class="urgency-dot ${l.urgency}" style="display:inline-block;"></span></div>
+                    <div class="k-card-name">${isEn ? l.nameEn.split('(')[0].trim() : l.nameKr.split('(')[0].trim()}</div>
+                    <div class="k-card-info">${isEn ? l.careEn : l.care} · ${l.loc}</div>
+                    <div class="k-card-footer"><span class="k-fee">${l.fee}</span><span class="k-date">${l.budget}</span></div>
+                </div>`).join('')}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderFacilities() {
+    const isEn = adminLang === 'en';
+    document.getElementById('facGrid').innerHTML = FAC_DATA.map(f => `
+        <div class="fac-card">
+            <div class="fac-img" style="background-image:url('${f.img}')">
+                <span class="fac-status-badge ${f.status==='active'?'fac-status-active':'fac-status-paused'}">${f.status==='active'?(isEn?'Active':'운영중'):(isEn?'Paused':'일시중지')}</span>
+            </div>
+            <div class="fac-body">
+                <h4>${isEn ? f.nameEn : f.nameKr}</h4>
+                <div class="fac-meta-row">
+                    <span class="fac-tag">${isEn ? f.typeEn : f.type}</span>
+                    <span class="fac-tag">📍 ${f.loc}</span>
+                    <span class="fac-tag">⭐ ${f.rating}</span>
+                </div>
+                <div class="fac-stats-row">
+                    <div class="fac-stat"><strong>${f.vacancies}/${f.capacity}</strong><span>${isEn?'Vacancies':'입주가능'}</span></div>
+                    <div class="fac-stat"><strong>${f.leads}</strong><span>${isEn?'Leads/mo':'월리드'}</span></div>
+                    <div class="fac-stat"><strong>${f.placements}</strong><span>${isEn?'Placed/mo':'이달입주'}</span></div>
+                </div>
+                <div class="fac-actions">
+                    <button class="btn-primary" style="flex:1;">${isEn?'Edit Listing':'정보 수정'}</button>
+                    <button class="btn-secondary">${isEn?'Photos':'사진 관리'}</button>
+                    <button class="btn-secondary">${isEn?'Preview':'미리보기'}</button>
+                </div>
+            </div>
+        </div>`).join('');
+}
+
+function renderBilling() {
+    const isEn = adminLang === 'en';
+    document.getElementById('billingBody').innerHTML = BILLING_ROWS.map(r => `
+        <tr>
+            <td><div class="txn-name">${isEn ? r.nameEn : r.nameKr}</div><div class="txn-care">${isEn ? r.careEn : r.care}</div></td>
+            <td>${isEn ? r.careEn : r.care}</td>
+            <td>${r.monthlyFee}</td>
+            <td class="txn-amount-pos">${r.referral}</td>
+            <td>${r.date}</td>
+            <td><span class="${r.status==='paid'?'paid-badge':'pending-badge'}">${r.status==='paid'?(isEn?'PAID':'정산완료'):(isEn?'PENDING':'정산대기')}</span></td>
+        </tr>`).join('');
+}
+
+function renderRevBars() {
+    const vals = [9200,11500,12800,10400,15100,15200,18400];
+    const max = Math.max(...vals);
+    document.getElementById('revBars').innerHTML = vals.map((v,i) => `
+        <div class="rev-bar-wrap">
+            <div class="rev-bar-val">$${(v/1000).toFixed(1)}k</div>
+            <div class="rev-bar" style="height:${(v/max)*100}px;" title="$${v.toLocaleString()}"></div>
+        </div>`).join('');
+}
+
+// ─── LEAD DETAIL ───
+function openLeadDetail(id) {
+    const isEn = adminLang === 'en';
+    const l = LEADS.find(x => x.id === id);
+    document.getElementById('modalStatus').textContent = isEn ? statusEn[l.status] : statusKr[l.status];
+    document.getElementById('modalStatus').className = `badge ${statusMap[l.status]}`;
+    document.getElementById('modalName').textContent = isEn ? l.nameEn : l.nameKr;
+    document.getElementById('modalMeta').textContent = `${isEn?'Received':'접수일'}: ${l.date} · ${l.loc}`;
+    document.getElementById('modalInfoGrid').innerHTML = [
+        { label: isEn?'Care Type':'케어 유형', val: isEn?l.careEn:l.care },
+        { label: isEn?'Monthly Budget':'월 예산', val: l.budget },
+        { label: isEn?'Est. Referral Fee':'예상 수수료', val: l.fee },
+        { label: isEn?'Urgency':'긴급도', val: {high:isEn?'Urgent':'긴급',med:isEn?'Medium':'보통',low:isEn?'Low':'여유'}[l.urgency] },
+    ].map(item => `<div class="lead-info-box"><label>${item.label}</label><span>${item.val}</span></div>`).join('');
+    document.getElementById('modalNotes').innerHTML = `<label>🤖 AI ${isEn?'Notes':'케어 플래너 메모'}</label><p>${l.notes}</p>`;
+    showModal('leadDetailModal');
+}
+
+// ─── NAV ───
+function showSection(id) {
+    document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + id).classList.add('active');
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    const map = { dashboard:0, leads:1, kanban:2, facilities:3, billing:4, settings:5 };
+    document.querySelectorAll('.menu-item')[map[id]].classList.add('active');
+    const titles = { dashboard:'대시보드', leads:'신규 문의 · 리드', kanban:'리드 파이프라인', facilities:'시설 관리', billing:'수수료 정산', settings:'설정' };
+    const titlesEn = { dashboard:'Dashboard', leads:'Leads', kanban:'Pipeline', facilities:'Facilities', billing:'Billing', settings:'Settings' };
+    document.getElementById('pageTitle').textContent = adminLang === 'en' ? titlesEn[id] : titles[id];
+    renderAll();
+}
+
+function renderAll() {
+    renderRecentLeads(); renderAllLeads(); renderKanban(); renderFacilities(); renderBilling(); renderRevBars();
+}
+
+// ─── MODAL ───
+function showModal(id) { const el = document.getElementById(id); el.style.display='flex'; setTimeout(()=>el.classList.add('show'),10); }
+function closeModal(id) { const el = document.getElementById(id); el.classList.remove('show'); setTimeout(()=>el.style.display='none',200); }
+
+// ─── LANG ───
+function toggleAdminLang() {
+    adminLang = adminLang === 'kr' ? 'en' : 'kr';
+    const isEn = adminLang === 'en';
+    document.querySelectorAll('.kr').forEach(el => { el.style.display = isEn ? 'none' : (el.tagName==='SPAN'||el.tagName==='BUTTON'||el.tagName==='OPTION'?'inline':'block'); });
+    document.querySelectorAll('.en').forEach(el => { el.style.display = isEn ? (el.tagName==='SPAN'||el.tagName==='BUTTON'||el.tagName==='OPTION'?'inline':'block') : 'none'; });
+    document.getElementById('adminLangBtn').innerHTML = isEn ? '🇰🇷 한국어' : '🇺🇸 English';
+    renderAll();
+}
+
+// ─── MISC ───
+function addTag() {
+    const inp = document.getElementById('newTagInput');
+    if (!inp.value.trim()) return;
+    const wrap = document.querySelector('.tag-wrap');
+    const tag = document.createElement('div');
+    tag.className = 'stag';
+    tag.innerHTML = `${inp.value} <span class="rm" onclick="this.parentNode.remove()">✕</span>`;
+    wrap.appendChild(tag);
+    inp.value = '';
+}
+
+window.onload = function() { renderAll(); };
+</script>
+</body>
+</html>
