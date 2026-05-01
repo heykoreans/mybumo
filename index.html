@@ -1010,13 +1010,26 @@ function pNext(n) {
         else el.className = 'p-step-ind';
     });
 }
-function submitPartner() {
-    if (!document.getElementById('agreeCheck').checked) {
-        alert(lang === 'kr' ? '약관에 동의해 주세요.' : 'Please agree to the terms.'); return;
-    }
-    document.getElementById('ps4').classList.remove('active');
-    document.getElementById('ps-done').classList.add('active');
-    ['pbar1','pbar2','pbar3','pbar4'].forEach(id => document.getElementById(id).className = 'p-step-ind done');
+async function submitPartner() {
+  if (!document.getElementById('agreeCheck').checked) {
+    alert(lang === 'kr' ? '약관에 동의해 주세요.' : 'Please agree to the terms.'); return;
+  }
+  const inputs = document.querySelectorAll('#ps1 input, #ps2 input, #ps3 input, #ps4 input');
+  const v = (i) => inputs[i]?.value || '';
+
+  const { error } = await db.from('partners').insert([{
+    facility_name_kr: v(0), facility_name_en: v(1),
+    city: v(2), capacity: v(3), license: v(4),
+    fee_min: v(5), fee_max: v(6),
+    contact_name: v(7), contact_email: v(8), contact_phone: v(9)
+  }]);
+
+  if (error) { console.error(error); alert('저장 중 오류가 발생했습니다.'); return; }
+
+  document.getElementById('ps4').classList.remove('active');
+  document.getElementById('ps-done').classList.add('active');
+  ['pbar1','pbar2','pbar3','pbar4'].forEach(id =>
+    document.getElementById(id).className = 'p-step-ind done');
 }
 function toggleType(el) { el.classList.toggle('sel'); }
 
