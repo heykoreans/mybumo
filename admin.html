@@ -595,8 +595,8 @@
                 <div class="field-group"><label class="kr">시설명 (영어)</label><label class="en">Name (English)</label><input value="Hanmaeum Assisted Living"></div>
                 <div class="field-group"><label class="kr">주소</label><label class="en">Address</label><input value="1234 Western Ave, Torrance, CA 90501"></div>
                 <div class="field-group"><label class="kr">전화번호</label><label class="en">Phone</label><input value="+1 (310) 555-0192"></div>
-                <button class="save-btn kr">변경 사항 저장</button>
-                <button class="save-btn en" style="display:none">Save Changes</button>
+                <button type="button" class="save-btn kr" onclick="saveBasicInfo()">변경 사항 저장</button>
+                <button type="button" class="save-btn en" style="display:none" onclick="saveBasicInfo()">Save Changes</button>
             </div>
             <div class="settings-card">
                 <h3 class="kr">🔔 알림 설정</h3>
@@ -632,8 +632,10 @@
                 </div>
                 <div style="display:flex;gap:8px;margin-top:14px;">
                     <input id="newTagInput" type="text" placeholder="태그 추가..." style="flex:1;padding:9px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;">
-                    <button class="btn-primary" onclick="addTag()">추가</button>
+                    <button type="button" class="btn-primary" onclick="addTag()">추가</button>
                 </div>
+                <button type="button" class="save-btn kr" onclick="saveTags()" style="margin-top:12px;">태그 저장</button>
+                <button type="button" class="save-btn en" onclick="saveTags()" style="display:none;margin-top:12px;">Save Tags</button>
             </div>
             <div class="settings-card">
                 <h3 class="kr">🛏️ 입주 가능 현황</h3>
@@ -644,8 +646,8 @@
                     <div class="toggle-info"><strong class="kr">신규 리드 수신 중</strong><strong class="en" style="display:none">Accepting new leads</strong><span class="kr">비활성화 시 신규 리드 배정이 중단됩니다</span><span class="en" style="display:none">Disable to pause new lead assignments</span></div>
                     <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
                 </div>
-                <button class="save-btn kr">저장</button>
-                <button class="save-btn en" style="display:none">Save</button>
+                <button type="button" class="save-btn kr" onclick="saveAvailability()">저장</button>
+                <button type="button" class="save-btn en" style="display:none" onclick="saveAvailability()">Save</button>
             </div>
         </div>
     </div>
@@ -705,6 +707,95 @@ let photoFiles = [];
 let existingPhotos = [];
 let previewSlideIdx = 0;
 let previewSliderPhotos = [];
+let currentPartnerId = null;
+
+function normalizePartnerTags(raw) {
+  if (raw == null) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const p = JSON.parse(raw);
+      return Array.isArray(p) ? p : [];
+    } catch (e) {
+      return [];
+    }
+  }
+  return [];
+}
+
+async function loadSettings() {
+  const { data, error } = await db.from('partners')
+    .select('*')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .single();
+  if (error || !data) return;
+  currentPartnerId = data.id;
+
+  const inputs = document.querySelectorAll('#sec-settings .settings-grid > .settings-card:nth-of-type(1) input');
+  if (inputs[0]) inputs[0].value = data.facility_name_kr || '';
+  if (inputs[1]) inputs[1].value = data.facility_name_en || '';
+  if (inputs[2]) inputs[2].value = (data.city || '') + (data.state ? ', ' + data.state : '');
+  if (inputs[3]) inputs[3].value = data.contact_phone || '';
+
+  const tagWrap = document.querySelector('#sec-settings .tag-wrap');
+  const tags = normalizePartnerTags(data.tags);
+  if (tagWrap && tags.length > 0) {
+    tagWrap.innerHTML = tags.map(tag =>
+      `<div class="stag">${String(tag).replace(/</g, '&lt;')} <span class="rm" onclick="this.parentNode.remove()">✕</span></div>`
+    ).join('');
+  }
+
+  const availInputs = document.querySelectorAll('#sec-settings .settings-grid > .settings-card:nth-of-type(4) input[type=number]');
+  if (availInputs[0]) availInputs[0].value = data.vacancies ?? 0;
+  if (availInputs[1]) availInputs[1].value = data.capacity_total ?? data.capacity ?? 0;
+}
+
+async function saveBasicInfo() {
+  if (!currentPartnerId) return;
+  const inputs = document.querySelectorAll('#sec-settings .settings-grid > .settings-card:nth-of-type(1) input');
+  const fullAddr = inputs[2]?.value || '';
+  const addrParts = fullAddr.split(',');
+
+  const { error } = await db.from('partners').update({
+    facility_name_kr: inputs[0]?.value || '',
+    facility_name_en: inputs[1]?.value || '',
+    city: addrParts[0]?.trim() || '',
+    state: addrParts[1]?.trim() || '',
+    contact_phone: inputs[3]?.value || '',
+  }).eq('id', currentPartnerId);
+
+  if (error) { alert('저장 실패: ' + error.message); return; }
+  alert('기본 정보가 저장되었습니다!');
+}
+
+async function saveTags() {
+  if (!currentPartnerId) return;
+  const tagEls = document.querySelectorAll('#sec-settings .tag-wrap .stag');
+  const tags = Array.from(tagEls).map(el => {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('.rm').forEach(n => n.remove());
+    return clone.textContent.replace(/\s+/g, ' ').trim();
+  }).filter(Boolean);
+
+  const { error } = await db.from('partners').update({ tags }).eq('id', currentPartnerId);
+  if (error) { alert('저장 실패: ' + error.message); return; }
+  alert('태그가 저장되었습니다!');
+}
+
+async function saveAvailability() {
+  if (!currentPartnerId) return;
+  const availInputs = document.querySelectorAll('#sec-settings .settings-grid > .settings-card:nth-of-type(4) input[type=number]');
+
+  const { error } = await db.from('partners').update({
+    vacancies: parseInt(availInputs[0]?.value, 10) || 0,
+    capacity_total: parseInt(availInputs[1]?.value, 10) || 0,
+  }).eq('id', currentPartnerId);
+
+  if (error) { alert('저장 실패: ' + error.message); return; }
+  alert('입주 현황이 저장되었습니다!');
+  renderFacilities();
+}
 
 function firstFacilityPhotoUrl(pu) {
   if (pu == null || pu === '') return null;
@@ -1212,6 +1303,7 @@ async function loadRealLeads() {
 window.onload = async function() {
   await renderAll();
   loadRealLeads();
+  await loadSettings();
 };
 </script>
 
