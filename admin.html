@@ -863,33 +863,34 @@ function addTag() {
     inp.value = '';
 }
 
-async function loadLeads() {
+async function loadRealLeads() {
   const { data, error } = await db.from('leads').select('*').order('created_at', { ascending: false });
   if (error) { console.error(error); return; }
 
-  // KPI 업데이트
-  const kpiEl = document.querySelector('.kpi-value');
-  if (kpiEl) kpiEl.textContent = data.length;
+  // 리드 테이블 tbody를 찾아서 교체
+  const tables = document.querySelectorAll('table.leads-table tbody');
+  tables.forEach(tbody => {
+    tbody.innerHTML = data.map(l => `
+      <tr>
+        <td>${l.created_at ? new Date(l.created_at).toLocaleDateString('ko-KR') : '-'}</td>
+        <td>${l.name || '-'}</td>
+        <td>${l.email || '-'}</td>
+        <td>${l.phone || '-'}</td>
+        <td>${l.senior_age ? l.senior_age + '세' : '-'}</td>
+        <td>${l.note || '-'}</td>
+        <td><span style="background:#dcfce7;color:#16a34a;padding:3px 10px;border-radius:20px;font-size:12px;">신규</span></td>
+      </tr>
+    `).join('');
+  });
 
-  // leads 테이블 렌더링 (id가 leads-table-body 인 tbody 찾아서)
-  const tbody = document.getElementById('leads-table-body');
-  if (!tbody) return;
-  tbody.innerHTML = data.map(l => `
-    <tr>
-      <td>${l.created_at ? new Date(l.created_at).toLocaleDateString('ko-KR') : '-'}</td>
-      <td>${l.name || '-'}</td>
-      <td>${l.email || '-'}</td>
-      <td>${l.phone || '-'}</td>
-      <td>${l.senior_age || '-'}세</td>
-      <td>${l.note || '-'}</td>
-      <td><span class="badge badge-new">신규</span></td>
-    </tr>
-  `).join('');
+  // KPI 신규 리드 숫자 업데이트 (첫번째 KPI 카드)
+  const kpiNums = document.querySelectorAll('.kpi-value, .kpi-num');
+  if (kpiNums[0]) kpiNums[0].textContent = data.length;
 }
 
 window.onload = async function() {
   renderAll();
-  await loadLeads();
+  loadRealLeads();
 };
 </script>
 </body>
