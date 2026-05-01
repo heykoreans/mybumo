@@ -698,6 +698,7 @@ function matchFacilities(facilities, userNeeds) {
   const stateMap = {
     '뉴저지': 'NJ', '뉴저지주': 'NJ', 'new jersey': 'NJ', 'nj': 'NJ',
     '뉴욕': 'NY', '뉴욕주': 'NY', 'new york': 'NY', 'ny': 'NY',
+    '뉴욕/뉴저지': 'NY', '뉴욕 / 뉴저지': 'NY', 'new york/new jersey': 'NY', 'new york / new jersey': 'NY',
     '캘리포니아': 'CA', '캘리포니아주': 'CA', 'california': 'CA', 'ca': 'CA',
     '메릴랜드': 'MD', '메릴랜드주': 'MD', 'maryland': 'MD', 'md': 'MD',
     '버지니아': 'VA', '버지니아주': 'VA', 'virginia': 'VA', 'va': 'VA',
@@ -737,17 +738,19 @@ function matchFacilities(facilities, userNeeds) {
       const locLower = userNeeds.location.toLowerCase().trim();
       if (locLower === '기타 지역' || locLower === 'other') {
         // 지역 미고정 — 주 기준 보너스 없음
-      } else if (
-        locLower === '뉴욕 / 뉴저지' ||
-        locLower === 'new york / new jersey'
-      ) {
-        if (f.state === 'NY' || f.state === 'NJ') score += 30;
       } else {
         const mappedFromState = stateMap[locLower];
         const mappedFromCity = cityMap[locLower];
         const mappedState = mappedFromState || mappedFromCity || userNeeds.location.toUpperCase();
+        const nyNjCombo =
+          locLower === '뉴욕/뉴저지' ||
+          locLower === '뉴욕 / 뉴저지' ||
+          locLower === 'new york/new jersey' ||
+          locLower === 'new york / new jersey';
 
-        if (f.state === mappedState) {
+        if (mappedState === 'NY' && nyNjCombo && (f.state === 'NY' || f.state === 'NJ')) {
+          score += 30;
+        } else if (f.state === mappedState) {
           score += 30;
         } else if (f.city && f.city.toLowerCase().includes(locLower)) {
           score += 30;
@@ -925,42 +928,31 @@ function showStep2() {
         : 'Understood! 😊 Which area are you looking in?');
     const opts = document.createElement('div');
     opts.className = 'options'; opts.id = 'step2Opts';
-    const pairs = lang === 'kr'
-        ? [
-            { label: '🌴 LA / OC (캘리포니아)', matchKey: '캘리포니아' },
-            { label: '🗽 뉴욕 / 뉴저지', matchKey: '뉴욕 / 뉴저지' },
-            { label: '🍑 애틀랜타 (조지아)', matchKey: '조지아' },
-            { label: '⭐ 텍사스 (달라스·휴스턴)', matchKey: '텍사스' },
-            { label: '🌲 시애틀 / 워싱턴', matchKey: '워싱턴' },
-            { label: '📍 기타 지역', matchKey: '기타 지역' },
-          ]
-        : [
-            { label: '🌴 LA / OC (California)', matchKey: 'california' },
-            { label: '🗽 New York / New Jersey', matchKey: 'new york / new jersey' },
-            { label: '🍑 Atlanta (Georgia)', matchKey: 'georgia' },
-            { label: '⭐ Texas (Dallas·Houston)', matchKey: 'texas' },
-            { label: '🌲 Seattle / Washington', matchKey: 'washington' },
-            { label: '📍 Other', matchKey: 'other' },
-          ];
-    pairs.forEach((pair) => {
+    const locations = lang === 'kr'
+        ? ['🌴 LA / OC (캘리포니아)', '🗽 뉴욕 / 뉴저지', '🍑 애틀랜타 (조지아)', '⭐ 텍사스 (달라스·휴스턴)', '🌲 시애틀 / 워싱턴', '📍 기타 지역']
+        : ['🌴 LA / OC (California)', '🗽 New York / New Jersey', '🍑 Atlanta (Georgia)', '⭐ Texas (Dallas·Houston)', '🌲 Seattle / Washington', '📍 Other'];
+    const matchKeys = lang === 'kr'
+        ? ['캘리포니아', '뉴욕/뉴저지', '조지아', '텍사스', '워싱턴', '기타 지역']
+        : ['california', 'new york/new jersey', 'georgia', 'texas', 'washington', 'other'];
+    locations.forEach((loc, i) => {
         const b = document.createElement('button');
         b.className = 'btn-opt';
-        b.textContent = pair.label;
-        b.onclick = () => step2Select(b, pair.label, pair.matchKey);
+        b.textContent = loc;
+        b.onclick = () => step2Select(b, loc, matchKeys[i]);
         opts.appendChild(b);
     });
     document.getElementById('chatBody').appendChild(opts);
     scrollBottom();
 }
 
-function step2Select(btn, displayLabel, matchKey) {
+function step2Select(btn, val, matchKey) {
     document.querySelectorAll('#step2Opts .btn-opt').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
-    selectedLocation = matchKey;
-    window.selectedLocation = matchKey;
+    selectedLocation = matchKey || val;
+    window.selectedLocation = matchKey || val;
     setTimeout(() => {
         document.getElementById('step2Opts').innerHTML = '';
-        appendUserMsg(displayLabel);
+        appendUserMsg(val);
         setTimeout(() => showStep3(), 600);
     }, 300);
 }
