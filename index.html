@@ -780,13 +780,14 @@ function matchFacilities(facilities, userNeeds) {
 
 async function showMatchedFacilities(userNeeds) {
   if (realFacilities.length === 0) await loadFacilities();
+  const noteFromDom = document.getElementById('addNoteText')?.value || '';
   const needs = {
     careType: inferCareTypeForMatch(userNeeds.careType),
     location: userNeeds.location || '',
     budget: userNeeds.budget || '',
-    specialNote: userNeeds.specialNote != null && userNeeds.specialNote !== ''
-      ? userNeeds.specialNote
-      : (document.getElementById('addNoteText')?.value || '')
+    specialNote: userNeeds.specialNote !== undefined && userNeeds.specialNote !== null
+      ? String(userNeeds.specialNote)
+      : noteFromDom
   };
   const matched = matchFacilities(realFacilities, needs);
 
@@ -904,19 +905,11 @@ function step3Select(btn, val) {
     }, 300);
 }
 
-async function showResults() {
+function showResults() {
     const isEn = lang === 'en';
     appendAiMsg(isEn
-        ? '✨ Great! Here are <strong>Korean care facilities</strong> matched to your needs:'
-        : '✨ 분석 완료! 조건에 맞는 <strong>한인 케어 시설</strong>을 찾았습니다. 추천 시설을 확인해보세요:');
-
-    const userNeeds = {
-        careType: selectedCareType || '',
-        location: selectedLocation || '',
-        budget: selectedBudget || '',
-        specialNote: document.getElementById('addNoteText')?.value || ''
-    };
-    await showMatchedFacilities(userNeeds);
+        ? 'Almost there! 💡 Add any specific needs below, then tap <strong>Get Matched</strong> to see facility recommendations.'
+        : '거의 다 되었습니다! 💡 특별 요청사항을 적어 주신 뒤 <strong>매칭 요청하기</strong>를 눌러 시설 추천을 받아보세요.');
 
     setTimeout(() => {
         const box = document.createElement('div');
@@ -925,12 +918,12 @@ async function showResults() {
             <p>${isEn ? '💡 Any specific needs or questions? (e.g., Parkinson\'s care, near Korean church, Medicare coverage)' : '💡 특별히 더 필요한 사항이 있으신가요? (예: 파킨슨 케어, 한인 교회 인근, 메디케어 적용 여부 등)'}</p>
             <textarea id="addNoteText" rows="3" placeholder="${isEn ? 'e.g., Father has Parkinson\'s, prefers Torrance area, Medicare coverage required...' : '예: 아버지 파킨슨 진단, 토런스 지역 선호, 메디케어 적용 필수...'}"></textarea>
             <div class="add-req-row">
-                <button class="skip-btn" onclick="skipNote()">${isEn ? 'Skip' : '건너뛰기'}</button>
-                <button class="send-req-btn" onclick="sendNote()">${isEn ? 'Get Matched →' : '매칭 요청하기 →'}</button>
+                <button type="button" class="skip-btn" onclick="skipNote()">${isEn ? 'Skip' : '건너뛰기'}</button>
+                <button type="button" class="send-req-btn" onclick="sendNote()">${isEn ? 'Get Matched →' : '매칭 요청하기 →'}</button>
             </div>`;
         document.getElementById('chatBody').appendChild(box);
         scrollBottom();
-    }, 900);
+    }, 400);
     scrollBottom();
 }
 
@@ -1003,8 +996,26 @@ async function submitLead() {
   updateLang(); scrollBottom();
 }
 
-function skipNote() { showOverlay('leadOverlay'); }
-function sendNote() { showOverlay('leadOverlay'); }
+function buildChatUserNeeds(specialNote) {
+    return {
+        careType: selectedCareType || '',
+        location: selectedLocation || '',
+        budget: selectedBudget || '',
+        specialNote: specialNote != null ? specialNote : (document.getElementById('addNoteText')?.value || '')
+    };
+}
+
+async function skipNote() {
+    await showMatchedFacilities(buildChatUserNeeds(''));
+    showOverlay('leadOverlay');
+    scrollBottom();
+}
+
+async function sendNote() {
+    await showMatchedFacilities(buildChatUserNeeds());
+    showOverlay('leadOverlay');
+    scrollBottom();
+}
 
 // ─── PARTNER ───
 let pStep = 1;
