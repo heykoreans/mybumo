@@ -705,7 +705,8 @@ function matchFacilities(facilities, userNeeds) {
     '텍사스': 'TX', '텍사스주': 'TX', 'texas': 'TX', 'tx': 'TX',
     '일리노이': 'IL', '일리노이주': 'IL', 'illinois': 'IL', 'il': 'IL',
     '미시간': 'MI', '미시간주': 'MI', 'michigan': 'MI', 'mi': 'MI',
-    '워싱턴': 'WA', 'washington': 'WA', 'wa': 'WA',
+    '워싱턴': 'WA', '워싱턴주': 'WA', 'washington': 'WA', 'wa': 'WA',
+    '시애틀': 'WA', 'seattle': 'WA',
     '플로리다': 'FL', 'florida': 'FL', 'fl': 'FL',
     '펜실베이니아': 'PA', 'pennsylvania': 'PA', 'pa': 'PA',
   };
@@ -714,6 +715,7 @@ function matchFacilities(facilities, userNeeds) {
     '뉴욕시': 'NY', '맨해튼': 'NY', '플러싱': 'NY', '퀸즈': 'NY', 'flushing': 'NY',
     '애틀랜타': 'GA', 'atlanta': 'GA', '둘루스': 'GA', 'duluth': 'GA',
     '토런스': 'CA', 'torrance': 'CA', 'la': 'CA', '엘에이': 'CA', '로스앤젤레스': 'CA',
+    'la / oc': 'CA', 'oc': 'CA',
     '포트리': 'NJ', 'fort lee': 'NJ', '팰리세이즈': 'NJ', '에디슨': 'NJ', 'edison': 'NJ',
     '락빌': 'MD', 'rockville': 'MD',
     '애난데일': 'VA', 'annandale': 'VA',
@@ -733,17 +735,26 @@ function matchFacilities(facilities, userNeeds) {
 
     if (userNeeds.location && f.state) {
       const locLower = userNeeds.location.toLowerCase().trim();
-      const mappedFromState = stateMap[locLower];
-      const mappedFromCity = cityMap[locLower];
-      const mappedState = mappedFromState || mappedFromCity || userNeeds.location.toUpperCase();
+      if (locLower === '기타 지역' || locLower === 'other') {
+        // 지역 미고정 — 주 기준 보너스 없음
+      } else if (
+        locLower === '뉴욕 / 뉴저지' ||
+        locLower === 'new york / new jersey'
+      ) {
+        if (f.state === 'NY' || f.state === 'NJ') score += 30;
+      } else {
+        const mappedFromState = stateMap[locLower];
+        const mappedFromCity = cityMap[locLower];
+        const mappedState = mappedFromState || mappedFromCity || userNeeds.location.toUpperCase();
 
-      if (f.state === mappedState) {
-        score += 30;
-      } else if (f.city && f.city.toLowerCase().includes(locLower)) {
-        score += 30;
-      } else if (locLower.includes(f.state.toLowerCase()) ||
-                 (f.city && locLower.includes(f.city.toLowerCase()))) {
-        score += 20;
+        if (f.state === mappedState) {
+          score += 30;
+        } else if (f.city && f.city.toLowerCase().includes(locLower)) {
+          score += 30;
+        } else if (locLower.includes(f.state.toLowerCase()) ||
+                   (f.city && locLower.includes(f.city.toLowerCase()))) {
+          score += 20;
+        }
       }
     }
 
@@ -843,6 +854,12 @@ async function showMatchedFacilities(userNeeds) {
 
   if (matched.length === 0) {
     appendAiMsg('<p>현재 조건에 맞는 시설을 찾는 중입니다. 케어 플래너가 24시간 내 연락드립니다.</p>');
+    setTimeout(() => {
+      const chatBody = document.getElementById('chatBody');
+      if (chatBody) {
+        chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+      }
+    }, 100);
     return;
   }
 
@@ -881,6 +898,12 @@ async function showMatchedFacilities(userNeeds) {
   appendAiMsg(html);
   updateLang();
   scrollBottom();
+  setTimeout(() => {
+    const chatBody = document.getElementById('chatBody');
+    if (chatBody) {
+      chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+    }
+  }, 100);
 }
 
 // ─── CHAT FLOW ───
@@ -902,27 +925,42 @@ function showStep2() {
         : 'Understood! 😊 Which area are you looking in?');
     const opts = document.createElement('div');
     opts.className = 'options'; opts.id = 'step2Opts';
-    const locations = lang === 'kr'
-        ? ['🌴 LA / OC (캘리포니아)', '🗽 뉴욕 / 뉴저지', '🍑 애틀랜타 (조지아)', '⭐ 텍사스 (달라스·휴스턴)', '🌲 시애틀 / 워싱턴', '📍 기타 지역']
-        : ['🌴 LA / OC (California)', '🗽 New York / New Jersey', '🍑 Atlanta (Georgia)', '⭐ Texas (Dallas·Houston)', '🌲 Seattle / Washington', '📍 Other'];
-    locations.forEach((loc, i) => {
+    const pairs = lang === 'kr'
+        ? [
+            { label: '🌴 LA / OC (캘리포니아)', matchKey: '캘리포니아' },
+            { label: '🗽 뉴욕 / 뉴저지', matchKey: '뉴욕 / 뉴저지' },
+            { label: '🍑 애틀랜타 (조지아)', matchKey: '조지아' },
+            { label: '⭐ 텍사스 (달라스·휴스턴)', matchKey: '텍사스' },
+            { label: '🌲 시애틀 / 워싱턴', matchKey: '워싱턴' },
+            { label: '📍 기타 지역', matchKey: '기타 지역' },
+          ]
+        : [
+            { label: '🌴 LA / OC (California)', matchKey: 'california' },
+            { label: '🗽 New York / New Jersey', matchKey: 'new york / new jersey' },
+            { label: '🍑 Atlanta (Georgia)', matchKey: 'georgia' },
+            { label: '⭐ Texas (Dallas·Houston)', matchKey: 'texas' },
+            { label: '🌲 Seattle / Washington', matchKey: 'washington' },
+            { label: '📍 Other', matchKey: 'other' },
+          ];
+    pairs.forEach((pair) => {
         const b = document.createElement('button');
-        b.className = 'btn-opt'; b.textContent = loc;
-        b.onclick = () => step2Select(b, loc, i);
+        b.className = 'btn-opt';
+        b.textContent = pair.label;
+        b.onclick = () => step2Select(b, pair.label, pair.matchKey);
         opts.appendChild(b);
     });
     document.getElementById('chatBody').appendChild(opts);
     scrollBottom();
 }
 
-function step2Select(btn, val, idx) {
+function step2Select(btn, displayLabel, matchKey) {
     document.querySelectorAll('#step2Opts .btn-opt').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
-    selectedLocation = val;
-    window.selectedLocation = val;
+    selectedLocation = matchKey;
+    window.selectedLocation = matchKey;
     setTimeout(() => {
         document.getElementById('step2Opts').innerHTML = '';
-        appendUserMsg(val);
+        appendUserMsg(displayLabel);
         setTimeout(() => showStep3(), 600);
     }, 300);
 }
