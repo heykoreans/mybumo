@@ -670,7 +670,7 @@ let adminLang = 'kr';
 let photoFiles = [];
 let existingPhotos = [];
 let previewSlideIdx = 0;
-let previewPhotos = [];
+let previewSliderPhotos = [];
 
 function firstFacilityPhotoUrl(pu) {
   if (pu == null || pu === '') return null;
@@ -930,13 +930,13 @@ async function uploadPhotos(facilityId) {
 function applyPreviewSlideTransform() {
   const slider = document.getElementById('previewSlider');
   if (!slider) return;
-  const n = previewPhotos.length;
+  const n = previewSliderPhotos.length;
   const pct = n > 0 ? (previewSlideIdx * 100) / n : 0;
   slider.style.transform = `translateX(-${pct}%)`;
 }
 
 function slidePreview(dir) {
-  const n = previewPhotos.length;
+  const n = previewSliderPhotos.length;
   if (!n) return;
   previewSlideIdx = Math.max(0, Math.min(n - 1, previewSlideIdx + dir));
   applyPreviewSlideTransform();
@@ -944,7 +944,7 @@ function slidePreview(dir) {
 }
 
 function goPreviewSlide(i) {
-  const n = previewPhotos.length;
+  const n = previewSliderPhotos.length;
   if (!n) return;
   previewSlideIdx = Math.max(0, Math.min(n - 1, i));
   applyPreviewSlideTransform();
@@ -954,21 +954,21 @@ function goPreviewSlide(i) {
 function updatePreviewDots() {
   const dots = document.getElementById('previewDots');
   if (!dots) return;
-  dots.innerHTML = previewPhotos.map((_, i) =>
+  dots.innerHTML = previewSliderPhotos.map((_, i) =>
     `<div style="width:6px;height:6px;border-radius:50%;background:${i === previewSlideIdx ? 'white' : 'rgba(255,255,255,.5)'};cursor:pointer;" onclick="goPreviewSlide(${i})"></div>`
   ).join('');
 }
 
 function openPreviewModal(f) {
   previewSlideIdx = 0;
-  previewPhotos = f.photo_urls && f.photo_urls.length > 0
+  previewSliderPhotos = f.photo_urls && f.photo_urls.length > 0
     ? f.photo_urls
     : (f.photo_url ? [f.photo_url] : []);
 
   const slider = document.getElementById('previewSlider');
-  const n = previewPhotos.length;
+  const n = previewSliderPhotos.length;
   if (n > 0) {
-    slider.innerHTML = previewPhotos.map(url =>
+    slider.innerHTML = previewSliderPhotos.map(url =>
       `<div style="flex-shrink:0;width:${100 / n}%;height:200px;background:url(${url}) center/cover no-repeat;"></div>`
     ).join('');
     slider.style.width = `${n * 100}%`;
@@ -1084,7 +1084,8 @@ function openLeadDetail(id) {
 // ─── NAV ───
 async function showSection(id) {
     document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-    document.getElementById('sec-' + id).classList.add('active');
+    const target = document.getElementById('sec-' + id);
+    if (target) target.classList.add('active');
     document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
     const map = { dashboard:0, leads:1, kanban:2, facilities:3, billing:4, settings:5 };
     document.querySelectorAll('.menu-item')[map[id]].classList.add('active');
