@@ -234,6 +234,12 @@
         @media(max-width:1200px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } .kanban-board { grid-template-columns: repeat(3, 1fr); } }
         @media(max-width:900px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; width: 100%; } }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      const SUPABASE_URL = 'https://tlpzztuxttsobhqprosk.supabase.co';
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRscHp6dHV4dHRzb2JocXByb3NrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2Mzg2NDQsImV4cCI6MjA5MzIxNDY0NH0.gMP2SO2NCnbWbknHMObs11Z8vWH3Wa6_3bAGobV9_GU';
+      const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    </script>
 </head>
 <body>
 
@@ -461,17 +467,16 @@
                 <table class="leads-table">
                     <thead>
                         <tr>
-                            <th class="kr">문의 가족 / 어르신</th><th class="en" style="display:none">Family / Senior</th>
-                            <th class="kr">케어 유형</th><th class="en" style="display:none">Care Type</th>
-                            <th class="kr">지역</th><th class="en" style="display:none">Location</th>
-                            <th class="kr">긴급도</th><th class="en" style="display:none">Urgency</th>
-                            <th class="kr">예산</th><th class="en" style="display:none">Budget</th>
-                            <th class="kr">예상 수수료</th><th class="en" style="display:none">Est. Fee</th>
-                            <th class="kr">상태</th><th class="en" style="display:none">Status</th>
-                            <th></th>
+                            <th>날짜</th>
+                            <th>이름</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>나이</th>
+                            <th>메모</th>
+                            <th>상태</th>
                         </tr>
                     </thead>
-                    <tbody id="allLeadsBody"></tbody>
+                    <tbody id="leads-table-body"></tbody>
                 </table>
             </div>
         </div>
@@ -858,7 +863,34 @@ function addTag() {
     inp.value = '';
 }
 
-window.onload = function() { renderAll(); };
+async function loadLeads() {
+  const { data, error } = await db.from('leads').select('*').order('created_at', { ascending: false });
+  if (error) { console.error(error); return; }
+
+  // KPI 업데이트
+  const kpiEl = document.querySelector('.kpi-value');
+  if (kpiEl) kpiEl.textContent = data.length;
+
+  // leads 테이블 렌더링 (id가 leads-table-body 인 tbody 찾아서)
+  const tbody = document.getElementById('leads-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = data.map(l => `
+    <tr>
+      <td>${l.created_at ? new Date(l.created_at).toLocaleDateString('ko-KR') : '-'}</td>
+      <td>${l.name || '-'}</td>
+      <td>${l.email || '-'}</td>
+      <td>${l.phone || '-'}</td>
+      <td>${l.senior_age || '-'}세</td>
+      <td>${l.note || '-'}</td>
+      <td><span class="badge badge-new">신규</span></td>
+    </tr>
+  `).join('');
+}
+
+window.onload = async function() {
+  renderAll();
+  await loadLeads();
+};
 </script>
 </body>
 </html>
