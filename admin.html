@@ -500,7 +500,7 @@
             <h2 class="en" style="display:none">🏥 Facility Management</h2>
             <button class="btn-primary">+ 새 시설 등록</button>
         </div>
-        <div class="fac-grid" id="facGrid"></div>
+        <div class="fac-grid" id="facilitiesGrid"></div>
     </div>
 
     <!-- ══ BILLING ══ -->
@@ -686,11 +686,6 @@ const KANBAN_COLS = [
     { id:'lost', krLabel:'❄️ 보류/종결', enLabel:'❄️ On Hold', filterFn: l => l.status==='lost' },
 ];
 
-const FAC_DATA = [
-    { nameKr:'한마음 어시스티드 리빙', nameEn:'Hanmaeum Assisted Living', type:'어시스티드 리빙', typeEn:'Assisted Living', loc:'Torrance, CA', status:'active', capacity:45, vacancies:4, rating:'4.9', leads:14, placements:3, img:'https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?auto=format&fit=crop&w=600&q=80' },
-    { nameKr:'서울 메모리 케어 유닛', nameEn:'Seoul Memory Care Unit', type:'메모리 케어', typeEn:'Memory Care', loc:'Torrance, CA', status:'active', capacity:18, vacancies:2, rating:'4.8', leads:6, placements:1, img:'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80' },
-];
-
 const BILLING_ROWS = [
     { nameKr:'김순희 어르신', nameEn:'Soon-hee K.', care:'어시스티드 리빙', careEn:'Assisted Living', monthlyFee:'$6,200', referral:'$6,200', date:'2026.01.15', status:'pending' },
     { nameKr:'홍미경 어르신', nameEn:'Mi-kyung H.', care:'어시스티드 리빙', careEn:'Assisted Living', monthlyFee:'$6,000', referral:'$6,000', date:'2026.01.03', status:'pending' },
@@ -764,32 +759,41 @@ function renderKanban() {
     }).join('');
 }
 
-function renderFacilities() {
-    const isEn = adminLang === 'en';
-    document.getElementById('facGrid').innerHTML = FAC_DATA.map(f => `
-        <div class="fac-card">
-            <div class="fac-img" style="background-image:url('${f.img}')">
-                <span class="fac-status-badge ${f.status==='active'?'fac-status-active':'fac-status-paused'}">${f.status==='active'?(isEn?'Active':'운영중'):(isEn?'Paused':'일시중지')}</span>
-            </div>
-            <div class="fac-body">
-                <h4>${isEn ? f.nameEn : f.nameKr}</h4>
-                <div class="fac-meta-row">
-                    <span class="fac-tag">${isEn ? f.typeEn : f.type}</span>
-                    <span class="fac-tag">📍 ${f.loc}</span>
-                    <span class="fac-tag">⭐ ${f.rating}</span>
-                </div>
-                <div class="fac-stats-row">
-                    <div class="fac-stat"><strong>${f.vacancies}/${f.capacity}</strong><span>${isEn?'Vacancies':'입주가능'}</span></div>
-                    <div class="fac-stat"><strong>${f.leads}</strong><span>${isEn?'Leads/mo':'월리드'}</span></div>
-                    <div class="fac-stat"><strong>${f.placements}</strong><span>${isEn?'Placed/mo':'이달입주'}</span></div>
-                </div>
-                <div class="fac-actions">
-                    <button class="btn-primary" style="flex:1;">${isEn?'Edit Listing':'정보 수정'}</button>
-                    <button class="btn-secondary">${isEn?'Photos':'사진 관리'}</button>
-                    <button class="btn-secondary">${isEn?'Preview':'미리보기'}</button>
-                </div>
-            </div>
-        </div>`).join('');
+async function renderFacilities() {
+  const { data, error } = await db.from('partners').select('*').order('created_at', { ascending: false });
+  if (error) { console.error(error); return; }
+
+  const container = document.getElementById('facilitiesGrid');
+  if (!container) return;
+
+  if (data.length === 0) {
+    container.innerHTML = '<p style="color:#94a3b8;text-align:center;padding:40px;">등록된 시설이 없습니다.</p>';
+    return;
+  }
+
+  container.innerHTML = data.map(f => `
+    <div class="fac-card">
+      <div class="fac-img" style="background:${f.photo_url ? 'url(' + f.photo_url + ') center/cover' : '#e2e8f0'}; height:160px; border-radius:12px 12px 0 0; display:flex; align-items:center; justify-content:center;">
+        ${!f.photo_url ? '<span style="font-size:40px;">🏥</span>' : ''}
+      </div>
+      <div style="padding:16px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="background:#dcfce7;color:#16a34a;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;">${f.status === 'active' ? '운영중' : '검토중'}</span>
+        </div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px;">${f.facility_name_kr || f.facility_name_en || '-'}</div>
+        <div style="font-size:13px;color:#64748b;margin-bottom:12px;">📍 ${f.city || '-'}${f.state ? ', ' + f.state : ''}</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+          <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${f.vacancies || 0}/${f.capacity_total || f.capacity || '-'}</div><div style="font-size:11px;color:#64748b;">입주가능</div></div>
+          <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${f.monthly_leads || 0}</div><div style="font-size:11px;color:#64748b;">월리드</div></div>
+          <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${f.monthly_placements || 0}</div><div style="font-size:11px;color:#64748b;">이달입주</div></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button style="flex:1;padding:8px;background:#1f7a75;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;">정보 수정</button>
+          <button style="padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;cursor:pointer;">미리보기</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
 
 function renderBilling() {
@@ -834,7 +838,7 @@ function openLeadDetail(id) {
 }
 
 // ─── NAV ───
-function showSection(id) {
+async function showSection(id) {
     document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
     document.getElementById('sec-' + id).classList.add('active');
     document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
@@ -843,11 +847,16 @@ function showSection(id) {
     const titles = { dashboard:'대시보드', leads:'신규 문의 · 리드', kanban:'리드 파이프라인', facilities:'시설 관리', billing:'수수료 정산', settings:'설정' };
     const titlesEn = { dashboard:'Dashboard', leads:'Leads', kanban:'Pipeline', facilities:'Facilities', billing:'Billing', settings:'Settings' };
     document.getElementById('pageTitle').textContent = adminLang === 'en' ? titlesEn[id] : titles[id];
-    renderAll();
+    await renderAll();
 }
 
-function renderAll() {
-    renderRecentLeads(); renderAllLeads(); renderKanban(); renderFacilities(); renderBilling(); renderRevBars();
+async function renderAll() {
+    renderRecentLeads();
+    renderAllLeads();
+    renderKanban();
+    await renderFacilities();
+    renderBilling();
+    renderRevBars();
 }
 
 // ─── MODAL ───
@@ -855,13 +864,13 @@ function showModal(id) { const el = document.getElementById(id); el.style.displa
 function closeModal(id) { const el = document.getElementById(id); el.classList.remove('show'); setTimeout(()=>el.style.display='none',200); }
 
 // ─── LANG ───
-function toggleAdminLang() {
+async function toggleAdminLang() {
     adminLang = adminLang === 'kr' ? 'en' : 'kr';
     const isEn = adminLang === 'en';
     document.querySelectorAll('.kr').forEach(el => { el.style.display = isEn ? 'none' : (el.tagName==='SPAN'||el.tagName==='BUTTON'||el.tagName==='OPTION'?'inline':'block'); });
     document.querySelectorAll('.en').forEach(el => { el.style.display = isEn ? (el.tagName==='SPAN'||el.tagName==='BUTTON'||el.tagName==='OPTION'?'inline':'block') : 'none'; });
     document.getElementById('adminLangBtn').innerHTML = isEn ? '🇰🇷 한국어' : '🇺🇸 English';
-    renderAll();
+    await renderAll();
 }
 
 // ─── MISC ───
@@ -902,7 +911,7 @@ async function loadRealLeads() {
 }
 
 window.onload = async function() {
-  renderAll();
+  await renderAll();
   loadRealLeads();
 };
 </script>
