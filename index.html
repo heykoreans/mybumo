@@ -700,10 +700,13 @@ function matchFacilities(facilities, userNeeds) {
     if (userNeeds.budget && f.fee_min != null && f.fee_max != null) {
       const budgetMap = {
         '$5,000 이하': 5000, '$5,000~$7,000': 6000,
-        '$7,000~$10,000': 8500, '$10,000 이상': 12000,
+        '$7,000~$10,000': 8500,
+        '$10,000~$15,000': 12000,
+        '$15,000 이상': 18000,
         '💰 $4,000~$5,500': 4750, '💳 $5,500~$7,500': 6500,
         '✨ $7,500~$10,000': 8750, '🔍 예산 미정 / 최적 추천': 7000,
-        '🔍 No budget set / best match': 7000
+        '🔍 No budget set / best match': 7000,
+        '$15,000+': 18000
       };
       const userBudget = budgetMap[userNeeds.budget] || 7000;
       const feeMin = parseFeeNum(f.fee_min);
@@ -814,8 +817,8 @@ function showStep3() {
     const opts = document.createElement('div');
     opts.className = 'options'; opts.id = 'step3Opts';
     const budgets = lang === 'kr'
-        ? ['💰 $4,000~$5,500', '💳 $5,500~$7,500', '✨ $7,500~$10,000', '🔍 예산 미정 / 최적 추천']
-        : ['💰 $4,000~$5,500', '💳 $5,500~$7,500', '✨ $7,500~$10,000', '🔍 No budget set / best match'];
+        ? ['💰 $4,000~$5,500', '💳 $5,500~$7,500', '✨ $7,500~$10,000', '$10,000~$15,000', '$15,000 이상', '🔍 예산 미정 / 최적 추천']
+        : ['💰 $4,000~$5,500', '💳 $5,500~$7,500', '✨ $7,500~$10,000', '$10,000~$15,000', '$15,000+', '🔍 No budget set / best match'];
     budgets.forEach(b => {
         const btn = document.createElement('button');
         btn.className = 'btn-opt'; btn.textContent = b;
