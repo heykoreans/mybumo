@@ -631,6 +631,10 @@ let selectedLocation = '';
 let selectedBudget = '';
 let selectedFacIdx = -1;
 
+window.selectedCareType = '';
+window.selectedLocation = '';
+window.selectedBudget = '';
+
 let realFacilities = [];
 let displayedFacilities = [];
 
@@ -838,6 +842,7 @@ function step1Select(btn, val) {
     document.querySelectorAll('#step1Opts .btn-opt').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
     selectedCareType = val;
+    window.selectedCareType = val;
     setTimeout(() => {
         document.getElementById('step1Opts').innerHTML = '';
         appendUserMsg(val);
@@ -868,6 +873,7 @@ function step2Select(btn, val, idx) {
     document.querySelectorAll('#step2Opts .btn-opt').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
     selectedLocation = val;
+    window.selectedLocation = val;
     setTimeout(() => {
         document.getElementById('step2Opts').innerHTML = '';
         appendUserMsg(val);
@@ -898,6 +904,7 @@ function step3Select(btn, val) {
     document.querySelectorAll('#step3Opts .btn-opt').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
     selectedBudget = val;
+    window.selectedBudget = val;
     setTimeout(() => {
         document.getElementById('step3Opts').innerHTML = '';
         appendUserMsg(val);
@@ -996,25 +1003,26 @@ async function submitLead() {
   updateLang(); scrollBottom();
 }
 
-function buildChatUserNeeds(specialNote) {
-    return {
-        careType: selectedCareType || '',
-        location: selectedLocation || '',
-        budget: selectedBudget || '',
-        specialNote: specialNote != null ? specialNote : (document.getElementById('addNoteText')?.value || '')
-    };
+async function sendNote() {
+  const userNeeds = {
+    careType: window.selectedCareType || '',
+    location: window.selectedLocation || '',
+    budget: window.selectedBudget || '',
+    specialNote: document.getElementById('addNoteText')?.value || ''
+  };
+  await showMatchedFacilities(userNeeds);
+  setTimeout(() => showOverlay('leadOverlay'), 2000);
 }
 
 async function skipNote() {
-    await showMatchedFacilities(buildChatUserNeeds(''));
-    showOverlay('leadOverlay');
-    scrollBottom();
-}
-
-async function sendNote() {
-    await showMatchedFacilities(buildChatUserNeeds());
-    showOverlay('leadOverlay');
-    scrollBottom();
+  const userNeeds = {
+    careType: window.selectedCareType || '',
+    location: window.selectedLocation || '',
+    budget: window.selectedBudget || '',
+    specialNote: ''
+  };
+  await showMatchedFacilities(userNeeds);
+  setTimeout(() => showOverlay('leadOverlay'), 2000);
 }
 
 // ─── PARTNER ───
