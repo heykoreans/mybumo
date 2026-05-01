@@ -296,7 +296,24 @@
         .type-opt span { font-size:11.5px; color:var(--muted); }
 
         /* Responsive */
-        @media(max-width:1100px) { .left-panel { display:none; } .right-panel { width:100%; } }
+        @media (min-width: 769px) and (max-width: 1100px) {
+            .left-panel { display: none; }
+            .right-panel { width: 100%; }
+        }
+        @media (max-width: 768px) {
+            .left-panel {
+                width: 100% !important;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding: 40px 24px !important;
+            }
+            .top-nav { left: 24px; right: 24px; }
+            .trust-bar { position: relative; bottom: auto; left: auto; right: auto; margin-top: 28px; flex-wrap: wrap; gap: 12px; }
+            .trust-div { display: none; }
+            .trust-item { min-width: 45%; }
+        }
         @media(max-width:600px) { .pkg-modal,.ag-modal,.how-modal,.lead-modal,.partner-modal { width:calc(100vw - 40px); } }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -337,6 +354,14 @@
         <p>
             <span class="kr">한국어 구사 직원, 한식 제공, 문화 프로그램까지.<br>한인 시니어를 위한 최적의 케어 시설을 AI가 1분 안에 연결해 드립니다.</span>
             <span class="en" style="display:none">Korean-speaking staff, Korean meals, and cultural activities — our AI connects Korean seniors with the perfect care facility in under 60 seconds.</span>
+        </p>
+
+        <button type="button" id="mobileChatBtn" onclick="startMobileChat()"
+          style="display:none;width:100%;max-width:340px;padding:18px;background:#1f7a75;color:white;border:none;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;margin-top:24px;box-shadow:0 8px 24px rgba(31,122,117,.35);">
+          🔍 무료 매칭 시작하기 →
+        </button>
+        <p style="display:none;font-size:12px;color:rgba(255,255,255,.7);margin-top:10px;" id="mobileChatSub">
+          1분 안에 맞춤 시설 추천 · 가족 비용 $0
         </p>
     </div>
 
@@ -1109,9 +1134,65 @@ document.addEventListener('DOMContentLoaded', function() {
     loadFacilities();
 });
 
+let mobileChatOpen = false;
+
+function startMobileChat() {
+    mobileChatOpen = true;
+    document.getElementById('mobileChatBtn').style.display = 'none';
+    document.getElementById('mobileChatSub').style.display = 'none';
+    checkMobile();
+    setTimeout(() => scrollBottom(), 150);
+}
+
+function checkMobile() {
+    const w = window.innerWidth;
+    const left = document.querySelector('.left-panel');
+    const right = document.querySelector('.right-panel');
+    const btn = document.getElementById('mobileChatBtn');
+    const sub = document.getElementById('mobileChatSub');
+
+    if (w > 768) {
+        left.style.display = '';
+        right.style.display = '';
+        right.style.width = '';
+        right.style.position = '';
+        right.style.top = '';
+        right.style.left = '';
+        right.style.height = '';
+        right.style.zIndex = '';
+        right.style.borderRadius = '';
+        mobileChatOpen = false;
+        if (btn) btn.style.display = 'none';
+        if (sub) sub.style.display = 'none';
+        return;
+    }
+
+    if (mobileChatOpen) {
+        left.style.display = 'none';
+        right.style.display = 'flex';
+        right.style.width = '100%';
+        right.style.position = 'fixed';
+        right.style.top = '0';
+        right.style.left = '0';
+        right.style.height = '100%';
+        right.style.zIndex = '9999';
+        right.style.borderRadius = '0';
+        if (btn) btn.style.display = 'none';
+        if (sub) sub.style.display = 'none';
+    } else {
+        left.style.display = 'flex';
+        right.style.display = 'none';
+        if (btn) btn.style.display = 'block';
+        if (sub) sub.style.display = 'block';
+    }
+}
+
+window.addEventListener('resize', checkMobile);
+
 window.onload = function() {
     updateLang();
     scrollBottom();
+    checkMobile();
 };
 </script>
 </body>
