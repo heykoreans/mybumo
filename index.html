@@ -1015,7 +1015,7 @@ async function submitPartner() {
   if (!document.getElementById('agreeCheck').checked) {
     alert(lang === 'kr' ? '약관에 동의해 주세요.' : 'Please agree to the terms.'); return;
   }
-  const inputs = document.querySelectorAll('#ps1 input, #ps2 input, #ps3 input, #ps4 input');
+  const inputs = document.querySelectorAll('#ps1 input:not([type=checkbox]), #ps2 input:not([type=checkbox]), #ps3 input:not([type=checkbox]), #ps4 input:not([type=checkbox])');
   const v = (i) => inputs[i]?.value || '';
 
   const { error } = await db.from('partners').insert([{
