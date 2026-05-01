@@ -695,6 +695,34 @@ async function loadFacilities() {
 }
 
 function matchFacilities(facilities, userNeeds) {
+  const stateMap = {
+    '뉴저지': 'NJ', '뉴저지주': 'NJ', 'new jersey': 'NJ', 'nj': 'NJ',
+    '뉴욕': 'NY', '뉴욕주': 'NY', 'new york': 'NY', 'ny': 'NY',
+    '캘리포니아': 'CA', '캘리포니아주': 'CA', 'california': 'CA', 'ca': 'CA',
+    '메릴랜드': 'MD', '메릴랜드주': 'MD', 'maryland': 'MD', 'md': 'MD',
+    '버지니아': 'VA', '버지니아주': 'VA', 'virginia': 'VA', 'va': 'VA',
+    '조지아': 'GA', '조지아주': 'GA', 'georgia': 'GA', 'ga': 'GA',
+    '텍사스': 'TX', '텍사스주': 'TX', 'texas': 'TX', 'tx': 'TX',
+    '일리노이': 'IL', '일리노이주': 'IL', 'illinois': 'IL', 'il': 'IL',
+    '미시간': 'MI', '미시간주': 'MI', 'michigan': 'MI', 'mi': 'MI',
+    '워싱턴': 'WA', 'washington': 'WA', 'wa': 'WA',
+    '플로리다': 'FL', 'florida': 'FL', 'fl': 'FL',
+    '펜실베이니아': 'PA', 'pennsylvania': 'PA', 'pa': 'PA',
+  };
+
+  const cityMap = {
+    '뉴욕시': 'NY', '맨해튼': 'NY', '플러싱': 'NY', '퀸즈': 'NY', 'flushing': 'NY',
+    '애틀랜타': 'GA', 'atlanta': 'GA', '둘루스': 'GA', 'duluth': 'GA',
+    '토런스': 'CA', 'torrance': 'CA', 'la': 'CA', '엘에이': 'CA', '로스앤젤레스': 'CA',
+    '포트리': 'NJ', 'fort lee': 'NJ', '팰리세이즈': 'NJ', '에디슨': 'NJ', 'edison': 'NJ',
+    '락빌': 'MD', 'rockville': 'MD',
+    '애난데일': 'VA', 'annandale': 'VA',
+    '달라스': 'TX', 'dallas': 'TX', '휴스턴': 'TX', 'houston': 'TX',
+    '시카고': 'IL', 'chicago': 'IL',
+    '산호세': 'CA', 'san jose': 'CA',
+    '비벌리힐스': 'CA', 'beverly hills': 'CA',
+  };
+
   return facilities.map(f => {
     let score = 0;
 
@@ -704,26 +732,19 @@ function matchFacilities(facilities, userNeeds) {
     }
 
     if (userNeeds.location && f.state) {
-      const locLower = userNeeds.location.toLowerCase();
-      const stateMap = {
-        '뉴저지': 'NJ', '뉴욕': 'NY', '캘리포니아': 'CA',
-        'nj': 'NJ', 'ny': 'NY', 'ca': 'CA',
-        '뉴저지주': 'NJ', '뉴욕주': 'NY',
-        'new jersey': 'NJ', 'new york': 'NY', 'california': 'CA',
-        '메릴랜드': 'MD', 'md': 'MD'
-      };
-      const mappedState = stateMap[locLower] || userNeeds.location.toUpperCase();
-      const cityLower = (f.city || '').toLowerCase();
-      const regionMatch =
-        f.state === mappedState ||
-        (/^\s*🌴|la\s*\/\s*oc|캘리포니아|california/.test(locLower) && f.state === 'CA') ||
-        (/뉴욕|new york|🗽/.test(locLower) && (f.state === 'NY' || f.state === 'NJ')) ||
-        (/뉴저지|new jersey/.test(locLower) && f.state === 'NJ') ||
-        (/애틀랜타|atlanta|조지아|georgia|🍑/.test(locLower) && f.state === 'GA') ||
-        (/텍사스|texas|달라스|dallas|휴스턴|houston|⭐/.test(locLower) && f.state === 'TX') ||
-        (/시애틀|seattle|워싱턴|washington|🌲/.test(locLower) && (f.state === 'WA' || f.state === 'OR'));
-      const locClean = locLower.replace(/[^\w\s가-힣·/]/g, '').trim();
-      if (regionMatch || (locClean && cityLower.includes(locClean))) score += 30;
+      const locLower = userNeeds.location.toLowerCase().trim();
+      const mappedFromState = stateMap[locLower];
+      const mappedFromCity = cityMap[locLower];
+      const mappedState = mappedFromState || mappedFromCity || userNeeds.location.toUpperCase();
+
+      if (f.state === mappedState) {
+        score += 30;
+      } else if (f.city && f.city.toLowerCase().includes(locLower)) {
+        score += 30;
+      } else if (locLower.includes(f.state.toLowerCase()) ||
+                 (f.city && locLower.includes(f.city.toLowerCase()))) {
+        score += 20;
+      }
     }
 
     if (userNeeds.budget && f.fee_min != null && f.fee_max != null) {
