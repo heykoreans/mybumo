@@ -89,6 +89,12 @@
         /* ══ RIGHT PANEL ══ */
         .right-panel { width:560px; background:var(--panel); display:flex; flex-direction:column; box-shadow:-16px 0 48px rgba(7,21,37,.08); min-height:100vh; }
 
+        .chat-widget {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
         .chat-header { position:sticky; top:0; padding:18px 26px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:13px; z-index:10; background:rgba(250,250,248,.97); backdrop-filter:blur(12px); }
         .logo-circ { width:40px; height:40px; background:linear-gradient(135deg,var(--sage-dk),var(--navy)); border-radius:11px; display:flex; justify-content:center; align-items:center; color:white; font-size:18px; flex-shrink:0; box-shadow:0 4px 12px rgba(31,122,117,.3); }
         .hdr-text h2 { font-size:15.5px; color:var(--navy); font-weight:700; }
@@ -96,7 +102,16 @@
         .sdot { width:6px; height:6px; background:#22c55e; border-radius:50%; animation:blink 2s infinite; }
         .hdr-text p { font-size:11.5px; color:var(--sage-dk); font-weight:600; }
 
-        .chat-body { flex:1; padding:26px 26px 14px; display:flex; flex-direction:column; gap:20px; }
+        .chat-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 26px 26px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
         .msg-row { display:flex; max-width:92%; align-items:flex-start; gap:10px; }
         .ai-row { align-self:flex-start; animation:sli .35s ease; }
         .user-row { align-self:flex-end; flex-direction:row-reverse; animation:slr .3s ease; }
@@ -443,15 +458,6 @@
 
             .chat-header, .chat-footer {
                 flex-shrink: 0;
-            }
-
-            .chat-widget {
-                height: 100dvh;
-            }
-
-            .chat-body {
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
             }
         }
         @media(max-width:600px) { .pkg-modal,.ag-modal,.how-modal,.lead-modal,.partner-modal { width:calc(100vw - 40px); } }
@@ -1335,7 +1341,13 @@ function sendMsg() {
         ? '감사합니다! 전담 케어 플래너가 24시간 내 연락드릴 예정입니다. 지금 바로 무료 상담을 신청하시겠어요?'
         : 'Thank you! A dedicated care planner will be in touch within 24 hours. Would you like to request a free consultation now?'), 700);
 }
-function scrollBottom() { setTimeout(() => { const b = document.getElementById('chatBody'); b.scrollTop = b.scrollHeight; }, 100); }
+function scrollBottom() {
+    setTimeout(() => {
+        const chatBody = document.getElementById('chatBody');
+        if (!chatBody) return;
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }, 100);
+}
 
 // ─── OVERLAY ───
 function showOverlay(id) { const el = document.getElementById(id); el.style.display='flex'; setTimeout(()=>el.classList.add('show'),10); }
