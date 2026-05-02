@@ -1309,7 +1309,7 @@ async function submitLead() {
   const name  = document.querySelector('#lstep2 input[type=text]')?.value || '';
   const phone = document.querySelector('#lstep2 input[type=tel]')?.value  || '';
   const age   = document.querySelector('#lstep2 input[type=number]')?.value || '';
-  const note  = document.getElementById('addNoteText')?.value || '';
+  const note  = document.getElementById('addNoteText')?.value || window.capturedNote || '';
   const { error } = await db.from('leads').insert([{ email, name, phone, senior_age: age, note }]);
   if (error) { console.error(error); alert('저장 중 오류가 발생했습니다.'); return; }
   closeOverlay('leadOverlay');
@@ -1331,7 +1331,7 @@ async function sendNote() {
     careType: mapCareTypeToFacility(window.selectedCareType || selectedCare || ''),
     location: window.selectedLocation || selectedLocation || '',
     budget: window.selectedBudget || selectedBudget || '',
-    specialNote: document.getElementById('addNoteText')?.value || ''
+    specialNote: (window.capturedNote = document.getElementById('addNoteText')?.value || '')
   };
   console.log('userNeeds:', userNeeds);
   await showMatchedFacilities(userNeeds);
@@ -1347,7 +1347,7 @@ async function skipNote() {
     careType: mapCareTypeToFacility(window.selectedCareType || selectedCare || ''),
     location: window.selectedLocation || selectedLocation || '',
     budget: window.selectedBudget || selectedBudget || '',
-    specialNote: document.getElementById('addNoteText')?.value || ''
+    specialNote: (window.capturedNote = document.getElementById('addNoteText')?.value || '')
   };
   console.log('userNeeds:', userNeeds);
   await showMatchedFacilities(userNeeds);
