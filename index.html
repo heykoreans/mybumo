@@ -715,52 +715,56 @@
 <!-- ══ LEAD OVERLAY ══ -->
 <div class="overlay" id="leadOverlay">
     <div class="modal lead-modal">
-        <button class="modal-close" onclick="closeOverlay('leadOverlay')">✕</button>
-        <div id="lstep1" class="step-con">
-            <div class="fbadge kr">🎉 방문 투어 · 상담 100% 무료</div>
-            <div class="fbadge en">🎉 Free Tour & Consultation</div>
-            <h3 class="kr">시설과<br>연결해 드릴까요?</h3>
-            <h3 class="en">Ready to connect with<br>a care facility?</h3>
-            <p class="sub kr">이메일로 맞춤 시설 정보와 방문 일정을 안내해 드립니다. 가족 부담 비용은 없습니다.</p>
-            <p class="sub en">We'll send you a personalized facility recommendation and tour schedule. Zero cost to families.</p>
-            <div class="fg"><label class="kr">이메일 주소</label><label class="en">Email</label><input type="email" id="userEmail" placeholder="name@example.com"></div>
-            <button class="sbtn" onclick="goLStep2()"><span class="kr">무료 상담 받아보기 →</span><span class="en">Get My Free Consultation →</span></button>
-            <div class="np">
-                <span class="kr">💡 <strong>가족 비용 $0.</strong> 저희 서비스는 <span class="hl">케어 시설에서 수수료를 받는 구조</span>이므로, 가족분께는 어떠한 비용도 청구되지 않습니다.</span>
-                <span class="en">💡 <strong>$0 to families.</strong> We are compensated by care facilities — <span class="hl">there is never any cost to you or your family.</span></span>
-            </div>
-        </div>
-        <div id="lstep2" class="step-con" style="display:none;">
-            <div class="fbadge kr">거의 다 됐어요 🎉</div>
-            <div class="fbadge en">Almost there! 🎉</div>
-            <h3 class="kr">어르신 정보를<br>알려주세요</h3>
-            <h3 class="en">Tell us about<br>your loved one</h3>
-            <p class="sub kr">케어 플래너가 최적의 시설을 매칭하는 데 사용합니다.</p>
-            <p class="sub en">Your care planner will use this to find the best match.</p>
-            <div class="fg-row">
-                <div class="fg"><label class="kr">문의자 성함</label><label class="en">Your Name</label><input type="text" placeholder="홍길동"></div>
-                <div class="fg"><label class="kr">연락처</label><label class="en">Phone</label><input type="tel" placeholder="+1 (000) 000-0000"></div>
-            </div>
-            <div class="fg-row">
-                <div class="fg"><label class="kr">어르신 연령</label><label class="en">Senior's Age</label><input type="number" placeholder="75"></div>
-                <div class="fg"><label class="kr">입주 희망 시기</label><label class="en">Move-in Timeline</label>
-                    <select>
-                        <option class="kr">즉시 (1개월 이내)</option>
-                        <option class="en" style="display:none">Within 1 month</option>
-                        <option class="kr">1~3개월</option>
-                        <option class="en" style="display:none">1~3 months</option>
-                        <option class="kr">3~6개월</option>
-                        <option class="en" style="display:none">3~6 months</option>
-                        <option class="kr">탐색 중</option>
-                        <option class="en" style="display:none">Just exploring</option>
-                    </select>
-                </div>
-            </div>
-            <div class="fg"><label class="kr">추가 요청사항 (선택)</label><label class="en">Additional Notes (Optional)</label>
-                <textarea id="leadNoteText" rows="3" placeholder="예: 파킨슨병 진단, 한식 필수, LA 또는 OC 지역 선호..." style="resize:none;"></textarea>
-            </div>
-            <button class="sbtn" onclick="submitLead()"><span class="kr">상담 신청 완료 →</span><span class="en">Complete Request →</span></button>
-        </div>
+<button onclick="closeOverlay('leadOverlay')" style="position:absolute;top:14px;right:14px;background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;color:#64748b;z-index:10;">×</button>
+
+<div style="text-align:center;margin-bottom:16px;">
+  <span style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:30px;padding:7px 14px;color:#16a34a;font-size:12px;font-weight:700;display:inline-block;">
+    <span class="kr">🎉 방문 투어 및 매칭 상담 100% 무료</span>
+    <span class="en" style="display:none">🎉 Free Tours & Consultations</span>
+  </span>
+</div>
+
+<h2 style="font-size:21px;font-weight:800;color:#0d2137;margin:0 0 8px;line-height:1.35;">
+  <span class="kr">요청하신 조건에 딱 맞는<br>시설을 찾아드릴게요</span>
+  <span class="en" style="display:none">We'll find the perfect<br>match for your needs</span>
+</h2>
+
+<p style="font-size:13px;color:#64748b;line-height:1.6;margin:0 0 16px;">
+  <span class="kr">작성해주신 정보를 시설에 전달하여, <strong style="color:#0d2137;">회원님께 맞춤 상담을 준비하겠습니다.</strong></span>
+  <span class="en" style="display:none">We'll share your details with facilities to <strong style="color:#0d2137;">prepare a personalized consultation for you.</strong></span>
+</p>
+
+<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border-radius:12px;padding:12px 14px;margin-bottom:16px;border:1px solid #fcd34d;">
+  <div style="font-size:10px;color:#78350f;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">
+    <span class="kr">📋 나의 맞춤 조건</span>
+    <span class="en" style="display:none">📋 My Preferences</span>
+  </div>
+  <div id="leadSummaryContent" style="font-size:13px;color:#451a03;line-height:1.5;font-weight:600;"></div>
+</div>
+
+<label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;line-height:1.5;">
+  <span class="kr">이메일로 맞춤 시설 정보와 방문 일정을 안내해 드립니다.</span>
+  <span class="en" style="display:none">We'll send you matched facilities and tour schedules via email.</span>
+</label>
+
+<div style="position:relative;margin-bottom:12px;">
+  <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;">✉️</span>
+  <input type="email" id="leadEmailInput" placeholder="name@example.com" 
+    style="width:100%;padding:13px 14px 13px 40px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;outline:none;">
+</div>
+
+<button onclick="submitLead()" 
+  style="width:100%;padding:15px;background:#0d2137;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(13,33,55,.3);margin-bottom:14px;">
+  <span class="kr">무료 맞춤 상담 받아보기 →</span>
+  <span class="en" style="display:none">Get Free Personalized Consultation →</span>
+</button>
+
+<div style="background:#f0f9ff;border-left:3px solid #0ea5e9;border-radius:6px;padding:10px 12px;">
+  <div style="font-size:11px;color:#075985;line-height:1.6;">
+    <span class="kr"><strong>💡 가족 비용 $0.</strong> 저희 서비스는 케어 시설에서 수수료를 받는 구조이므로, 가족분께는 어떠한 비용도 청구되지 않습니다. <strong>안심하고 이용하세요.</strong></span>
+    <span class="en" style="display:none"><strong>💡 $0 Family Cost.</strong> We're paid by care facilities — never by families. <strong>You can use this with peace of mind.</strong></span>
+  </div>
+</div>
     </div>
 </div>
 
@@ -1318,36 +1322,48 @@ function openFacDetail(idx) {
 }
 
 // ─── LEAD FORM ───
-function goLStep2() {
-    const email = document.getElementById('userEmail').value;
-    if (!email) { alert(lang === 'kr' ? '이메일을 입력해주세요.' : 'Please enter your email.'); return; }
-    document.getElementById('lstep1').style.display = 'none';
-    document.getElementById('lstep2').style.display = 'block';
+function fillLeadSummary() {
+  const care = window.selectedCareType || selectedCare || '-';
+  const loc = window.selectedLocation || selectedLocation || '-';
+  const budget = window.selectedBudget || selectedBudget || '-';
+  const note = document.getElementById('addNoteText')?.value || window.capturedNote || '';
+
+  const careShort = care.replace(/[🏠🧠🏥💊👨‍⚕️✨]/g, '').trim().substring(0, 15);
+  let budgetShort = budget.replace(/[💰💳✨🔍]/g, '').trim();
+  budgetShort = budgetShort.replace(/\$([0-9,]+)~\$([0-9,]+)/g, (m, a, b) => {
+    const aK = (parseInt(a.replace(/,/g,'')) / 1000).toFixed(1).replace('.0','') + 'K';
+    const bK = (parseInt(b.replace(/,/g,'')) / 1000).toFixed(1).replace('.0','') + 'K';
+    return '$' + aK + '~$' + bK;
+  });
+  const noteShort = note.length > 12 ? note.substring(0, 12) + '...' : note;
+
+  let parts = [careShort, loc, budgetShort];
+  if (note) parts.push(noteShort);
+
+  const el = document.getElementById('leadSummaryContent');
+  if (el) el.textContent = parts.join(' · ');
 }
+
 async function submitLead() {
-  const email = document.getElementById('userEmail').value;
-  const name  = document.querySelector('#lstep2 input[type=text]')?.value || '';
-  const phone = document.querySelector('#lstep2 input[type=tel]')?.value  || '';
-  const age   = document.querySelector('#lstep2 input[type=number]')?.value || '';
+  const email = document.getElementById('leadEmailInput')?.value?.trim() || '';
+  if (!email) { alert(lang === 'kr' ? '이메일을 입력해주세요.' : 'Please enter your email.'); return; }
+  const name  = '';
+  const phone = '';
+  const age   = '';
   const matchNote = document.getElementById('addNoteText')?.value || window.capturedNote || '';
-  const leadNote  = document.getElementById('leadNoteText')?.value || '';
-  const note = leadNote && matchNote && leadNote !== matchNote
-    ? `${matchNote} | ${leadNote}`
-    : (leadNote || matchNote || '');
-  
+  const note = matchNote || '';
+
   const care_type = window.selectedCareType || selectedCare || '';
   const location  = window.selectedLocation || selectedLocation || '';
   const budget    = window.selectedBudget || selectedBudget || '';
-  
-  const { error } = await db.from('leads').insert([{ 
-    email, name, phone, senior_age: age, note, care_type, location, budget 
+
+  const { error } = await db.from('leads').insert([{
+    email, name, phone, senior_age: age, note, care_type, location, budget
   }]);
-  
+
   if (error) { console.error(error); alert('저장 중 오류가 발생했습니다.'); return; }
-  
+
   closeOverlay('leadOverlay');
-  document.getElementById('lstep1').style.display = 'block';
-  document.getElementById('lstep2').style.display = 'none';
   const sbox = document.createElement('div');
   sbox.className = 'success-box';
   sbox.innerHTML = `<div class="si">🎉</div><h4 class="kr">상담 신청이 완료되었습니다!</h4><h4 class="en" style="display:none">Request submitted!</h4><p class="kr">24시간 이내 케어 플래너가 연락드립니다.</p>`;
@@ -1505,7 +1521,12 @@ function scrollBottom() {
 }
 
 // ─── OVERLAY ───
-function showOverlay(id) { const el = document.getElementById(id); el.style.display='flex'; setTimeout(()=>el.classList.add('show'),10); }
+function showOverlay(id) {
+  if (id === 'leadOverlay') fillLeadSummary();
+  const el = document.getElementById(id);
+  el.style.display='flex';
+  setTimeout(()=>el.classList.add('show'),10);
+}
 function closeOverlay(id) { const el = document.getElementById(id); el.classList.remove('show'); setTimeout(()=>el.style.display='none',200); }
 
 // ─── LANG ───
