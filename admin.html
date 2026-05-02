@@ -1561,8 +1561,10 @@ function renderKanbanReal() {
               ${l.senior_age ? `<span class="k-date">${l.senior_age}세</span>` : ''}
             </div>
             ${l.tour_date ? `
-              <div style="margin-top:8px;padding:6px 8px;background:${l.tour_completed ? '#f0fdf4' : '#fef3c7'};border-radius:6px;font-size:11px;color:${l.tour_completed ? '#16a34a' : '#d97706'};font-weight:600;">
-                ${l.tour_completed ? '✓' : '📅'} 투어 ${new Date(l.tour_date).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'})}
+              <div style="margin-top:8px;padding:6px 8px;background:${l.tour_completed ? '#f0fdf4' : '#fef3c7'};border-radius:6px;font-size:11px;color:${l.tour_completed ? '#15803d' : '#d97706'};font-weight:700;">
+                ${l.tour_completed
+                  ? ('✓ 투어 완료 · ' + new Date(l.tour_date).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'}))
+                  : ('📅 투어 예약 · ' + new Date(l.tour_date).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'}))}
               </div>
             ` : ''}
           </div>
@@ -2403,7 +2405,7 @@ async function loadRealLeads() {
         ${l.location ? `<span class="mlc-tag">📍 ${l.location}</span>` : ''}
         ${l.budget ? `<span class="mlc-tag">💰 ${l.budget}</span>` : ''}
         ${l.senior_age ? `<span class="mlc-tag">${l.senior_age}세</span>` : ''}
-        ${l.tour_date ? `<span class="mlc-tag" style="background:${l.tour_completed ? '#f0fdf4' : '#fef3c7'};color:${l.tour_completed ? '#16a34a' : '#d97706'};font-weight:700;">${l.tour_completed ? '✓' : '📅'} ${new Date(l.tour_date).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'})}</span>` : ''}
+        ${l.tour_date ? `<span class="mlc-tag" style="background:${l.tour_completed ? '#f0fdf4' : '#fef3c7'};color:${l.tour_completed ? '#15803d' : '#d97706'};font-weight:700;">${l.tour_completed ? '✓ 투어 완료' : '📅 투어 ' + new Date(l.tour_date).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'})}</span>` : ''}
         <span class="mlc-status">신규</span>
       </div>
     </div>
