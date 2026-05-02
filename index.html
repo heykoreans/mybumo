@@ -107,7 +107,7 @@
             min-height: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            padding: 26px 26px 14px;
+            padding: 26px 26px 100px;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -181,6 +181,25 @@
         .add-req-row { display:flex; gap:10px; margin-top:10px; justify-content:flex-end; }
         .skip-btn { background:none; border:1.5px solid var(--border); color:var(--muted); padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; }
         .send-req-btn { background:var(--navy); color:white; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+
+        .add-req-box {
+            overflow: visible !important;
+        }
+        .add-req-box textarea {
+            display: block !important;
+            width: 100% !important;
+            min-height: 80px !important;
+            box-sizing: border-box !important;
+        }
+        .add-req-row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+        }
+        .add-req-row button {
+            display: inline-block !important;
+            min-height: 40px !important;
+            visibility: visible !important;
+        }
 
         /* Success */
         .success-box { background:linear-gradient(135deg,#ecfdf5,#f0fdfc); border:1.5px solid #6ee7b7; border-radius:16px; padding:24px 20px; margin-left:43px; width:440px; text-align:center; }
