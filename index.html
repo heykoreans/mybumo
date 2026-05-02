@@ -1338,7 +1338,7 @@ function fillLeadSummary() {
     return '$' + aK + '~$' + bK;
   });
   // 노트 짧게
-  const noteShort = note.length > 20 ? note.substring(0, 20) + '...' : note;
+  const noteShort = note.length > 28 ? note.substring(0, 28) + '...' : note;
 
   let parts = [careShort, loc, budgetShort];
   if (note) parts.push(noteShort);
