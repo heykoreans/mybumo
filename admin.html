@@ -1479,6 +1479,11 @@ function renderKanbanReal() {
               <span class="k-fee" style="font-size:12px;color:#64748b;">${l.budget || '-'}</span>
               ${l.senior_age ? `<span class="k-date">${l.senior_age}세</span>` : ''}
             </div>
+            ${l.tour_date ? `
+              <div style="margin-top:8px;padding:6px 8px;background:${l.tour_completed ? '#f0fdf4' : '#fef3c7'};border-radius:6px;font-size:11px;color:${l.tour_completed ? '#16a34a' : '#d97706'};font-weight:600;">
+                ${l.tour_completed ? '✓' : '📅'} 투어 ${new Date(l.tour_date).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'})}
+              </div>
+            ` : ''}
           </div>
         `).join('') || `<div style="color:#94a3b8;font-size:12px;text-align:center;padding:20px;">${isEn ? 'No leads' : '리드 없음'}</div>`}
       </div>
@@ -1933,7 +1938,79 @@ function openLeadDetail(lead) {
     callBtn.style.opacity = lead.phone ? '1' : '0.4';
     emailBtn.style.opacity = lead.email ? '1' : '0.4';
 
+    // 어드민 메모 + 투어 정보 채우기
+    document.getElementById('ldmAdminNotes').value = lead.admin_notes || '';
+    document.getElementById('ldmTourDate').value = lead.tour_date
+        ? new Date(lead.tour_date).toISOString().slice(0, 16)
+        : '';
+    document.getElementById('ldmTourCompleted').checked = !!lead.tour_completed;
+
+    // 현재 lead id 저장 (저장 시 사용)
+    window.currentLeadId = lead.id;
+
     document.getElementById('leadDetailModal').classList.add('show');
+}
+
+function appendAdminNote() {
+    const textarea = document.getElementById('ldmAdminNotes');
+    const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' });
+    const existing = textarea.value.trim();
+    const newLine = `\n[${today}] `;
+    textarea.value = existing ? existing + newLine : `[${today}] `;
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+}
+
+async function saveLeadUpdates(event) {
+    const leadId = window.currentLeadId;
+    if (!leadId) return;
+
+    const adminNotes = document.getElementById('ldmAdminNotes').value;
+    const tourDateValue = document.getElementById('ldmTourDate').value;
+    const tourCompleted = document.getElementById('ldmTourCompleted').checked;
+
+    const updates = {
+        admin_notes: adminNotes || null,
+        tour_date: tourDateValue ? new Date(tourDateValue).toISOString() : null,
+        tour_completed: tourCompleted
+    };
+
+    const saveBtn = event && event.target ? event.target : document.getElementById('ldmSaveBtn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = '저장 중...';
+    saveBtn.disabled = true;
+
+    const { error } = await db.from('leads').update(updates).eq('id', leadId);
+
+    if (error) {
+        console.error('Save failed:', error);
+        alert('저장에 실패했습니다. 다시 시도해주세요.');
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+        return;
+    }
+
+    const lead = realLeadsData.find(l => String(l.id) === String(leadId));
+    if (lead) {
+        Object.assign(lead, updates);
+    }
+
+    if (window._leadsDataForModal && Array.isArray(window._leadsDataForModal)) {
+        const m = window._leadsDataForModal.find(l => String(l.id) === String(leadId));
+        if (m) Object.assign(m, updates);
+    }
+
+    saveBtn.textContent = '✓ 저장됨';
+    saveBtn.style.background = '#16a34a';
+
+    setTimeout(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.style.background = '#0d2137';
+        saveBtn.disabled = false;
+    }, 1500);
+
+    if (typeof renderKanbanReal === 'function') renderKanbanReal();
+    if (typeof loadRealLeads === 'function') loadRealLeads();
 }
 
 function closeLeadDetail() {
@@ -2051,6 +2128,7 @@ async function loadRealLeads() {
         ${l.location ? `<span class="mlc-tag">📍 ${l.location}</span>` : ''}
         ${l.budget ? `<span class="mlc-tag">💰 ${l.budget}</span>` : ''}
         ${l.senior_age ? `<span class="mlc-tag">${l.senior_age}세</span>` : ''}
+        ${l.tour_date ? `<span class="mlc-tag" style="background:${l.tour_completed ? '#f0fdf4' : '#fef3c7'};color:${l.tour_completed ? '#16a34a' : '#d97706'};font-weight:700;">${l.tour_completed ? '✓' : '📅'} ${new Date(l.tour_date).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit'})}</span>` : ''}
         <span class="mlc-status">신규</span>
       </div>
     </div>
@@ -2202,6 +2280,33 @@ window.onload = async function() {
       <div class="ldm-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
         <span class="ldm-label">메모</span>
         <span id="ldmNote" style="word-break:keep-all;line-height:1.6;color:#1e293b;">-</span>
+      </div>
+      <div style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:20px;">
+        <label style="display:block;font-size:13px;font-weight:700;color:#0d2137;margin-bottom:8px;">📅 투어 예정일</label>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+          <input type="datetime-local" id="ldmTourDate" style="flex:1;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13px;outline:none;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#1e293b;cursor:pointer;white-space:nowrap;">
+            <input type="checkbox" id="ldmTourCompleted" style="width:16px;height:16px;cursor:pointer;">
+            완료
+          </label>
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <label style="display:block;font-size:13px;font-weight:700;color:#0d2137;margin-bottom:8px;">📝 상담 메모</label>
+        <textarea id="ldmAdminNotes" rows="5" placeholder="예: 2/15 1차 통화 - 관심 있음, 다음 주 투어 희망. 한식 제공 여부 문의함."
+          style="width:100%;padding:12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;"></textarea>
+        <button type="button" onclick="appendAdminNote()" 
+          style="margin-top:8px;background:#f1f5f9;border:1px solid #cbd5e1;color:#1e293b;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;">
+          ➕ 오늘 날짜로 새 메모 추가
+        </button>
+      </div>
+
+      <div style="margin-top:20px;">
+        <button type="button" id="ldmSaveBtn" onclick="saveLeadUpdates(event)"
+          style="width:100%;background:#0d2137;color:white;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">
+          💾 저장
+        </button>
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;">
         <a id="ldmCallBtn" href="#" class="ldm-action-btn" style="background:#0d2137;color:white;">📞 전화 걸기</a>
