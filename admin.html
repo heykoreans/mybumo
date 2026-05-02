@@ -492,6 +492,22 @@
             #sec-leads .leads-table { display: none !important; }
             #sec-leads .mobile-leads-list { display: block !important; }
 
+            #sec-kanban .kanban-board {
+                display: flex !important;
+                flex-direction: row !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                gap: 12px !important;
+                padding-bottom: 12px !important;
+                scroll-snap-type: x mandatory !important;
+            }
+            #sec-kanban .kanban-col {
+                flex: 0 0 280px !important;
+                scroll-snap-align: start !important;
+                min-width: 280px !important;
+                max-width: 280px !important;
+            }
+
             .mobile-tabbar {
                 display: flex;
                 position: fixed;
@@ -926,8 +942,8 @@
         <div class="section-header">
             <h2 class="kr">📋 리드 파이프라인</h2>
             <h2 class="en" style="display:none">📋 Lead Pipeline</h2>
-            <div style="font-size:13px;color:#64748b;font-weight:600;" class="kr">총 예상 수수료: <strong style="color:#0d2137;font-size:16px;">$47,200</strong></div>
-            <div style="font-size:13px;color:#64748b;font-weight:600;display:none;" class="en">Total Projected Fees: <strong style="color:#0d2137;font-size:16px;">$47,200</strong></div>
+            <div style="font-size:13px;color:#64748b;font-weight:600;" class="kr">총 리드: <strong style="color:#0d2137;font-size:16px;" id="kanbanTotal">0</strong>건</div>
+            <div style="font-size:13px;color:#64748b;font-weight:600;display:none;" class="en">Total leads: <strong style="color:#0d2137;font-size:16px;" id="kanbanTotalEn">0</strong></div>
         </div>
         <div class="kanban-board" id="kanbanBoard"></div>
     </div>
@@ -1247,6 +1263,8 @@ const LEADS = [
     { id:6, nameKr:'신미래 (어르신: 신동구, 89세)', nameEn:'Mi-rae Shin (Senior: Dong-gu S., 89)', care:'너싱홈', careEn:'Skilled Nursing', loc:'GA', urgency:'high', budget:'$6,500~$9,500', fee:'$8,200', status:'contacting', date:'2026.01.10', notes:'뇌졸중 후 재활 필요. 메디케어 적용 요청. 애틀랜타 한인 지역 선호.' },
 ];
 
+let realLeadsData = []; // 실제 leads 데이터 캐시
+
 const KANBAN_COLS = [
     { id:'new', krLabel:'🆕 신규', enLabel:'🆕 New', filterFn: l => l.status==='new' },
     { id:'contacting', krLabel:'📞 연락 중', enLabel:'📞 Contacting', filterFn: l => l.status==='contacting' },
@@ -1329,6 +1347,156 @@ function renderKanban() {
             </div>
         </div>`;
     }).join('');
+}
+
+function renderKanbanReal() {
+  const isEn = adminLang === 'en';
+  const board = document.getElementById('kanbanBoard');
+  if (!board) return;
+
+  board.innerHTML = KANBAN_COLS.map(col => {
+    const cards = realLeadsData.filter(l => (l.status || 'new') === col.id);
+
+    const colTotal = cards.length;
+
+    return `<div class="kanban-col" data-col-id="${col.id}"
+              ondragover="kanbanDragOver(event)"
+              ondragleave="kanbanDragLeave(event)"
+              ondrop="kanbanDrop(event, '${col.id}')">
+      <div class="kanban-col-header">
+        ${isEn ? col.enLabel : col.krLabel}
+        <span class="col-count">${colTotal}</span>
+      </div>
+      <div class="kanban-cards">
+        ${cards.map(l => `
+          <div class="k-card ${col.id === 'placed' ? 'won' : col.id === 'lost' ? 'cold' : ''}"
+               draggable="true"
+               data-lead-id="${l.id}"
+               ondragstart="kanbanDragStart(event, '${l.id}')"
+               ondragend="kanbanDragEnd(event)"
+               onclick="openLeadDetailFromKanban('${l.id}')">
+            <div class="k-card-meta">
+              <span>${l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'}) : '-'}</span>
+              <span class="k-card-mobile-menu" onclick="event.stopPropagation();showStatusMenu(event, '${l.id}')" style="cursor:pointer;font-size:14px;color:#94a3b8;padding:4px 6px;">⋯</span>
+            </div>
+            <div class="k-card-name">${l.name || '-'}</div>
+            <div class="k-card-info" style="word-break:keep-all;line-height:1.4;">
+              ${l.care_type || '-'}${l.location ? ' · ' + l.location : ''}
+            </div>
+            <div class="k-card-footer">
+              <span class="k-fee" style="font-size:12px;color:#64748b;">${l.budget || '-'}</span>
+              ${l.senior_age ? `<span class="k-date">${l.senior_age}세</span>` : ''}
+            </div>
+          </div>
+        `).join('') || `<div style="color:#94a3b8;font-size:12px;text-align:center;padding:20px;">${isEn ? 'No leads' : '리드 없음'}</div>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  const totalEl = document.getElementById('kanbanTotal');
+  if (totalEl) totalEl.textContent = realLeadsData.length;
+  const totalElEn = document.getElementById('kanbanTotalEn');
+  if (totalElEn) totalElEn.textContent = realLeadsData.length;
+}
+
+let draggedLeadId = null;
+
+function kanbanDragStart(e, leadId) {
+  draggedLeadId = leadId;
+  e.target.style.opacity = '0.5';
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function kanbanDragEnd(e) {
+  e.target.style.opacity = '1';
+}
+
+function kanbanDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.style.background = '#f0f9ff';
+}
+
+function kanbanDragLeave(e) {
+  e.currentTarget.style.background = '';
+}
+
+async function kanbanDrop(e, newStatus) {
+  e.preventDefault();
+  e.currentTarget.style.background = '';
+
+  if (!draggedLeadId) return;
+
+  const lead = realLeadsData.find(l => String(l.id) === String(draggedLeadId));
+  if (!lead || (lead.status || 'new') === newStatus) {
+    draggedLeadId = null;
+    return;
+  }
+
+  lead.status = newStatus;
+  renderKanbanReal();
+
+  const { error } = await db.from('leads').update({ status: newStatus }).eq('id', draggedLeadId);
+  if (error) {
+    console.error('Status update failed:', error);
+    alert('상태 변경에 실패했습니다. 다시 시도해주세요.');
+    await loadRealLeads();
+  }
+
+  draggedLeadId = null;
+}
+
+function showStatusMenu(e, leadId) {
+  e.stopPropagation();
+  const lead = realLeadsData.find(l => String(l.id) === String(leadId));
+  if (!lead) return;
+
+  const isEn = adminLang === 'en';
+  const menu = document.createElement('div');
+  menu.id = 'statusMenu';
+  menu.style.cssText = `
+    position: fixed; inset: 0; z-index: 5000;
+    display: flex; align-items: flex-end; justify-content: center;
+    background: rgba(0,0,0,0.4);
+  `;
+  menu.onclick = () => menu.remove();
+
+  menu.innerHTML = `
+    <div onclick="event.stopPropagation()" style="background:white;border-radius:20px 20px 0 0;width:100%;max-width:500px;padding:8px 16px 32px;animation:ldmSlideUp .25s ease;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 4px 8px;">
+        <strong style="font-size:16px;color:#0d2137;">${(lead.name || (isEn ? 'Lead' : '리드')) + (isEn ? ' — change status' : ' 상태 변경')}</strong>
+        <button onclick="document.getElementById('statusMenu').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+      </div>
+      ${KANBAN_COLS.map(col => `
+        <button onclick="changeStatus('${leadId}', '${col.id}');document.getElementById('statusMenu').remove();"
+          style="display:block;width:100%;text-align:left;background:${(lead.status || 'new') === col.id ? '#f1f5f9' : 'none'};border:none;padding:14px 8px;font-size:15px;color:#1e293b;cursor:pointer;border-radius:10px;">
+          ${isEn ? col.enLabel : col.krLabel} ${(lead.status || 'new') === col.id ? '✓' : ''}
+        </button>
+      `).join('')}
+    </div>
+  `;
+  document.body.appendChild(menu);
+}
+
+async function changeStatus(leadId, newStatus) {
+  const lead = realLeadsData.find(l => String(l.id) === String(leadId));
+  if (!lead) return;
+
+  lead.status = newStatus;
+  renderKanbanReal();
+
+  const { error } = await db.from('leads').update({ status: newStatus }).eq('id', leadId);
+  if (error) {
+    alert('상태 변경 실패');
+    await loadRealLeads();
+  }
+}
+
+function openLeadDetailFromKanban(leadId) {
+  const lead = realLeadsData.find(l => String(l.id) === String(leadId));
+  if (lead && typeof openLeadDetail === 'function') {
+    openLeadDetail(lead);
+  }
 }
 
 async function renderFacilities() {
@@ -1712,7 +1880,7 @@ function logout() {
 async function renderAll() {
     renderRecentLeads();
     await renderAllLeads();
-    renderKanban();
+    renderKanbanReal();
     await renderFacilities();
     renderBilling();
     renderRevBars();
@@ -1748,6 +1916,8 @@ function addTag() {
 async function loadRealLeads() {
   const { data, error } = await db.from('leads').select('*').order('created_at', { ascending: false });
   if (error) { console.error(error); return; }
+
+  realLeadsData = data || [];
 
   // 리드 테이블 tbody를 찾아서 교체
   const tables = document.querySelectorAll('table.leads-table tbody');
@@ -1799,6 +1969,8 @@ async function loadRealLeads() {
   if (kpiNums[0]) kpiNums[0].textContent = data.length;
   const mobileTabBadge = document.getElementById('mobileTabBadge');
   if (mobileTabBadge && data) mobileTabBadge.textContent = data.length;
+
+  renderKanbanReal();
 }
 
 window.onload = async function() {
