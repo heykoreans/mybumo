@@ -396,6 +396,10 @@
                 box-sizing: border-box !important;
             }
 
+            #chatBody .msg-row {
+                max-width: 90% !important;
+            }
+
             /* AI 메시지 버블, 사용자 메시지 버블 */
             .msg, .ai-msg, .user-msg, [class*="bubble"], [class*="message"] {
                 max-width: calc(100vw - 60px) !important;
@@ -404,8 +408,7 @@
             }
 
             #chatBody .user-row .bubble {
-                width: fit-content !important;
-                max-width: 82% !important;
+                max-width: 100% !important;
                 word-break: keep-all !important;
                 overflow-wrap: break-word !important;
                 white-space: normal !important;
