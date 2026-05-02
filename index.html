@@ -403,11 +403,17 @@
                 overflow-wrap: break-word !important;
             }
 
-            .bubble, .ai-msg, .user-msg, [class*="msg"] {
-                max-width: 85% !important;
+            .user-row .bubble {
+                max-width: 82% !important;
                 word-break: keep-all !important;
                 overflow-wrap: break-word !important;
-                line-height: 1.6 !important;
+                white-space: normal !important;
+            }
+
+            .ai-row .bubble {
+                max-width: 88% !important;
+                word-break: keep-all !important;
+                overflow-wrap: break-word !important;
             }
 
             /* 노트 입력 카드 전체 */
