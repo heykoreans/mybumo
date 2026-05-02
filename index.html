@@ -72,8 +72,12 @@
 
         .hero-text { position:relative; z-index:1; }
         .hero-pill { display:inline-flex; align-items:center; gap:8px; background:rgba(46,158,152,.18); border:1px solid rgba(46,158,152,.45); color:var(--sage-lt); font-size:11.5px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; padding:7px 14px; border-radius:30px; margin-bottom:26px; }
-        .hero-pill .dot { width:6px; height:6px; background:var(--sage-lt); border-radius:50%; animation:blink 2s infinite; }
-        @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+        .hero-pill .dot { width:6px; height:6px; background:var(--sage-lt); border-radius:50%; animation:statusDotPulse 2s infinite; }
+        @keyframes statusDotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+        @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
 
         .hero-text h1 { font-size:48px; font-weight:800; line-height:1.14; margin-bottom:22px; letter-spacing:-1px; }
         .hero-text h1 .ac { color:var(--sage-lt); }
@@ -99,7 +103,7 @@
         .logo-circ { width:40px; height:40px; background:linear-gradient(135deg,var(--sage-dk),var(--navy)); border-radius:11px; display:flex; justify-content:center; align-items:center; color:white; font-size:18px; flex-shrink:0; box-shadow:0 4px 12px rgba(31,122,117,.3); }
         .hdr-text h2 { font-size:15.5px; color:var(--navy); font-weight:700; }
         .hdr-status { display:flex; align-items:center; gap:5px; margin-top:2px; }
-        .sdot { width:6px; height:6px; background:#22c55e; border-radius:50%; animation:blink 2s infinite; }
+        .sdot { width:6px; height:6px; background:#22c55e; border-radius:50%; animation:statusDotPulse 2s infinite; }
         .hdr-text p { font-size:11.5px; color:var(--sage-dk); font-weight:600; }
 
         .chat-body {
@@ -1352,33 +1356,59 @@ async function submitLead() {
 }
 
 async function sendNote() {
-  console.log('=== 매칭 요청 ===');
-  console.log('selectedCareType:', window.selectedCareType, selectedCare);
-  console.log('selectedLocation:', window.selectedLocation, selectedLocation);
-  console.log('selectedBudget:', window.selectedBudget, selectedBudget);
   const userNeeds = {
     careType: mapCareTypeToFacility(window.selectedCareType || selectedCare || ''),
     location: window.selectedLocation || selectedLocation || '',
     budget: window.selectedBudget || selectedBudget || '',
     specialNote: (window.capturedNote = document.getElementById('addNoteText')?.value || '')
   };
-  console.log('userNeeds:', userNeeds);
+
+  // 로딩 말풍선 추가
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'msg-row ai-row';
+  loadingEl.id = 'loadingBubble';
+  loadingEl.innerHTML = `
+    <div class="ai-av">🤝</div>
+    <div class="bubble" style="display:flex;gap:5px;align-items:center;">
+      <span style="animation:blink 1s infinite 0s">●</span>
+      <span style="animation:blink 1s infinite .2s">●</span>
+      <span style="animation:blink 1s infinite .4s">●</span>
+    </div>`;
+  document.getElementById('chatBody').appendChild(loadingEl);
+  scrollBottom();
+
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  // 로딩 제거 후 결과 표시
+  document.getElementById('loadingBubble')?.remove();
   await showMatchedFacilities(userNeeds);
   setTimeout(() => showOverlay('leadOverlay'), 10000);
 }
 
 async function skipNote() {
-  console.log('=== 매칭 요청 ===');
-  console.log('selectedCareType:', window.selectedCareType, selectedCare);
-  console.log('selectedLocation:', window.selectedLocation, selectedLocation);
-  console.log('selectedBudget:', window.selectedBudget, selectedBudget);
   const userNeeds = {
     careType: mapCareTypeToFacility(window.selectedCareType || selectedCare || ''),
     location: window.selectedLocation || selectedLocation || '',
     budget: window.selectedBudget || selectedBudget || '',
     specialNote: (window.capturedNote = document.getElementById('addNoteText')?.value || '')
   };
-  console.log('userNeeds:', userNeeds);
+
+  const loadingEl = document.createElement('div');
+  loadingEl.className = 'msg-row ai-row';
+  loadingEl.id = 'loadingBubble';
+  loadingEl.innerHTML = `
+    <div class="ai-av">🤝</div>
+    <div class="bubble" style="display:flex;gap:5px;align-items:center;">
+      <span style="animation:blink 1s infinite 0s">●</span>
+      <span style="animation:blink 1s infinite .2s">●</span>
+      <span style="animation:blink 1s infinite .4s">●</span>
+    </div>`;
+  document.getElementById('chatBody').appendChild(loadingEl);
+  scrollBottom();
+
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
+  document.getElementById('loadingBubble')?.remove();
   await showMatchedFacilities(userNeeds);
   setTimeout(() => showOverlay('leadOverlay'), 10000);
 }
