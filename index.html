@@ -629,14 +629,18 @@
             </div>
         </div>
         <div class="options" id="step1Opts">
-            <button class="btn-opt kr" onclick="step1Select(this,'일상 도움이 필요해요')">🏠 일상 도움이 필요해요</button>
-            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'Needs daily assistance')">🏠 Needs daily assistance</button>
-            <button class="btn-opt kr" onclick="step1Select(this,'기억력·치매 증상이 있어요')">🧠 기억력·치매 증상이 있어요</button>
-            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'Memory/dementia concerns')">🧠 Memory/dementia concerns</button>
-            <button class="btn-opt kr" onclick="step1Select(this,'병원 퇴원 후 회복이 필요해요')">🏥 병원 퇴원 후 회복이 필요해요</button>
-            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'Post-hospital recovery')">🏥 Post-hospital recovery</button>
-            <button class="btn-opt kr" onclick="step1Select(this,'독립적이지만 안전한 환경 원해요')">✨ 독립적이지만 안전한 환경 원해요</button>
-            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'Independent but safe environment')">✨ Independent but safe environment</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'🏠 일상 생활에 도움이 필요해요')">🏠 일상 생활에 도움이 필요해요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'🏠 Help with daily activities')">🏠 Help with daily activities</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'🧠 기억력·치매 증상이 있어요')">🧠 기억력·치매 증상이 있어요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'🧠 Memory/dementia concerns')">🧠 Memory/dementia concerns</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'🏥 병원 퇴원 후 회복이 필요해요')">🏥 병원 퇴원 후 회복이 필요해요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'🏥 Recovery after hospital discharge')">🏥 Recovery after hospital discharge</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'💊 만성 질환·약물 관리가 필요해요')">💊 만성 질환·약물 관리가 필요해요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'💊 Chronic conditions or medication')">💊 Chronic conditions or medication</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'👨‍⚕️ 24시간 전문 간호가 필요해요')">👨‍⚕️ 24시간 전문 간호가 필요해요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'👨‍⚕️ 24/7 skilled nursing needed')">👨‍⚕️ 24/7 skilled nursing needed</button>
+            <button class="btn-opt kr" onclick="step1Select(this,'✨ 독립적이지만 안전한 환경 원해요')">✨ 독립적이지만 안전한 환경 원해요</button>
+            <button class="btn-opt en" style="display:none" onclick="step1Select(this,'✨ Independent but want safety')">✨ Independent but want safety</button>
         </div>
 
     </div>
@@ -882,13 +886,28 @@ function parseFeeNum(v) {
   return isNaN(n) ? 0 : n;
 }
 
+function mapCareTypeToFacility(userChoice) {
+  const choice = (userChoice || '').toLowerCase();
+  if (choice.includes('일상') || choice.includes('daily')) return '어시스티드 리빙';
+  if (choice.includes('기억') || choice.includes('치매') || choice.includes('memory') || choice.includes('dementia')) return '메모리 케어';
+  if (choice.includes('퇴원') || choice.includes('회복') || choice.includes('recovery') || choice.includes('discharge')) return '재활 센터';
+  if (choice.includes('만성') || choice.includes('약물') || choice.includes('chronic') || choice.includes('medication')) return '너싱홈';
+  if (choice.includes('24') || choice.includes('전문 간호') || choice.includes('skilled nursing')) return '너싱홈';
+  if (choice.includes('독립') || choice.includes('independent')) return '독립 생활';
+  return userChoice;
+}
+
+const STANDARD_FACILITY_CARE_TYPES = ['어시스티드 리빙', '메모리 케어', '너싱홈', '재활 센터', '독립 생활'];
+
 function inferCareTypeForMatch(need) {
   const n = (need || '').toLowerCase();
   if (!n) return '';
   if (/memory|dementia|치매|기억/.test(n)) return '메모리 케어';
-  if (/hospital|recovery|병원|퇴원|회복/.test(n)) return '너싱홈';
+  if (/hospital|recovery|병원|퇴원|회복/.test(n)) return '재활 센터';
   if (/independent|독립/.test(n)) return '독립 생활';
   if (/daily|일상|assistance|도움/.test(n)) return '어시스티드 리빙';
+  if (/24|skilled nursing|간호/.test(n)) return '너싱홈';
+  if (/chronic|medication|만성|약물/.test(n)) return '너싱홈';
   return '어시스티드 리빙';
 }
 
@@ -1055,8 +1074,12 @@ function matchFacilities(facilities, userNeeds) {
 async function showMatchedFacilities(userNeeds) {
   if (realFacilities.length === 0) await loadFacilities();
   const noteFromDom = document.getElementById('addNoteText')?.value || '';
+  const mappedCare = mapCareTypeToFacility(userNeeds.careType || '');
+  const careTypeForMatch = STANDARD_FACILITY_CARE_TYPES.includes(mappedCare)
+    ? mappedCare
+    : inferCareTypeForMatch(userNeeds.careType || mappedCare);
   const needs = {
-    careType: inferCareTypeForMatch(userNeeds.careType),
+    careType: careTypeForMatch,
     location: userNeeds.location || '',
     budget: userNeeds.budget || '',
     specialNote: userNeeds.specialNote !== undefined && userNeeds.specialNote !== null
@@ -1305,7 +1328,7 @@ async function sendNote() {
   console.log('selectedLocation:', window.selectedLocation, selectedLocation);
   console.log('selectedBudget:', window.selectedBudget, selectedBudget);
   const userNeeds = {
-    careType: window.selectedCareType || selectedCareType || '',
+    careType: mapCareTypeToFacility(window.selectedCareType || selectedCare || ''),
     location: window.selectedLocation || selectedLocation || '',
     budget: window.selectedBudget || selectedBudget || '',
     specialNote: document.getElementById('addNoteText')?.value || ''
@@ -1321,7 +1344,7 @@ async function skipNote() {
   console.log('selectedLocation:', window.selectedLocation, selectedLocation);
   console.log('selectedBudget:', window.selectedBudget, selectedBudget);
   const userNeeds = {
-    careType: window.selectedCareType || selectedCareType || '',
+    careType: mapCareTypeToFacility(window.selectedCareType || selectedCare || ''),
     location: window.selectedLocation || selectedLocation || '',
     budget: window.selectedBudget || selectedBudget || '',
     specialNote: document.getElementById('addNoteText')?.value || ''
