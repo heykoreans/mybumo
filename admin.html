@@ -401,6 +401,79 @@
             font-weight: 700;
             text-decoration: none;
         }
+
+        .ldm-section {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .ldm-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .ldm-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .ldm-edit-btn {
+            background: white;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .ldm-edit-btn:hover { background: #0f172a; color: white; border-color: #0f172a; }
+        .ldm-edit-btn.active { background: #0f172a; color: white; border-color: #0f172a; }
+        .ldm-section-body {
+            padding: 6px 16px;
+        }
+        .ldm-section .ldm-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            gap: 12px;
+        }
+        .ldm-section .ldm-field:last-child { border-bottom: none; }
+        .ldm-section .ldm-label {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .ldm-value, .ldm-value-readonly {
+            color: #1e293b;
+            text-align: right;
+            word-break: keep-all;
+        }
+        .ldm-value-readonly { color: #94a3b8; }
+        .ldm-input {
+            flex: 1;
+            max-width: 60%;
+            padding: 7px 10px;
+            border: 1.5px solid #0f172a;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            text-align: right;
+            background: white;
+        }
+        .ldm-section.editing .ldm-edit-btn::before { content: "✓ "; }
+
         @keyframes ldmFadeIn { from{opacity:0} to{opacity:1} }
         @keyframes ldmSlideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
 
@@ -1944,14 +2017,34 @@ function initTourDatePicker() {
 
 function openLeadDetail(lead) {
     document.getElementById('ldmName').textContent = lead.name || '-';
-    document.getElementById('ldmDate').textContent = lead.created_at ? new Date(lead.created_at).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'}) : '-';
-    document.getElementById('ldmCare').textContent = lead.care_type || '-';
-    document.getElementById('ldmLocation').textContent = lead.location || '-';
-    document.getElementById('ldmBudget').textContent = lead.budget || '-';
-    document.getElementById('ldmAge').textContent = lead.senior_age ? lead.senior_age + '세' : '-';
-    document.getElementById('ldmEmail').textContent = lead.email || '-';
-    document.getElementById('ldmPhone').textContent = lead.phone || '-';
-    document.getElementById('ldmNote').textContent = lead.note || '-';
+
+    const fieldMap = {
+        name: lead.name,
+        senior_age: lead.senior_age,
+        email: lead.email,
+        phone: lead.phone,
+        guardian_name: lead.guardian_name,
+        guardian_relation: lead.guardian_relation,
+        guardian_phone: lead.guardian_phone,
+        care_type: lead.care_type,
+        location: lead.location,
+        budget: lead.budget,
+        move_in_timing: lead.move_in_timing,
+        insurance: lead.insurance,
+        note: lead.note
+    };
+
+    Object.entries(fieldMap).forEach(([key, val]) => {
+        const el = document.getElementById('ldmField_' + key);
+        if (el) {
+            const suffix = el.dataset.suffix || '';
+            el.textContent = val !== null && val !== undefined && val !== '' ? (String(val) + suffix) : '-';
+        }
+    });
+
+    document.getElementById('ldmField_created_at').textContent = lead.created_at
+        ? new Date(lead.created_at).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })
+        : '-';
 
     const callBtn = document.getElementById('ldmCallBtn');
     const emailBtn = document.getElementById('ldmEmailBtn');
@@ -1960,20 +2053,106 @@ function openLeadDetail(lead) {
     callBtn.style.opacity = lead.phone ? '1' : '0.4';
     emailBtn.style.opacity = lead.email ? '1' : '0.4';
 
-    // 어드민 메모 + 투어 정보 채우기
     document.getElementById('ldmAdminNotes').value = lead.admin_notes || '';
+    document.getElementById('ldmTourCompleted').checked = !!lead.tour_completed;
+
     initTourDatePicker();
     if (lead.tour_date) {
         tourDatePicker.setDate(new Date(lead.tour_date), false);
     } else {
         tourDatePicker.clear();
     }
-    document.getElementById('ldmTourCompleted').checked = !!lead.tour_completed;
 
-    // 현재 lead id 저장 (저장 시 사용)
+    document.querySelectorAll('.ldm-section').forEach(sec => {
+        sec.classList.remove('editing');
+        const btn = sec.querySelector('.ldm-edit-btn');
+        if (btn) btn.textContent = '수정';
+        sec.querySelectorAll('.ldm-input').forEach(input => {
+            const span = document.createElement('span');
+            span.className = 'ldm-value';
+            span.id = input.dataset.targetId;
+            span.dataset.field = input.dataset.field;
+            if (input.dataset.suffix) span.dataset.suffix = input.dataset.suffix;
+            if (input.dataset.type) span.dataset.type = input.dataset.type;
+            if (input.dataset.options) span.dataset.options = input.dataset.options;
+            if (input.tagName === 'SELECT') {
+                const opt = input.options[input.selectedIndex];
+                span.textContent = opt && opt.value ? opt.text : '-';
+            } else {
+                const suf = input.dataset.suffix || '';
+                span.textContent = input.value ? (String(input.value) + suf) : '-';
+            }
+            input.replaceWith(span);
+        });
+    });
+
     window.currentLeadId = lead.id;
-
     document.getElementById('leadDetailModal').classList.add('show');
+}
+
+function toggleEditSection(sectionId) {
+    const section = document.querySelector(`.ldm-section[data-section="${sectionId}"]`);
+    if (!section) return;
+
+    const isEditing = section.classList.contains('editing');
+    const btn = section.querySelector('.ldm-edit-btn');
+
+    if (isEditing) {
+        section.querySelectorAll('.ldm-input').forEach(input => {
+            const span = document.createElement('span');
+            span.className = 'ldm-value';
+            span.id = input.dataset.targetId;
+            span.dataset.field = input.dataset.field;
+            if (input.dataset.suffix) span.dataset.suffix = input.dataset.suffix;
+            if (input.dataset.type) span.dataset.type = input.dataset.type;
+            if (input.dataset.options) span.dataset.options = input.dataset.options;
+            const suffix = input.dataset.suffix || '';
+            if (input.tagName === 'SELECT') {
+                const opt = input.options[input.selectedIndex];
+                span.textContent = opt && opt.value ? opt.text : '-';
+            } else {
+                span.textContent = input.value ? (String(input.value) + suffix) : '-';
+            }
+            input.replaceWith(span);
+        });
+        section.classList.remove('editing');
+        btn.textContent = '수정';
+    } else {
+        section.querySelectorAll('.ldm-value').forEach(span => {
+            const field = span.dataset.field;
+            if (!field) return;
+
+            const currentVal = span.textContent === '-' ? '' :
+                (span.dataset.suffix ? span.textContent.replace(span.dataset.suffix, '').trim() : span.textContent.trim());
+
+            let input;
+            if (span.dataset.type === 'select' && span.dataset.options) {
+                input = document.createElement('select');
+                const opts = span.dataset.options.split(',');
+                input.innerHTML = '<option value="">선택</option>' +
+                    opts.map(opt => {
+                        const t = opt.trim();
+                        const esc = t.replace(/"/g, '&quot;');
+                        return `<option value="${esc}" ${t === currentVal ? 'selected' : ''}>${t}</option>`;
+                    }).join('');
+            } else {
+                input = document.createElement('input');
+                input.type = field === 'senior_age' ? 'number' : (field === 'email' ? 'email' : 'text');
+                input.value = currentVal;
+            }
+
+            input.className = 'ldm-input';
+            input.dataset.field = field;
+            input.dataset.targetId = span.id;
+            if (span.dataset.suffix) input.dataset.suffix = span.dataset.suffix;
+            if (span.dataset.type) input.dataset.type = span.dataset.type;
+            if (span.dataset.options) input.dataset.options = span.dataset.options;
+
+            span.replaceWith(input);
+        });
+        section.classList.add('editing');
+        btn.textContent = '완료';
+    }
 }
 
 function appendAdminNote() {
@@ -1990,19 +2169,39 @@ async function saveLeadUpdates(event) {
     const leadId = window.currentLeadId;
     if (!leadId) return;
 
-    const adminNotes = document.getElementById('ldmAdminNotes').value;
+    document.querySelectorAll('.ldm-section.editing').forEach(sec => {
+        toggleEditSection(sec.dataset.section);
+    });
+
+    const updates = {};
+    document.querySelectorAll('.ldm-value[data-field]').forEach(span => {
+        const field = span.dataset.field;
+        let val = span.textContent === '-' ? null :
+            (span.dataset.suffix ? span.textContent.replace(span.dataset.suffix, '').trim() : span.textContent.trim());
+
+        if (val === '') val = null;
+
+        if (field === 'senior_age') {
+            if (val === null || val === undefined || val === '') {
+                val = null;
+            } else {
+                const n = parseInt(String(val), 10);
+                val = Number.isNaN(n) ? null : n;
+            }
+        }
+
+        updates[field] = val;
+    });
+
+    updates.admin_notes = document.getElementById('ldmAdminNotes').value || null;
+    updates.tour_completed = document.getElementById('ldmTourCompleted').checked;
+
     const tourDateValue = tourDatePicker && tourDatePicker.selectedDates[0]
         ? tourDatePicker.selectedDates[0]
         : null;
-    const tourCompleted = document.getElementById('ldmTourCompleted').checked;
+    updates.tour_date = tourDateValue ? tourDateValue.toISOString() : null;
 
-    const updates = {
-        admin_notes: adminNotes || null,
-        tour_date: tourDateValue ? tourDateValue.toISOString() : null,
-        tour_completed: tourCompleted
-    };
-
-    const saveBtn = event && event.target ? event.target : document.getElementById('ldmSaveBtn');
+    const saveBtn = (event && event.target) || document.getElementById('ldmSaveBtn');
     const originalText = saveBtn.textContent;
     saveBtn.textContent = '저장 중...';
     saveBtn.disabled = true;
@@ -2018,8 +2217,18 @@ async function saveLeadUpdates(event) {
     }
 
     const lead = realLeadsData.find(l => String(l.id) === String(leadId));
-    if (lead) {
-        Object.assign(lead, updates);
+    if (lead) Object.assign(lead, updates);
+
+    if (updates.name) {
+        document.getElementById('ldmName').textContent = updates.name;
+    }
+    const callBtnAfter = document.getElementById('ldmCallBtn');
+    const emailBtnAfter = document.getElementById('ldmEmailBtn');
+    if (callBtnAfter && emailBtnAfter) {
+        callBtnAfter.href = updates.phone ? `tel:${updates.phone}` : '#';
+        emailBtnAfter.href = updates.email ? `mailto:${updates.email}` : '#';
+        callBtnAfter.style.opacity = updates.phone ? '1' : '0.4';
+        emailBtnAfter.style.opacity = updates.email ? '1' : '0.4';
     }
 
     if (window._leadsDataForModal && Array.isArray(window._leadsDataForModal)) {
@@ -2296,18 +2505,56 @@ window.onload = async function() {
       <h3 id="ldmName">-</h3>
       <button onclick="closeLeadDetail()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#64748b;">✕</button>
     </div>
-    <div class="ldm-body">
-      <div class="ldm-row"><span class="ldm-label">날짜</span><span id="ldmDate">-</span></div>
-      <div class="ldm-row"><span class="ldm-label">케어 유형</span><span id="ldmCare">-</span></div>
-      <div class="ldm-row"><span class="ldm-label">지역</span><span id="ldmLocation">-</span></div>
-      <div class="ldm-row"><span class="ldm-label">예산</span><span id="ldmBudget">-</span></div>
-      <div class="ldm-row"><span class="ldm-label">나이</span><span id="ldmAge">-</span></div>
-      <div class="ldm-row"><span class="ldm-label">이메일</span><span id="ldmEmail">-</span></div>
-      <div class="ldm-row"><span class="ldm-label">전화</span><span id="ldmPhone">-</span></div>
-      <div class="ldm-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
-        <span class="ldm-label">메모</span>
-        <span id="ldmNote" style="word-break:keep-all;line-height:1.6;color:#1e293b;">-</span>
+    <div class="ldm-body" style="padding:0 4px;">
+
+      <!-- 섹션 1: 본인 정보 -->
+      <div class="ldm-section" data-section="self">
+        <div class="ldm-section-header">
+          <span class="ldm-section-title">📋 본인 정보</span>
+          <button type="button" class="ldm-edit-btn" onclick="toggleEditSection('self')">수정</button>
+        </div>
+        <div class="ldm-section-body">
+          <div class="ldm-field"><span class="ldm-label">이름</span><span class="ldm-value" data-field="name" id="ldmField_name">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">나이</span><span class="ldm-value" data-field="senior_age" data-suffix="세" id="ldmField_senior_age">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">이메일</span><span class="ldm-value" data-field="email" id="ldmField_email">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">전화</span><span class="ldm-value" data-field="phone" id="ldmField_phone">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">날짜</span><span class="ldm-value-readonly" id="ldmField_created_at">-</span></div>
+        </div>
       </div>
+
+      <!-- 섹션 2: 보호자 정보 -->
+      <div class="ldm-section" data-section="guardian">
+        <div class="ldm-section-header">
+          <span class="ldm-section-title">👨‍👩‍👧 보호자 정보</span>
+          <button type="button" class="ldm-edit-btn" onclick="toggleEditSection('guardian')">수정</button>
+        </div>
+        <div class="ldm-section-body">
+          <div class="ldm-field"><span class="ldm-label">이름</span><span class="ldm-value" data-field="guardian_name" id="ldmField_guardian_name">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">관계</span><span class="ldm-value" data-field="guardian_relation" data-type="select" data-options="자녀,배우자,형제자매,기타" id="ldmField_guardian_relation">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">연락처</span><span class="ldm-value" data-field="guardian_phone" id="ldmField_guardian_phone">-</span></div>
+        </div>
+      </div>
+
+      <!-- 섹션 3: 케어 요구사항 -->
+      <div class="ldm-section" data-section="care">
+        <div class="ldm-section-header">
+          <span class="ldm-section-title">🏥 케어 요구사항</span>
+          <button type="button" class="ldm-edit-btn" onclick="toggleEditSection('care')">수정</button>
+        </div>
+        <div class="ldm-section-body">
+          <div class="ldm-field"><span class="ldm-label">케어 유형</span><span class="ldm-value" data-field="care_type" id="ldmField_care_type">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">지역</span><span class="ldm-value" data-field="location" id="ldmField_location">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">예산</span><span class="ldm-value" data-field="budget" id="ldmField_budget">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">입주 희망</span><span class="ldm-value" data-field="move_in_timing" data-type="select" data-options="즉시 (1개월 이내),1-3개월,3-6개월,6개월 이상,미정" id="ldmField_move_in_timing">-</span></div>
+          <div class="ldm-field"><span class="ldm-label">보험</span><span class="ldm-value" data-field="insurance" data-type="select" data-options="메디케어,메디케이드,사보험,없음,기타" id="ldmField_insurance">-</span></div>
+          <div class="ldm-field" style="flex-direction:column;align-items:flex-start;gap:6px;">
+            <span class="ldm-label">초기 메모 (회원 작성)</span>
+            <span class="ldm-value-readonly" id="ldmField_note" style="word-break:keep-all;line-height:1.6;">-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 투어 + 메모 + 저장 (기존 영역 유지) -->
       <div style="margin-top:24px;border-top:1px solid #f1f5f9;padding-top:24px;">
         <label style="display:block;font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">📅 투어 일정 관리</label>
         <div style="display:flex;gap:10px;align-items:center;background:#f8fafc;padding:12px;border-radius:12px;border:1px solid #e2e8f0;">
@@ -2330,19 +2577,20 @@ window.onload = async function() {
             + 오늘 날짜 추가
           </button>
         </div>
-        <textarea id="ldmAdminNotes" rows="5" placeholder="예: 2/15 1차 통화 - 관심 있음, 다음 주 투어 희망. 한식 제공 여부 문의함."
+        <textarea id="ldmAdminNotes" rows="5" placeholder="예: 2/15 1차 통화 - 관심 있음, 다음 주 투어 희망."
           style="width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:12px;font-size:14px;color:#334155;background:#f8fafc;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;"></textarea>
       </div>
 
-      <div style="margin-top:24px;">
+      <div style="margin-top:24px;display:flex;gap:8px;">
+        <a id="ldmCallBtn" href="#" style="flex:1;text-align:center;padding:14px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;background:#f1f5f9;color:#0f172a;">📞 전화</a>
+        <a id="ldmEmailBtn" href="#" style="flex:1;text-align:center;padding:14px;border-radius:12px;font-size:14px;font-weight:700;text-decoration:none;background:#f1f5f9;color:#0f172a;">✉️ 이메일</a>
+      </div>
+
+      <div style="margin-top:12px;">
         <button id="ldmSaveBtn" type="button" onclick="saveLeadUpdates(event)" 
           style="width:100%;background:#0f172a;color:#ffffff;border:none;padding:15px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
           💾 변경 사항 저장
         </button>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:20px;">
-        <a id="ldmCallBtn" href="#" class="ldm-action-btn" style="background:#0d2137;color:white;">📞 전화 걸기</a>
-        <a id="ldmEmailBtn" href="#" class="ldm-action-btn" style="background:white;color:#0d2137;border:1.5px solid #0d2137;">✉️ 이메일</a>
       </div>
     </div>
   </div>
