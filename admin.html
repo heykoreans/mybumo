@@ -1314,12 +1314,6 @@ window.addEventListener('DOMContentLoaded', function() {
   if (sessionStorage.getItem('adminAuth') === 'true') {
     document.getElementById('loginOverlay').style.display = 'none';
   }
-  document.addEventListener('change', function(e) {
-    if (e.target && e.target.id === 'ldmTourCompleted') {
-      const hasDate = tourDatePicker && tourDatePicker.selectedDates.length > 0;
-      updateTourToggleUI(hasDate);
-    }
-  });
 });
 
 let adminLang = 'kr';
@@ -2008,36 +2002,35 @@ function openDemoLeadDetail(id) {
 }
 
 function updateTourToggleUI(hasDate) {
-    const checkbox = document.getElementById('ldmTourCompleted');
-    const label = document.getElementById('ldmTourToggleLabel');
-    const text = document.getElementById('ldmTourToggleText');
-    const hint = document.getElementById('ldmTourHint');
+  const checkbox = document.getElementById('ldmTourCompleted');
+  const label = document.getElementById('ldmTourToggleLabel');
+  const text = document.getElementById('ldmTourToggleText');
+  const hint = document.getElementById('ldmTourHint');
+  if (!checkbox || !label || !text || !hint) return;
 
-    if (!checkbox || !label || !text || !hint) return;
+  if (!hasDate) {
+    checkbox.disabled = true;
+    checkbox.checked = false;
+    label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#94a3b8;cursor:not-allowed;padding:0 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;white-space:nowrap;transition:all .2s;';
+    text.textContent = '투어 예정';
+    hint.textContent = '투어 날짜를 먼저 선택해주세요';
+    hint.style.color = '#94a3b8';
+    return;
+  }
 
-    if (!hasDate) {
-        checkbox.disabled = true;
-        checkbox.checked = false;
-        label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#94a3b8;cursor:not-allowed;padding:0 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;white-space:nowrap;transition:all .2s;';
-        text.textContent = '투어 예정';
-        hint.textContent = '투어 날짜를 먼저 선택해주세요';
-        hint.style.color = '#94a3b8';
-        return;
-    }
+  checkbox.disabled = false;
 
-    checkbox.disabled = false;
-
-    if (checkbox.checked) {
-        label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#15803d;cursor:pointer;padding:0 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;white-space:nowrap;transition:all .2s;';
-        text.textContent = '투어 완료됨';
-        hint.textContent = '✓ 고객이 투어를 다녀왔습니다';
-        hint.style.color = '#15803d';
-    } else {
-        label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;padding:0 16px;background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;white-space:nowrap;transition:all .2s;';
-        text.textContent = '투어 다녀오면 체크';
-        hint.textContent = '투어 완료 후 체크박스를 눌러주세요';
-        hint.style.color = '#64748b';
-    }
+  if (checkbox.checked) {
+    label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#15803d;cursor:pointer;padding:0 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;white-space:nowrap;transition:all .2s;';
+    text.textContent = '투어 완료됨';
+    hint.textContent = '✓ 고객이 투어를 다녀왔습니다';
+    hint.style.color = '#15803d';
+  } else {
+    label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;padding:0 16px;background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;white-space:nowrap;transition:all .2s;';
+    text.textContent = '투어 다녀오면 체크';
+    hint.textContent = '투어 완료 후 체크박스를 눌러주세요';
+    hint.style.color = '#64748b';
+  }
 }
 
 function initTourDatePicker() {
@@ -2050,7 +2043,7 @@ function initTourDatePicker() {
         locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.ko) ? flatpickr.l10ns.ko : 'ko',
         time_24hr: false,
         minuteIncrement: 15,
-        minDate: 'today',
+        minDate: "today",
         onChange: function(selectedDates) {
             updateTourToggleUI(selectedDates.length > 0);
         },
@@ -2429,6 +2422,13 @@ window.onload = async function() {
   await renderAll();
   await loadSettings();
 };
+
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.id === 'ldmTourCompleted') {
+    const hasDate = tourDatePicker && tourDatePicker.selectedDates.length > 0;
+    updateTourToggleUI(hasDate);
+  }
+});
 </script>
 
 <div id="editFacModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;">
