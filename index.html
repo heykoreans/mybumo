@@ -345,50 +345,76 @@
                 max-height: 100vh;
                 overflow: hidden;
             }
+
             .chat-body, #chatBody {
                 flex: 1 1 auto;
-                overflow-x: hidden;
-                overflow-y: auto;
                 min-height: 0;
-                width: 100%;
-                box-sizing: border-box;
                 -webkit-overflow-scrolling: touch;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+                padding: 12px !important;
+                box-sizing: border-box !important;
             }
+
+            #chatBody * {
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* AI 메시지 버블, 사용자 메시지 버블 */
+            .msg, .ai-msg, .user-msg, [class*="bubble"], [class*="message"] {
+                max-width: calc(100vw - 60px) !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+            }
+
+            /* 노트 입력 카드 전체 */
+            .options, [id*="step"] {
+                width: 100% !important;
+                max-width: calc(100vw - 24px) !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 텍스트 영역과 입력창 */
+            textarea, input[type="text"], input[type="email"] {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                font-size: 16px !important;
+            }
+
+            /* 버튼 행 - flex로 정리 */
+            .note-actions, .add-req-row, [id*="Opts"] {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .note-actions button, .add-req-row button, [id*="Opts"] button {
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+                padding: 12px 8px !important;
+                font-size: 13px !important;
+            }
+
+            /* 채팅 헤더, 입력창 영역도 */
+            .chat-header, .chat-footer, [class*="chat-input"] {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                padding: 10px 12px !important;
+            }
+
+            /* 채팅 입력창 안의 input과 버튼 정렬 */
+            .chat-footer input, .chat-footer textarea {
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+            }
+
             .chat-header, .chat-footer {
-                flex-shrink: 0;
-            }
-
-            /* 채팅 메시지 버블 */
-            #chatBody > * {
-                max-width: 100%;
-                box-sizing: border-box;
-            }
-
-            /* 특별 요청 입력 카드 */
-            .note-card, .add-note-wrap, .add-req-box, [class*="note"] {
-                max-width: 100% !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            /* 버튼 영역 */
-            .note-actions, .add-req-row, [class*="btn-row"], [class*="actions"] {
-                display: flex;
-                width: 100%;
-                gap: 8px;
-                box-sizing: border-box;
-            }
-
-            /* 텍스트 영역 */
-            #addNoteText, textarea {
-                width: 100% !important;
-                max-width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            /* 매칭 요청하기 버튼 짤림 방지 */
-            button[onclick*="sendNote"], button[onclick*="skipNote"] {
-                white-space: nowrap;
                 flex-shrink: 0;
             }
         }
