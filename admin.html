@@ -869,13 +869,13 @@ async function renderAllLeads() {
 
   tbody.innerHTML = data.map(l => `
     <tr style="cursor:pointer;">
-      <td><div style="font-weight:600;">${l.name || '-'}</div><div style="font-size:12px;color:#64748b;">${l.note || ''}</div></td>
-      <td>${l.note || '-'}</td>
-      <td>${l.phone || '-'}</td>
-      <td><span style="background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:20px;font-size:12px;">보통</span></td>
-      <td>${l.senior_age ? l.senior_age + '세' : '-'}</td>
-      <td>${l.email || '-'}</td>
       <td>${l.created_at ? new Date(l.created_at).toLocaleDateString('ko-KR') : '-'}</td>
+      <td><div style="font-weight:600;">${l.name || '-'}</div></td>
+      <td>${l.email || '-'}</td>
+      <td>${l.phone || '-'}</td>
+      <td>${l.senior_age ? l.senior_age + '세' : '-'}</td>
+      <td>${l.note || '-'}</td>
+      <td><span style="background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:20px;font-size:12px;">보통</span></td>
     </tr>
   `).join('');
 
