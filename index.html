@@ -1335,7 +1335,7 @@ async function sendNote() {
   };
   console.log('userNeeds:', userNeeds);
   await showMatchedFacilities(userNeeds);
-  setTimeout(() => showOverlay('leadOverlay'), 2000);
+  setTimeout(() => showOverlay('leadOverlay'), 10000);
 }
 
 async function skipNote() {
@@ -1351,7 +1351,7 @@ async function skipNote() {
   };
   console.log('userNeeds:', userNeeds);
   await showMatchedFacilities(userNeeds);
-  setTimeout(() => showOverlay('leadOverlay'), 2000);
+  setTimeout(() => showOverlay('leadOverlay'), 10000);
 }
 
 // ─── PARTNER ───
