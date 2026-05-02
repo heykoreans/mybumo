@@ -267,10 +267,145 @@
         .mobile-tabbar { display: none; }
         .mobile-more-sheet { display: none; }
 
+        .mobile-leads-list {
+            display: none;
+            padding: 8px 0;
+        }
+        .mobile-lead-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all .2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .mobile-lead-card:active {
+            transform: scale(0.98);
+            background: #f8fafc;
+        }
+        .mlc-row1 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .mlc-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0d2137;
+        }
+        .mlc-date {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+        .mlc-care {
+            font-size: 13px;
+            color: #1e293b;
+            margin-bottom: 6px;
+            word-break: keep-all;
+        }
+        .mlc-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .mlc-tag {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .mlc-status {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 8px;
+            background: #dcfce7;
+            color: #16a34a;
+            font-weight: 700;
+            margin-left: auto;
+        }
+
+        .lead-detail-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+        }
+        .lead-detail-modal.show { display: block; }
+        .ldm-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            animation: ldmFadeIn .2s;
+        }
+        .ldm-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: ldmSlideUp .3s ease;
+            padding: 8px 20px 32px;
+        }
+        .ldm-handle {
+            width: 40px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 2px;
+            margin: 12px auto 8px;
+        }
+        .ldm-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0 16px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 16px;
+        }
+        .ldm-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: #0d2137;
+        }
+        .ldm-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            color: #1e293b;
+        }
+        .ldm-label {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .ldm-action-btn {
+            flex: 1;
+            text-align: center;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        @keyframes ldmFadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes ldmSlideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
         @media (max-width: 768px) {
             /* 전체 레이아웃 */
             html, body {
                 overflow-x: hidden !important;
+                overflow-y: auto !important;
+                height: auto !important;
             }
 
             .layout, .app-layout, .wrapper, .container {
@@ -293,6 +428,11 @@
                 max-width: 100vw !important;
                 box-sizing: border-box !important;
                 overflow-x: hidden !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                max-height: none !important;
             }
 
             /* 상단 알림 배너 */
@@ -347,6 +487,10 @@
                 max-width: 100% !important;
                 box-sizing: border-box !important;
             }
+
+            /* PC 테이블 숨기고 모바일 카드 리스트 표시 */
+            #sec-leads .leads-table { display: none !important; }
+            #sec-leads .mobile-leads-list { display: block !important; }
 
             .mobile-tabbar {
                 display: flex;
@@ -935,10 +1079,10 @@
     </div>
 </div>
 
-<!-- ── Lead Detail Modal ── -->
-<div class="modal-overlay" id="leadDetailModal">
+<!-- ── Lead Detail Modal (데모/대시보드·칸반용) ── -->
+<div class="modal-overlay" id="legacyLeadDetailModal">
     <div class="modal-box lead-modal">
-        <button class="modal-close" onclick="closeModal('leadDetailModal')">✕</button>
+        <button class="modal-close" onclick="closeModal('legacyLeadDetailModal')">✕</button>
         <div class="badge badge-new" id="modalStatus" style="margin-bottom:14px;"></div>
         <h2 id="modalName"></h2>
         <div class="lead-modal-meta" id="modalMeta"></div>
@@ -952,7 +1096,7 @@
                 <option class="kr">입주 확정</option><option class="en" style="display:none">Placed</option>
                 <option class="kr">보류</option><option class="en" style="display:none">On Hold</option>
             </select>
-            <button class="btn-primary" onclick="closeModal('leadDetailModal')">
+            <button class="btn-primary" onclick="closeModal('legacyLeadDetailModal')">
                 <span class="kr">저장하기</span><span class="en" style="display:none">Save</span>
             </button>
             <button class="btn-secondary">
@@ -1127,7 +1271,7 @@ const statusEn = { new:'New', contacting:'Contacting', tour:'Tour', placed:'Plac
 function renderRecentLeads() {
     const isEn = adminLang === 'en';
     document.getElementById('recentLeadsBody').innerHTML = LEADS.slice(0,5).map(l => `
-        <tr onclick="openLeadDetail(${l.id})" style="cursor:pointer;">
+        <tr onclick="openDemoLeadDetail(${l.id})" style="cursor:pointer;">
             <td><div class="td-name">${isEn ? l.nameEn : l.nameKr}</div></td>
             <td><span class="badge ${statusMap[l.status]}">${isEn ? l.careEn : l.care}</span></td>
             <td>${isEn ? 'Within 1-3 mo' : '1~3개월 내'}</td>
@@ -1176,7 +1320,7 @@ function renderKanban() {
         return `<div class="kanban-col">
             <div class="kanban-col-header">${isEn ? col.enLabel : col.krLabel} <span class="col-count">${cards.length}</span></div>
             <div class="kanban-cards">${cards.map(l => `
-                <div class="k-card ${l.urgency==='high'?'urgent':l.status==='placed'?'won':l.status==='lost'?'cold':''}" onclick="openLeadDetail(${l.id})">
+                <div class="k-card ${l.urgency==='high'?'urgent':l.status==='placed'?'won':l.status==='lost'?'cold':''}" onclick="openDemoLeadDetail(${l.id})">
                     <div class="k-card-meta"><span>${l.date}</span><span class="urgency-dot ${l.urgency}" style="display:inline-block;"></span></div>
                     <div class="k-card-name">${isEn ? l.nameEn.split('(')[0].trim() : l.nameKr.split('(')[0].trim()}</div>
                     <div class="k-card-info">${isEn ? l.careEn : l.care} · ${l.loc}</div>
@@ -1493,8 +1637,8 @@ function renderRevBars() {
         </div>`).join('');
 }
 
-// ─── LEAD DETAIL ───
-function openLeadDetail(id) {
+// ─── LEAD DETAIL (데모 데이터) ───
+function openDemoLeadDetail(id) {
     const isEn = adminLang === 'en';
     const l = LEADS.find(x => x.id === id);
     document.getElementById('modalStatus').textContent = isEn ? statusEn[l.status] : statusKr[l.status];
@@ -1508,7 +1652,32 @@ function openLeadDetail(id) {
         { label: isEn?'Urgency':'긴급도', val: {high:isEn?'Urgent':'긴급',med:isEn?'Medium':'보통',low:isEn?'Low':'여유'}[l.urgency] },
     ].map(item => `<div class="lead-info-box"><label>${item.label}</label><span>${item.val}</span></div>`).join('');
     document.getElementById('modalNotes').innerHTML = `<label>🤖 AI ${isEn?'Notes':'케어 플래너 메모'}</label><p>${l.notes}</p>`;
-    showModal('leadDetailModal');
+    showModal('legacyLeadDetailModal');
+}
+
+function openLeadDetail(lead) {
+    document.getElementById('ldmName').textContent = lead.name || '-';
+    document.getElementById('ldmDate').textContent = lead.created_at ? new Date(lead.created_at).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'}) : '-';
+    document.getElementById('ldmCare').textContent = lead.care_type || '-';
+    document.getElementById('ldmLocation').textContent = lead.location || '-';
+    document.getElementById('ldmBudget').textContent = lead.budget || '-';
+    document.getElementById('ldmAge').textContent = lead.senior_age ? lead.senior_age + '세' : '-';
+    document.getElementById('ldmEmail').textContent = lead.email || '-';
+    document.getElementById('ldmPhone').textContent = lead.phone || '-';
+    document.getElementById('ldmNote').textContent = lead.note || '-';
+
+    const callBtn = document.getElementById('ldmCallBtn');
+    const emailBtn = document.getElementById('ldmEmailBtn');
+    callBtn.href = lead.phone ? `tel:${lead.phone}` : '#';
+    emailBtn.href = lead.email ? `mailto:${lead.email}` : '#';
+    callBtn.style.opacity = lead.phone ? '1' : '0.4';
+    emailBtn.style.opacity = lead.email ? '1' : '0.4';
+
+    document.getElementById('leadDetailModal').classList.add('show');
+}
+
+function closeLeadDetail() {
+    document.getElementById('leadDetailModal').classList.remove('show');
 }
 
 // ─── NAV ───
@@ -1598,6 +1767,32 @@ async function loadRealLeads() {
       </tr>
     `).join('');
   });
+
+  // 모바일 카드 리스트 렌더링
+  window._leadsDataForModal = data;
+  let mobileList = document.querySelector('#sec-leads .mobile-leads-list');
+  if (!mobileList) {
+    mobileList = document.createElement('div');
+    mobileList.className = 'mobile-leads-list';
+    const cardBody = document.querySelector('#sec-leads .card-body');
+    if (cardBody) cardBody.appendChild(mobileList);
+  }
+
+  mobileList.innerHTML = data.map((l, idx) => `
+    <div class="mobile-lead-card" onclick="openLeadDetail(window._leadsDataForModal[${idx}])">
+      <div class="mlc-row1">
+        <span class="mlc-name">${l.name || '-'}</span>
+        <span class="mlc-date">${l.created_at ? new Date(l.created_at).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'}) : '-'}</span>
+      </div>
+      <div class="mlc-care">${l.care_type || '케어 유형 미정'}</div>
+      <div class="mlc-meta">
+        ${l.location ? `<span class="mlc-tag">📍 ${l.location}</span>` : ''}
+        ${l.budget ? `<span class="mlc-tag">💰 ${l.budget}</span>` : ''}
+        ${l.senior_age ? `<span class="mlc-tag">${l.senior_age}세</span>` : ''}
+        <span class="mlc-status">신규</span>
+      </div>
+    </div>
+  `).join('');
 
   // KPI 신규 리드 숫자 업데이트 (첫번째 KPI 카드)
   const kpiNums = document.querySelectorAll('.kpi-value, .kpi-num');
@@ -1721,6 +1916,34 @@ window.onload = async function() {
     <button class="more-item" onclick="showSection('settings');document.getElementById('mobileMoreSheet').classList.remove('show')">⚙️ 설정</button>
     <button class="more-item" onclick="toggleAdminLang()">🌐 English</button>
     <button class="more-item" style="color:#dc2626;" onclick="logout()">🚪 로그아웃</button>
+  </div>
+</div>
+
+<div class="lead-detail-modal" id="leadDetailModal">
+  <div class="ldm-backdrop" onclick="closeLeadDetail()"></div>
+  <div class="ldm-panel">
+    <div class="ldm-handle"></div>
+    <div class="ldm-header">
+      <h3 id="ldmName">-</h3>
+      <button onclick="closeLeadDetail()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#64748b;">✕</button>
+    </div>
+    <div class="ldm-body">
+      <div class="ldm-row"><span class="ldm-label">날짜</span><span id="ldmDate">-</span></div>
+      <div class="ldm-row"><span class="ldm-label">케어 유형</span><span id="ldmCare">-</span></div>
+      <div class="ldm-row"><span class="ldm-label">지역</span><span id="ldmLocation">-</span></div>
+      <div class="ldm-row"><span class="ldm-label">예산</span><span id="ldmBudget">-</span></div>
+      <div class="ldm-row"><span class="ldm-label">나이</span><span id="ldmAge">-</span></div>
+      <div class="ldm-row"><span class="ldm-label">이메일</span><span id="ldmEmail">-</span></div>
+      <div class="ldm-row"><span class="ldm-label">전화</span><span id="ldmPhone">-</span></div>
+      <div class="ldm-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+        <span class="ldm-label">메모</span>
+        <span id="ldmNote" style="word-break:keep-all;line-height:1.6;color:#1e293b;">-</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:20px;">
+        <a id="ldmCallBtn" href="#" class="ldm-action-btn" style="background:#0d2137;color:white;">📞 전화 걸기</a>
+        <a id="ldmEmailBtn" href="#" class="ldm-action-btn" style="background:white;color:#0d2137;border:1.5px solid #0d2137;">✉️ 이메일</a>
+      </div>
+    </div>
   </div>
 </div>
 </body>
