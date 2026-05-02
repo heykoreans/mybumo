@@ -246,7 +246,120 @@
 
         /* responsive */
         @media(max-width:1200px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } .kanban-board { grid-template-columns: repeat(3, 1fr); } }
-        @media(max-width:900px) { .sidebar { transform: translateX(-100%); } .main-content { margin-left: 0; width: 100%; } }
+
+        .mobile-tabbar { display: none; }
+        .mobile-more-sheet { display: none; }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none !important; }
+            .main-content { margin-left: 0 !important; padding-bottom: 80px !important; }
+
+            .mobile-tabbar {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 64px;
+                background: white;
+                border-top: 1px solid #e2e8f0;
+                z-index: 1000;
+                box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+            }
+            .tab-btn {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3px;
+                background: none;
+                border: none;
+                cursor: pointer;
+                color: #94a3b8;
+                font-size: 11px;
+                font-weight: 600;
+                position: relative;
+                padding: 8px 4px;
+                transition: color .2s;
+            }
+            .tab-btn.active { color: #0d2137; }
+            .tab-btn .tab-icon { font-size: 20px; }
+            .tab-btn .tab-label { font-size: 10.5px; }
+            .tab-badge {
+                position: absolute;
+                top: 6px;
+                right: 50%;
+                margin-right: -22px;
+                background: #f59e0b;
+                color: white;
+                font-size: 10px;
+                font-weight: 700;
+                padding: 1px 6px;
+                border-radius: 10px;
+                min-width: 16px;
+                text-align: center;
+            }
+
+            .mobile-more-sheet {
+                display: none;
+                position: fixed;
+                inset: 0;
+                z-index: 2000;
+            }
+            .mobile-more-sheet.show { display: block; }
+            .more-sheet-backdrop {
+                position: absolute;
+                inset: 0;
+                background: rgba(0,0,0,0.4);
+                animation: moreSheetFade .2s;
+            }
+            .more-sheet-panel {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: white;
+                border-radius: 20px 20px 0 0;
+                padding: 8px 16px 32px;
+                animation: moreSheetSlideUp .25s ease;
+            }
+            .more-sheet-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 16px 4px 12px;
+                font-size: 16px;
+                font-weight: 700;
+                color: #0d2137;
+            }
+            .more-item {
+                display: block;
+                width: 100%;
+                text-align: left;
+                background: none;
+                border: none;
+                padding: 14px 8px;
+                font-size: 15px;
+                color: #1e293b;
+                cursor: pointer;
+                border-radius: 10px;
+            }
+            .more-item:hover { background: #f1f5f9; }
+
+            /* 상단 헤더 영역 컴팩트화 */
+            .main-content { padding: 16px !important; }
+            .section-header { flex-direction: column; gap: 12px; align-items: flex-start !important; }
+        }
+
+        @keyframes moreSheetSlideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes moreSheetFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1253,11 +1366,26 @@ async function showSection(id) {
     if (target) target.classList.add('active');
     document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
     const map = { dashboard:0, leads:1, kanban:2, facilities:3, billing:4, settings:5 };
-    document.querySelectorAll('.menu-item')[map[id]].classList.add('active');
+    const menuItems = document.querySelectorAll('.menu-item');
+    if (map[id] !== undefined && menuItems[map[id]]) menuItems[map[id]].classList.add('active');
     const titles = { dashboard:'대시보드', leads:'신규 문의 · 리드', kanban:'리드 파이프라인', facilities:'시설 관리', billing:'수수료 정산', settings:'설정' };
     const titlesEn = { dashboard:'Dashboard', leads:'Leads', kanban:'Pipeline', facilities:'Facilities', billing:'Billing', settings:'Settings' };
     document.getElementById('pageTitle').textContent = adminLang === 'en' ? titlesEn[id] : titles[id];
     await renderAll();
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const activeTab = document.querySelector(`.tab-btn[data-section="${id}"]`);
+    if (activeTab) activeTab.classList.add('active');
+}
+
+function setActiveTab(btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+}
+
+function logout() {
+    sessionStorage.removeItem('adminAuth');
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('mobileMoreSheet')?.classList.remove('show');
 }
 
 async function renderAll() {
@@ -1322,6 +1450,8 @@ async function loadRealLeads() {
   // KPI 신규 리드 숫자 업데이트 (첫번째 KPI 카드)
   const kpiNums = document.querySelectorAll('.kpi-value, .kpi-num');
   if (kpiNums[0]) kpiNums[0].textContent = data.length;
+  const mobileTabBadge = document.getElementById('mobileTabBadge');
+  if (mobileTabBadge && data) mobileTabBadge.textContent = data.length;
 }
 
 window.onload = async function() {
@@ -1404,6 +1534,41 @@ window.onload = async function() {
         <button onclick="closePreviewModal()" style="flex:1;padding:12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;cursor:pointer;">닫기</button>
       </div>
     </div>
+  </div>
+</div>
+
+<nav class="mobile-tabbar">
+  <button class="tab-btn active" data-section="dashboard" onclick="showSection('dashboard');setActiveTab(this);">
+    <div class="tab-icon">📊</div>
+    <div class="tab-label">대시보드</div>
+  </button>
+  <button class="tab-btn" data-section="leads" onclick="showSection('leads');setActiveTab(this);">
+    <div class="tab-icon">👥</div>
+    <div class="tab-label">신규 리드</div>
+    <span class="tab-badge" id="mobileTabBadge">5</span>
+  </button>
+  <button class="tab-btn" data-section="kanban" onclick="showSection('kanban');setActiveTab(this);">
+    <div class="tab-icon">📋</div>
+    <div class="tab-label">파이프라인</div>
+  </button>
+  <button class="tab-btn" onclick="document.getElementById('mobileMoreSheet').classList.add('show')">
+    <div class="tab-icon">⋯</div>
+    <div class="tab-label">더보기</div>
+  </button>
+</nav>
+
+<div class="mobile-more-sheet" id="mobileMoreSheet">
+  <div class="more-sheet-backdrop" onclick="document.getElementById('mobileMoreSheet').classList.remove('show')"></div>
+  <div class="more-sheet-panel">
+    <div class="more-sheet-header">
+      <span>메뉴</span>
+      <button onclick="document.getElementById('mobileMoreSheet').classList.remove('show')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+    </div>
+    <button class="more-item" onclick="showSection('facilities');document.getElementById('mobileMoreSheet').classList.remove('show')">🏥 시설 관리</button>
+    <button class="more-item" onclick="showSection('billing');document.getElementById('mobileMoreSheet').classList.remove('show')">💰 수수료 정산</button>
+    <button class="more-item" onclick="showSection('settings');document.getElementById('mobileMoreSheet').classList.remove('show')">⚙️ 설정</button>
+    <button class="more-item" onclick="toggleAdminLang()">🌐 English</button>
+    <button class="more-item" style="color:#dc2626;" onclick="logout()">🚪 로그아웃</button>
   </div>
 </div>
 </body>
