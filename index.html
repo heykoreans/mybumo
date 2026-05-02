@@ -1310,8 +1310,17 @@ async function submitLead() {
   const phone = document.querySelector('#lstep2 input[type=tel]')?.value  || '';
   const age   = document.querySelector('#lstep2 input[type=number]')?.value || '';
   const note  = document.getElementById('addNoteText')?.value || window.capturedNote || '';
-  const { error } = await db.from('leads').insert([{ email, name, phone, senior_age: age, note }]);
+  
+  const care_type = window.selectedCareType || selectedCare || '';
+  const location  = window.selectedLocation || selectedLocation || '';
+  const budget    = window.selectedBudget || selectedBudget || '';
+  
+  const { error } = await db.from('leads').insert([{ 
+    email, name, phone, senior_age: age, note, care_type, location, budget 
+  }]);
+  
   if (error) { console.error(error); alert('저장 중 오류가 발생했습니다.'); return; }
+  
   closeOverlay('leadOverlay');
   document.getElementById('lstep1').style.display = 'block';
   document.getElementById('lstep2').style.display = 'none';

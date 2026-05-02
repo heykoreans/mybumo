@@ -482,6 +482,9 @@
                         <tr>
                             <th>날짜</th>
                             <th>이름</th>
+                            <th>케어 유형</th>
+                            <th>지역</th>
+                            <th>예산</th>
                             <th>Email</th>
                             <th>Phone</th>
                             <th>나이</th>
@@ -863,7 +866,7 @@ async function renderAllLeads() {
   if (!tbody) return;
 
   if (data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#94a3b8;">아직 접수된 리드가 없습니다.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:#94a3b8;">아직 접수된 리드가 없습니다.</td></tr>';
     return;
   }
 
@@ -871,6 +874,9 @@ async function renderAllLeads() {
     <tr style="cursor:pointer;">
       <td>${l.created_at ? new Date(l.created_at).toLocaleDateString('ko-KR') : '-'}</td>
       <td><div style="font-weight:600;">${l.name || '-'}</div></td>
+      <td>${l.care_type || '-'}</td>
+      <td>${l.location || '-'}</td>
+      <td>${l.budget || '-'}</td>
       <td>${l.email || '-'}</td>
       <td>${l.phone || '-'}</td>
       <td>${l.senior_age ? l.senior_age + '세' : '-'}</td>
@@ -1287,6 +1293,9 @@ async function loadRealLeads() {
       <tr>
         <td>${l.created_at ? new Date(l.created_at).toLocaleDateString('ko-KR') : '-'}</td>
         <td>${l.name || '-'}</td>
+        <td>${l.care_type || '-'}</td>
+        <td>${l.location || '-'}</td>
+        <td>${l.budget || '-'}</td>
         <td>${l.email || '-'}</td>
         <td>${l.phone || '-'}</td>
         <td>${l.senior_age ? l.senior_age + '세' : '-'}</td>
