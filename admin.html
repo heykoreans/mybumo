@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MyBumo — 시설 파트너 어드민</title>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/light.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
     <style>
         html, body {
             overflow-x: hidden !important;
@@ -764,6 +768,9 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        .flatpickr-calendar { z-index: 5000 !important; }
+        .flatpickr-time { z-index: 5001 !important; }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1356,6 +1363,7 @@ const LEADS = [
 ];
 
 let realLeadsData = []; // 실제 leads 데이터 캐시
+let tourDatePicker = null;
 
 const KANBAN_COLS = [
     { id:'new', krLabel:'🆕 신규', enLabel:'🆕 New', filterFn: l => l.status==='new' },
@@ -1920,6 +1928,20 @@ function openDemoLeadDetail(id) {
     showModal('legacyLeadDetailModal');
 }
 
+function initTourDatePicker() {
+    if (tourDatePicker) return;
+    tourDatePicker = flatpickr('#ldmTourDate', {
+        enableTime: true,
+        dateFormat: 'Y-m-d H:i',
+        altInput: true,
+        altFormat: 'n월 j일 (D) · h:i K',
+        locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.ko) ? flatpickr.l10ns.ko : 'ko',
+        time_24hr: false,
+        minuteIncrement: 15,
+        minDate: 'today'
+    });
+}
+
 function openLeadDetail(lead) {
     document.getElementById('ldmName').textContent = lead.name || '-';
     document.getElementById('ldmDate').textContent = lead.created_at ? new Date(lead.created_at).toLocaleDateString('en-US', {month:'2-digit', day:'2-digit', year:'2-digit'}) : '-';
@@ -1940,9 +1962,12 @@ function openLeadDetail(lead) {
 
     // 어드민 메모 + 투어 정보 채우기
     document.getElementById('ldmAdminNotes').value = lead.admin_notes || '';
-    document.getElementById('ldmTourDate').value = lead.tour_date
-        ? new Date(lead.tour_date).toISOString().slice(0, 16)
-        : '';
+    initTourDatePicker();
+    if (lead.tour_date) {
+        tourDatePicker.setDate(new Date(lead.tour_date), false);
+    } else {
+        tourDatePicker.clear();
+    }
     document.getElementById('ldmTourCompleted').checked = !!lead.tour_completed;
 
     // 현재 lead id 저장 (저장 시 사용)
@@ -1966,12 +1991,14 @@ async function saveLeadUpdates(event) {
     if (!leadId) return;
 
     const adminNotes = document.getElementById('ldmAdminNotes').value;
-    const tourDateValue = document.getElementById('ldmTourDate').value;
+    const tourDateValue = tourDatePicker && tourDatePicker.selectedDates[0]
+        ? tourDatePicker.selectedDates[0]
+        : null;
     const tourCompleted = document.getElementById('ldmTourCompleted').checked;
 
     const updates = {
         admin_notes: adminNotes || null,
-        tour_date: tourDateValue ? new Date(tourDateValue).toISOString() : null,
+        tour_date: tourDateValue ? tourDateValue.toISOString() : null,
         tour_completed: tourCompleted
     };
 
@@ -2005,7 +2032,7 @@ async function saveLeadUpdates(event) {
 
     setTimeout(() => {
         saveBtn.textContent = originalText;
-        saveBtn.style.background = '#0d2137';
+        saveBtn.style.background = '#0f172a';
         saveBtn.disabled = false;
     }, 1500);
 
@@ -2281,31 +2308,36 @@ window.onload = async function() {
         <span class="ldm-label">메모</span>
         <span id="ldmNote" style="word-break:keep-all;line-height:1.6;color:#1e293b;">-</span>
       </div>
-      <div style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:20px;">
-        <label style="display:block;font-size:13px;font-weight:700;color:#0d2137;margin-bottom:8px;">📅 투어 예정일</label>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-          <input type="datetime-local" id="ldmTourDate" style="flex:1;padding:10px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13px;outline:none;">
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#1e293b;cursor:pointer;white-space:nowrap;">
-            <input type="checkbox" id="ldmTourCompleted" style="width:16px;height:16px;cursor:pointer;">
+      <div style="margin-top:24px;border-top:1px solid #f1f5f9;padding-top:24px;">
+        <label style="display:block;font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">📅 투어 일정 관리</label>
+        <div style="display:flex;gap:10px;align-items:center;background:#f8fafc;padding:12px;border-radius:12px;border:1px solid #e2e8f0;">
+          <div style="flex:1;min-width:0;">
+            <input type="text" id="ldmTourDate" placeholder="날짜 · 시간 선택"
+              style="width:100%;padding:11px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;color:#334155;background:#ffffff;outline:none;box-sizing:border-box;cursor:pointer;font-family:inherit;">
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;padding:11px 14px;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;white-space:nowrap;">
+            <input type="checkbox" id="ldmTourCompleted" style="width:16px;height:16px;cursor:pointer;accent-color:#0f172a;">
             완료
           </label>
         </div>
       </div>
 
-      <div style="margin-top:20px;">
-        <label style="display:block;font-size:13px;font-weight:700;color:#0d2137;margin-bottom:8px;">📝 상담 메모</label>
+      <div style="margin-top:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <label style="font-size:14px;font-weight:700;color:#0f172a;">📝 상담 메모</label>
+          <button type="button" onclick="appendAdminNote()" 
+            style="background:#eef2ff;color:#4338ca;border:none;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;">
+            + 오늘 날짜 추가
+          </button>
+        </div>
         <textarea id="ldmAdminNotes" rows="5" placeholder="예: 2/15 1차 통화 - 관심 있음, 다음 주 투어 희망. 한식 제공 여부 문의함."
-          style="width:100%;padding:12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13px;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;"></textarea>
-        <button type="button" onclick="appendAdminNote()" 
-          style="margin-top:8px;background:#f1f5f9;border:1px solid #cbd5e1;color:#1e293b;padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;">
-          ➕ 오늘 날짜로 새 메모 추가
-        </button>
+          style="width:100%;padding:14px;border:1px solid #cbd5e1;border-radius:12px;font-size:14px;color:#334155;background:#f8fafc;line-height:1.6;resize:vertical;outline:none;box-sizing:border-box;font-family:inherit;"></textarea>
       </div>
 
-      <div style="margin-top:20px;">
-        <button type="button" id="ldmSaveBtn" onclick="saveLeadUpdates(event)"
-          style="width:100%;background:#0d2137;color:white;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">
-          💾 저장
+      <div style="margin-top:24px;">
+        <button id="ldmSaveBtn" type="button" onclick="saveLeadUpdates(event)" 
+          style="width:100%;background:#0f172a;color:#ffffff;border:none;padding:15px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">
+          💾 변경 사항 저장
         </button>
       </div>
       <div style="display:flex;gap:8px;margin-top:20px;">
