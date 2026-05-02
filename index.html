@@ -369,7 +369,7 @@
                 overflow-y: auto !important;
                 width: 100% !important;
                 max-width: 100vw !important;
-                padding: 12px 14px 80px !important;
+                padding: 12px 14px 140px !important;
                 box-sizing: border-box !important;
             }
 
@@ -456,28 +456,47 @@
                 max-width: 85% !important;
             }
 
-            /* 특별 요청 카드 (add-req-box) — 모바일 너비/여백 */
+            /* 특별 요청 카드 (add-req-box) — 모바일 너비/여백·콘텐츠 표시 */
             .add-req-box {
                 width: auto !important;
                 max-width: 100% !important;
                 margin-left: 0 !important;
                 box-sizing: border-box !important;
                 padding: 14px !important;
+                overflow: visible !important;
+                height: auto !important;
+                max-height: none !important;
+                display: block !important;
+            }
+
+            .add-req-box p {
+                display: block !important;
+                height: auto !important;
+                margin-bottom: 12px !important;
             }
 
             .add-req-box textarea {
+                display: block !important;
                 width: 100% !important;
+                min-height: 80px !important;
+                height: auto !important;
                 box-sizing: border-box !important;
+                margin-bottom: 10px !important;
             }
 
-            .add-req-row {
-                flex-wrap: wrap !important;
-                justify-content: stretch !important;
+            .add-req-box .add-req-row {
+                display: flex !important;
+                flex-direction: row !important;
+                gap: 8px !important;
+                width: 100% !important;
+                margin-top: 10px !important;
             }
 
-            .add-req-row button {
+            .add-req-box .add-req-row button {
                 flex: 1 1 auto !important;
-                min-width: 0 !important;
+                padding: 14px 12px !important;
+                font-size: 14px !important;
+                min-height: 44px !important;
             }
 
             .chat-header, .chat-footer {
@@ -1177,7 +1196,6 @@ function showResults() {
         box.className = 'add-req-box';
         box.style.maxWidth = '100%';
         box.style.boxSizing = 'border-box';
-        box.style.overflow = 'hidden';
         box.innerHTML = `
             <p>${isEn ? '💡 Any specific needs or questions? (e.g., Parkinson\'s care, near Korean church, Medicare coverage)' : '💡 특별히 더 필요한 사항이 있으신가요? (예: 파킨슨 케어, 한인 교회 인근, 메디케어 적용 여부 등)'}</p>
             <textarea id="addNoteText" rows="3" placeholder="${isEn ? 'e.g., Father has Parkinson\'s, prefers Torrance area, Medicare coverage required...' : '예: 아버지 파킨슨 진단, 토런스 지역 선호, 메디케어 적용 필수...'}"></textarea>
