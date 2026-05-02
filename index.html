@@ -1513,11 +1513,13 @@ function sendMsg() {
         : 'Thank you! A dedicated care planner will be in touch within 24 hours. Would you like to request a free consultation now?'), 700);
 }
 function scrollBottom() {
-    setTimeout(() => {
-        const chatBody = document.getElementById('chatBody');
-        if (!chatBody) return;
-        chatBody.scrollTop = chatBody.scrollHeight;
-    }, 100);
+  setTimeout(() => {
+    const chatBody = document.getElementById('chatBody');
+    if (!chatBody) return;
+    chatBody.scrollTop = chatBody.scrollHeight;
+    // PC에서 chatBody 자체가 스크롤 안 될 때 window도 같이 스크롤
+    window.scrollTo(0, document.body.scrollHeight);
+  }, 150);
 }
 
 // ─── OVERLAY ───
@@ -1581,7 +1583,7 @@ function startMobileChat() {
 
         document.body.style.overflow = 'hidden';
     }
-    setTimeout(() => scrollBottom(), 150);
+    setTimeout(() => scrollBottom(), 300);
 }
 
 function resetChatPanelLayout() {
