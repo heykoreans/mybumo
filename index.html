@@ -652,6 +652,7 @@
 let lang = 'kr';
 let step = 1;
 let selectedCareType = '';
+let selectedCare = '';
 let selectedLocation = '';
 let selectedBudget = '';
 let selectedFacIdx = -1;
@@ -860,9 +861,12 @@ async function showMatchedFacilities(userNeeds) {
     setTimeout(() => {
       const chatBody = document.getElementById('chatBody');
       if (chatBody) {
+        chatBody.scrollTop = chatBody.scrollHeight;
         chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
       }
-    }, 100);
+      const lastMsg = chatBody?.lastElementChild;
+      if (lastMsg) lastMsg.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 300);
     return;
   }
 
@@ -904,9 +908,13 @@ async function showMatchedFacilities(userNeeds) {
   setTimeout(() => {
     const chatBody = document.getElementById('chatBody');
     if (chatBody) {
+      chatBody.scrollTop = chatBody.scrollHeight;
       chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
     }
-  }, 100);
+    // 모바일/데스크톱 모두 대응
+    const lastMsg = chatBody?.lastElementChild;
+    if (lastMsg) lastMsg.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, 300);
 }
 
 // ─── CHAT FLOW ───
@@ -914,6 +922,7 @@ function step1Select(btn, val) {
     document.querySelectorAll('#step1Opts .btn-opt').forEach(b => b.classList.remove('sel'));
     btn.classList.add('sel');
     selectedCareType = val;
+    selectedCare = val;
     window.selectedCareType = val;
     setTimeout(() => {
         document.getElementById('step1Opts').innerHTML = '';
@@ -1080,23 +1089,33 @@ async function submitLead() {
 }
 
 async function sendNote() {
+  console.log('=== 매칭 요청 ===');
+  console.log('selectedCareType:', window.selectedCareType, selectedCare);
+  console.log('selectedLocation:', window.selectedLocation, selectedLocation);
+  console.log('selectedBudget:', window.selectedBudget, selectedBudget);
   const userNeeds = {
-    careType: window.selectedCareType || '',
-    location: window.selectedLocation || '',
-    budget: window.selectedBudget || '',
+    careType: window.selectedCareType || selectedCareType || '',
+    location: window.selectedLocation || selectedLocation || '',
+    budget: window.selectedBudget || selectedBudget || '',
     specialNote: document.getElementById('addNoteText')?.value || ''
   };
+  console.log('userNeeds:', userNeeds);
   await showMatchedFacilities(userNeeds);
   setTimeout(() => showOverlay('leadOverlay'), 2000);
 }
 
 async function skipNote() {
+  console.log('=== 매칭 요청 ===');
+  console.log('selectedCareType:', window.selectedCareType, selectedCare);
+  console.log('selectedLocation:', window.selectedLocation, selectedLocation);
+  console.log('selectedBudget:', window.selectedBudget, selectedBudget);
   const userNeeds = {
-    careType: window.selectedCareType || '',
-    location: window.selectedLocation || '',
-    budget: window.selectedBudget || '',
-    specialNote: ''
+    careType: window.selectedCareType || selectedCareType || '',
+    location: window.selectedLocation || selectedLocation || '',
+    budget: window.selectedBudget || selectedBudget || '',
+    specialNote: document.getElementById('addNoteText')?.value || ''
   };
+  console.log('userNeeds:', userNeeds);
   await showMatchedFacilities(userNeeds);
   setTimeout(() => showOverlay('leadOverlay'), 2000);
 }
