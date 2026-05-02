@@ -789,13 +789,13 @@
     </p>
   </div>
   
-  <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
     <div>
       <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">
         신청자 이름 <span style="color:#dc2626;">*</span>
       </label>
       <input type="text" id="leadNameInput" placeholder="홍길동"
-        style="width:100%;padding:14px 16px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit;">
+        style="width:100%;padding:14px 16px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit;min-width:0;">
     </div>
     
     <div>
@@ -803,7 +803,7 @@
         연락처 <span style="color:#dc2626;">*</span>
       </label>
       <input type="tel" id="leadPhoneInput" placeholder="(213) 123-4567"
-        style="width:100%;padding:14px 16px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit;">
+        style="width:100%;padding:14px 16px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit;min-width:0;">
     </div>
     
     <div>
@@ -811,7 +811,34 @@
         어르신 연세 <span style="color:#dc2626;">*</span>
       </label>
       <input type="number" id="leadAgeInput" placeholder="85" min="50" max="120"
-        style="width:100%;padding:14px 16px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit;">
+        style="width:100%;padding:14px 16px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit;min-width:0;">
+    </div>
+
+    <div>
+      <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">
+        입주 희망 시기 <span style="color:#dc2626;">*</span>
+      </label>
+      <select id="leadTimingInput"
+        style="width:100%;padding:14px 16px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;outline:none;box-sizing:border-box;font-family:inherit;background:#ffffff;cursor:pointer;appearance:none;background-image:url('data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;12&quot; height=&quot;8&quot; viewBox=&quot;0 0 12 8&quot;><path fill=&quot;%2364748b&quot; d=&quot;M6 8L0 0h12z&quot;/></svg>');background-repeat:no-repeat;background-position:right 16px center;padding-right:42px;min-width:0;">
+        <option value="">선택해주세요</option>
+        <option value="즉시 (1개월 이내)">즉시 (1개월 이내)</option>
+        <option value="1-3개월">1-3개월</option>
+        <option value="3-6개월">3-6개월</option>
+        <option value="6개월 이상">6개월 이상</option>
+        <option value="미정">아직 정하지 못했어요</option>
+      </select>
+    </div>
+
+    <div style="grid-column:1 / -1;">
+      <label style="display:block;font-size:13px;font-weight:700;color:#334155;margin-bottom:6px;">
+        추가 요청사항 <span style="color:#94a3b8;font-weight:500;">(선택)</span>
+      </label>
+      <textarea id="leadExtraNoteInput" rows="3"
+        placeholder="예: 파킨슨병 진단, 한식 필수, LA 또는 OC 지역 선호..."
+        style="width:100%;padding:14px 16px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;font-family:inherit;line-height:1.6;resize:vertical;"></textarea>
+      <p style="margin:6px 4px 0;font-size:11px;color:#94a3b8;">
+        💡 구체적으로 적어주실수록 더 정확한 매칭이 가능합니다
+      </p>
     </div>
   </div>
   
@@ -1433,6 +1460,10 @@ function fillLeadSummary() {
   if (nameInput) nameInput.value = '';
   if (phoneInput) phoneInput.value = '';
   if (ageInput) ageInput.value = '';
+  const timingInput = document.getElementById('leadTimingInput');
+  const extraNoteInput = document.getElementById('leadExtraNoteInput');
+  if (timingInput) timingInput.value = '';
+  if (extraNoteInput) extraNoteInput.value = '';
 }
 
 function goToLeadStep2() {
@@ -1464,6 +1495,8 @@ async function submitLead() {
   const name  = document.getElementById('leadNameInput')?.value?.trim() || '';
   const phone = document.getElementById('leadPhoneInput')?.value?.trim() || '';
   const age   = document.getElementById('leadAgeInput')?.value?.trim() || '';
+  const timing = document.getElementById('leadTimingInput')?.value || '';
+  const extraNote = document.getElementById('leadExtraNoteInput')?.value?.trim() || '';
 
   if (!email) { alert(lang === 'kr' ? '이메일을 입력해주세요.' : 'Please enter your email.'); return; }
   if (!name) {
@@ -1481,15 +1514,23 @@ async function submitLead() {
     document.getElementById('leadAgeInput')?.focus();
     return;
   }
+  if (!timing) {
+    alert(lang === 'kr' ? '입주 희망 시기를 선택해주세요.' : 'Please select move-in timing.');
+    document.getElementById('leadTimingInput')?.focus();
+    return;
+  }
   const matchNote = document.getElementById('addNoteText')?.value || window.capturedNote || '';
-  const note = matchNote || '';
+  const noteParts = [];
+  if (matchNote) noteParts.push(matchNote);
+  if (extraNote) noteParts.push(extraNote);
+  const note = noteParts.join(' | ');
 
   const care_type = window.selectedCareType || selectedCare || '';
   const location  = window.selectedLocation || selectedLocation || '';
   const budget    = window.selectedBudget || selectedBudget || '';
 
   const { error } = await db.from('leads').insert([{
-    email, name, phone, senior_age: age, note, care_type, location, budget
+    email, name, phone, senior_age: age, note, care_type, location, budget, move_in_timing: timing
   }]);
 
   if (error) { console.error(error); alert('저장 중 오류가 발생했습니다.'); return; }
