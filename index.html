@@ -338,6 +338,22 @@
             #mobileChatBtn:active {
                 transform: scale(0.98);
             }
+            .right-panel {
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                max-height: 100vh;
+                overflow: hidden;
+            }
+            .chat-body, #chatBody {
+                flex: 1 1 auto;
+                overflow-y: auto;
+                min-height: 0;
+                -webkit-overflow-scrolling: touch;
+            }
+            .chat-header, .chat-footer {
+                flex-shrink: 0;
+            }
         }
         @media(max-width:600px) { .pkg-modal,.ag-modal,.how-modal,.lead-modal,.partner-modal { width:calc(100vw - 40px); } }
     </style>
@@ -1234,8 +1250,57 @@ function startMobileChat() {
     mobileChatOpen = true;
     document.getElementById('mobileChatBtn').style.display = 'none';
     document.getElementById('mobileChatSub').style.display = 'none';
-    checkMobile();
+
+    if (window.innerWidth <= 768) {
+        document.querySelector('.left-panel').style.display = 'none';
+        const rightPanel = document.querySelector('.right-panel');
+        rightPanel.style.display = 'flex';
+        rightPanel.style.flexDirection = 'column';
+        rightPanel.style.width = '100%';
+        rightPanel.style.position = 'fixed';
+        rightPanel.style.top = '0';
+        rightPanel.style.left = '0';
+        rightPanel.style.height = '100vh';
+        rightPanel.style.maxHeight = '100vh';
+        rightPanel.style.zIndex = '9999';
+        rightPanel.style.borderRadius = '0';
+        rightPanel.style.overflow = 'hidden';
+
+        const chatBody = document.getElementById('chatBody');
+        if (chatBody) {
+            chatBody.style.flex = '1';
+            chatBody.style.overflowY = 'auto';
+            chatBody.style.minHeight = '0';
+            chatBody.style.maxHeight = 'none';
+        }
+
+        document.body.style.overflow = 'hidden';
+    }
     setTimeout(() => scrollBottom(), 150);
+}
+
+function resetChatPanelLayout() {
+    const right = document.querySelector('.right-panel');
+    const chatBody = document.getElementById('chatBody');
+    if (right) {
+        right.style.flexDirection = '';
+        right.style.width = '';
+        right.style.position = '';
+        right.style.top = '';
+        right.style.left = '';
+        right.style.height = '';
+        right.style.maxHeight = '';
+        right.style.zIndex = '';
+        right.style.borderRadius = '';
+        right.style.overflow = '';
+    }
+    if (chatBody) {
+        chatBody.style.flex = '';
+        chatBody.style.overflowY = '';
+        chatBody.style.minHeight = '';
+        chatBody.style.maxHeight = '';
+    }
+    document.body.style.overflow = '';
 }
 
 function checkMobile() {
@@ -1248,13 +1313,7 @@ function checkMobile() {
     if (w > 768) {
         left.style.display = '';
         right.style.display = '';
-        right.style.width = '';
-        right.style.position = '';
-        right.style.top = '';
-        right.style.left = '';
-        right.style.height = '';
-        right.style.zIndex = '';
-        right.style.borderRadius = '';
+        resetChatPanelLayout();
         mobileChatOpen = false;
         if (btn) btn.style.display = 'none';
         if (sub) sub.style.display = 'none';
@@ -1264,18 +1323,30 @@ function checkMobile() {
     if (mobileChatOpen) {
         left.style.display = 'none';
         right.style.display = 'flex';
+        right.style.flexDirection = 'column';
         right.style.width = '100%';
         right.style.position = 'fixed';
         right.style.top = '0';
         right.style.left = '0';
-        right.style.height = '100%';
+        right.style.height = '100vh';
+        right.style.maxHeight = '100vh';
         right.style.zIndex = '9999';
         right.style.borderRadius = '0';
+        right.style.overflow = 'hidden';
+        const chatBody = document.getElementById('chatBody');
+        if (chatBody) {
+            chatBody.style.flex = '1';
+            chatBody.style.overflowY = 'auto';
+            chatBody.style.minHeight = '0';
+            chatBody.style.maxHeight = 'none';
+        }
+        document.body.style.overflow = 'hidden';
         if (btn) btn.style.display = 'none';
         if (sub) sub.style.display = 'none';
     } else {
         left.style.display = 'flex';
         right.style.display = 'none';
+        resetChatPanelLayout();
         if (btn) btn.style.display = 'block';
         if (sub) sub.style.display = 'block';
     }
