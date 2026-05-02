@@ -863,6 +863,25 @@ function matchFacilities(facilities, userNeeds) {
       score += Math.min(tagScore, 30);
     }
 
+    // 지역 미스매치 시 점수 절반으로 (지역이 가장 중요)
+    const userLoc = (userNeeds.location || '').toLowerCase().trim();
+    if (userLoc && userLoc !== '기타 지역' && userLoc !== 'other') {
+      const mappedFromState = stateMap[userLoc];
+      const mappedFromCity = cityMap[userLoc];
+      const targetState = mappedFromState || mappedFromCity;
+      const isNyNj = userLoc.includes('뉴욕') && userLoc.includes('뉴저지')
+                  || userLoc.includes('new york') && userLoc.includes('new jersey');
+
+      let locationMatched = false;
+      if (isNyNj && (f.state === 'NY' || f.state === 'NJ')) locationMatched = true;
+      else if (targetState && f.state === targetState) locationMatched = true;
+      else if (f.city && f.city.toLowerCase().includes(userLoc)) locationMatched = true;
+
+      if (!locationMatched) {
+        score = Math.floor(score * 0.3);  // 지역 안 맞으면 30%로 감점
+      }
+    }
+
     return { ...f, matchScore: score };
   })
   .filter(f => f.matchScore > 0)
