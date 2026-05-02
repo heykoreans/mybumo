@@ -875,7 +875,7 @@ async function renderAllLeads() {
       <td>${l.phone || '-'}</td>
       <td>${l.senior_age ? l.senior_age + '세' : '-'}</td>
       <td>${l.note || '-'}</td>
-      <td><span style="background:#fef3c7;color:#d97706;padding:3px 10px;border-radius:20px;font-size:12px;">보통</span></td>
+      <td><span style="background:#dcfce7;color:#16a34a;padding:3px 10px;border-radius:20px;font-size:12px;">신규</span></td>
     </tr>
   `).join('');
 
@@ -1242,11 +1242,12 @@ async function showSection(id) {
 
 async function renderAll() {
     renderRecentLeads();
-    renderAllLeads();
+    await renderAllLeads();
     renderKanban();
     await renderFacilities();
     renderBilling();
     renderRevBars();
+    loadRealLeads();
 }
 
 // ─── MODAL ───
@@ -1302,7 +1303,6 @@ async function loadRealLeads() {
 
 window.onload = async function() {
   await renderAll();
-  loadRealLeads();
   await loadSettings();
 };
 </script>
