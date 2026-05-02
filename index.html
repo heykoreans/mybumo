@@ -347,11 +347,48 @@
             }
             .chat-body, #chatBody {
                 flex: 1 1 auto;
+                overflow-x: hidden;
                 overflow-y: auto;
                 min-height: 0;
+                width: 100%;
+                box-sizing: border-box;
                 -webkit-overflow-scrolling: touch;
             }
             .chat-header, .chat-footer {
+                flex-shrink: 0;
+            }
+
+            /* 채팅 메시지 버블 */
+            #chatBody > * {
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* 특별 요청 입력 카드 */
+            .note-card, .add-note-wrap, .add-req-box, [class*="note"] {
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 버튼 영역 */
+            .note-actions, .add-req-row, [class*="btn-row"], [class*="actions"] {
+                display: flex;
+                width: 100%;
+                gap: 8px;
+                box-sizing: border-box;
+            }
+
+            /* 텍스트 영역 */
+            #addNoteText, textarea {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 매칭 요청하기 버튼 짤림 방지 */
+            button[onclick*="sendNote"], button[onclick*="skipNote"] {
+                white-space: nowrap;
                 flex-shrink: 0;
             }
         }
@@ -1046,6 +1083,9 @@ function showResults() {
     setTimeout(() => {
         const box = document.createElement('div');
         box.className = 'add-req-box';
+        box.style.maxWidth = '100%';
+        box.style.boxSizing = 'border-box';
+        box.style.overflow = 'hidden';
         box.innerHTML = `
             <p>${isEn ? '💡 Any specific needs or questions? (e.g., Parkinson\'s care, near Korean church, Medicare coverage)' : '💡 특별히 더 필요한 사항이 있으신가요? (예: 파킨슨 케어, 한인 교회 인근, 메디케어 적용 여부 등)'}</p>
             <textarea id="addNoteText" rows="3" placeholder="${isEn ? 'e.g., Father has Parkinson\'s, prefers Torrance area, Medicare coverage required...' : '예: 아버지 파킨슨 진단, 토런스 지역 선호, 메디케어 적용 필수...'}"></textarea>
