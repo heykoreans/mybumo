@@ -715,7 +715,7 @@
 <!-- ══ LEAD OVERLAY ══ -->
 <div class="overlay" id="leadOverlay">
     <div class="modal lead-modal">
-<button onclick="closeOverlay('leadOverlay')" style="position:absolute;top:14px;right:14px;background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;color:#64748b;z-index:10;">×</button>
+<button onclick="hideOverlay('leadOverlay')" style="position:absolute;top:14px;right:14px;background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;color:#64748b;z-index:10;">×</button>
 
 <div style="text-align:center;margin-bottom:16px;">
   <span style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:30px;padding:7px 14px;color:#16a34a;font-size:12px;font-weight:700;display:inline-block;">
@@ -725,13 +725,13 @@
 </div>
 
 <h2 style="font-size:21px;font-weight:800;color:#0d2137;margin:0 0 8px;line-height:1.35;">
-  <span class="kr">요청하신 조건에 딱 맞는<br>시설을 찾아드릴게요</span>
-  <span class="en" style="display:none">We'll find the perfect<br>match for your needs</span>
+  <span class="kr">요청하신 조건에 딱 맞는<br>시설을 찾았습니다</span>
+  <span class="en" style="display:none">We found the perfect<br>match for your needs</span>
 </h2>
 
 <p style="font-size:13px;color:#64748b;line-height:1.6;margin:0 0 16px;">
-  <span class="kr">작성해주신 정보를 시설에 전달하여, <strong style="color:#0d2137;">회원님께 맞춤 상담을 준비하겠습니다.</strong></span>
-  <span class="en" style="display:none">We'll share your details with facilities to <strong style="color:#0d2137;">prepare a personalized consultation for you.</strong></span>
+  <span class="kr">회원님께 정보를 보내드릴 수 있도록 <strong style="color:#0d2137;">이메일 주소를 입력해주세요.</strong></span>
+  <span class="en" style="display:none">Please <strong style="color:#0d2137;">enter your email</strong> so we can send you the details.</span>
 </p>
 
 <div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border-radius:12px;padding:12px 14px;margin-bottom:16px;border:1px solid #fcd34d;">
@@ -1326,15 +1326,18 @@ function fillLeadSummary() {
   const care = window.selectedCareType || selectedCare || '-';
   const loc = window.selectedLocation || selectedLocation || '-';
   const budget = window.selectedBudget || selectedBudget || '-';
-  const note = document.getElementById('addNoteText')?.value || window.capturedNote || '';
+  const note = document.getElementById('addNoteText')?.value || '';
 
+  // 케어 타입 짧게 (이모지 제거)
   const careShort = care.replace(/[🏠🧠🏥💊👨‍⚕️✨]/g, '').trim().substring(0, 15);
+  // 예산 짧게 ($숫자K로)
   let budgetShort = budget.replace(/[💰💳✨🔍]/g, '').trim();
   budgetShort = budgetShort.replace(/\$([0-9,]+)~\$([0-9,]+)/g, (m, a, b) => {
     const aK = (parseInt(a.replace(/,/g,'')) / 1000).toFixed(1).replace('.0','') + 'K';
     const bK = (parseInt(b.replace(/,/g,'')) / 1000).toFixed(1).replace('.0','') + 'K';
     return '$' + aK + '~$' + bK;
   });
+  // 노트 짧게
   const noteShort = note.length > 12 ? note.substring(0, 12) + '...' : note;
 
   let parts = [careShort, loc, budgetShort];
@@ -1530,6 +1533,7 @@ function showOverlay(id) {
   setTimeout(()=>el.classList.add('show'),10);
 }
 function closeOverlay(id) { const el = document.getElementById(id); el.classList.remove('show'); setTimeout(()=>el.style.display='none',200); }
+function hideOverlay(id) { closeOverlay(id); }
 
 // ─── LANG ───
 function toggleLang() {
