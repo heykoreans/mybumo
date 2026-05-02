@@ -1113,16 +1113,21 @@ async function showMatchedFacilities(userNeeds) {
   const matched = matchFacilities(realFacilities, needs);
 
   if (matched.length === 0) {
-    appendAiMsg('<p>현재 조건에 맞는 시설을 찾는 중입니다. 케어 플래너가 24시간 내 연락드립니다.</p>');
+    appendAiMsg('<p>현재 조건에 맞는 시설을 찾는 중입니다. 케어 플래너가 24시간 내 연락드립니다.</p>', true);
+    const chatBody = document.getElementById('chatBody');
+    document.querySelector('#matchResultAnchor')?.removeAttribute('id');
+    const anchorRow = chatBody?.lastElementChild;
+    if (anchorRow) anchorRow.id = 'matchResultAnchor';
     setTimeout(() => {
-      const chatBody = document.getElementById('chatBody');
-      if (chatBody) {
-        chatBody.scrollTop = chatBody.scrollHeight;
-        chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+      const anchor = document.getElementById('matchResultAnchor');
+      const cb = document.getElementById('chatBody');
+      if (anchor && cb) {
+        cb.scrollTo({
+          top: anchor.offsetTop - 20,
+          behavior: 'smooth'
+        });
       }
-      const lastMsg = chatBody?.lastElementChild;
-      if (lastMsg) lastMsg.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, 300);
+    }, 150);
     return;
   }
 
@@ -1158,19 +1163,22 @@ async function showMatchedFacilities(userNeeds) {
       }).join('')}
     </div>
   `;
-  appendAiMsg(html);
+  appendAiMsg(html, true);
+  const chatBody = document.getElementById('chatBody');
+  document.querySelector('#matchResultAnchor')?.removeAttribute('id');
+  const anchorRow = chatBody?.lastElementChild;
+  if (anchorRow) anchorRow.id = 'matchResultAnchor';
   updateLang();
-  scrollBottom();
   setTimeout(() => {
-    const chatBody = document.getElementById('chatBody');
-    if (chatBody) {
-      chatBody.scrollTop = chatBody.scrollHeight;
-      chatBody.scrollTo({ top: chatBody.scrollHeight, behavior: 'smooth' });
+    const anchor = document.getElementById('matchResultAnchor');
+    const cb = document.getElementById('chatBody');
+    if (anchor && cb) {
+      cb.scrollTo({
+        top: anchor.offsetTop - 20,
+        behavior: 'smooth'
+      });
     }
-    // 모바일/데스크톱 모두 대응
-    const lastMsg = chatBody?.lastElementChild;
-    if (lastMsg) lastMsg.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, 300);
+  }, 150);
 }
 
 // ─── CHAT FLOW ───
@@ -1491,12 +1499,12 @@ async function submitPartner() {
 function toggleType(el) { el.classList.toggle('sel'); }
 
 // ─── CHAT HELPERS ───
-function appendAiMsg(html) {
+function appendAiMsg(html, skipScroll) {
     const row = document.createElement('div');
     row.className = 'msg-row ai-row';
     row.innerHTML = `<div class="ai-av">🤝</div><div class="bubble">${html}</div>`;
     document.getElementById('chatBody').appendChild(row);
-    scrollBottom();
+    if (!skipScroll) scrollBottom();
 }
 function appendUserMsg(text) {
     const row = document.createElement('div');
