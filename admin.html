@@ -265,7 +265,18 @@
 
         @media (max-width: 768px) {
             .sidebar { display: none !important; }
-            .main-content { margin-left: 0 !important; padding-bottom: 80px !important; }
+            body {
+                width: 100% !important;
+                overflow-x: hidden !important;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding: 16px !important;
+                padding-bottom: 80px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
 
             .mobile-tabbar {
                 display: flex;
@@ -361,7 +372,6 @@
             .more-item:hover { background: #f1f5f9; }
 
             /* 상단 헤더 영역 컴팩트화 */
-            .main-content { padding: 16px !important; }
             .section-header { flex-direction: column; gap: 12px; align-items: flex-start !important; }
         }
 
