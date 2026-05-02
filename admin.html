@@ -440,6 +440,68 @@
                 border-radius: 10px;
             }
             .more-item:hover { background: #f1f5f9; }
+
+            /* 설정 페이지 그리드 1열 강제 */
+            #sec-settings .settings-grid,
+            #sec-settings .grid,
+            #sec-settings [class*="grid"],
+            #sec-settings [style*="grid-template-columns"] {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+                width: 100% !important;
+            }
+
+            /* 설정 페이지 flex 좌우 분할 1열 강제 */
+            #sec-settings .row,
+            #sec-settings .two-col,
+            #sec-settings [class*="flex"] {
+                flex-direction: column !important;
+                width: 100% !important;
+            }
+
+            /* 설정 페이지 카드 모두 100% 너비 */
+            #sec-settings .card,
+            #sec-settings .settings-card,
+            #sec-settings > * {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            /* 토글 항목 행 - 좌측 텍스트 + 우측 토글 가로 유지하되 줄바꿈 방어 */
+            #sec-settings .toggle-row,
+            #sec-settings .setting-item,
+            #sec-settings label[class*="toggle"] {
+                display: flex !important;
+                flex-direction: row !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                gap: 12px !important;
+                width: 100% !important;
+            }
+
+            /* 모든 텍스트 한국어 줄바꿈 방어 */
+            #sec-settings * {
+                word-break: keep-all !important;
+                overflow-wrap: break-word !important;
+            }
+
+            /* 토글 라벨 텍스트가 너무 좁아지지 않도록 */
+            #sec-settings .toggle-label,
+            #sec-settings .setting-label,
+            #sec-settings .toggle-info {
+                flex: 1 1 auto !important;
+                min-width: 0 !important;
+                word-break: keep-all !important;
+            }
+
+            /* 토글 스위치 자체는 줄어들지 않게 */
+            #sec-settings input[type="checkbox"],
+            #sec-settings .switch,
+            #sec-settings .toggle {
+                flex-shrink: 0 !important;
+            }
         }
 
         @keyframes moreSheetSlideUp {
