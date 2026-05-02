@@ -436,8 +436,8 @@
                 font-size: 14px !important;
             }
 
-            /* 채팅 메시지 버블 너비 제한 */
-            .msg, [class*="bubble"] {
+            /* 채팅 메시지 버블 너비 제한 (#chatBody * 대비 특이도) */
+            #chatBody .msg, #chatBody [class*="bubble"] {
                 max-width: 85% !important;
             }
 
