@@ -1314,6 +1314,12 @@ window.addEventListener('DOMContentLoaded', function() {
   if (sessionStorage.getItem('adminAuth') === 'true') {
     document.getElementById('loginOverlay').style.display = 'none';
   }
+  document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'ldmTourCompleted') {
+      const hasDate = tourDatePicker && tourDatePicker.selectedDates.length > 0;
+      updateTourToggleUI(hasDate);
+    }
+  });
 });
 
 let adminLang = 'kr';
@@ -2001,6 +2007,39 @@ function openDemoLeadDetail(id) {
     showModal('legacyLeadDetailModal');
 }
 
+function updateTourToggleUI(hasDate) {
+    const checkbox = document.getElementById('ldmTourCompleted');
+    const label = document.getElementById('ldmTourToggleLabel');
+    const text = document.getElementById('ldmTourToggleText');
+    const hint = document.getElementById('ldmTourHint');
+
+    if (!checkbox || !label || !text || !hint) return;
+
+    if (!hasDate) {
+        checkbox.disabled = true;
+        checkbox.checked = false;
+        label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#94a3b8;cursor:not-allowed;padding:0 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;white-space:nowrap;transition:all .2s;';
+        text.textContent = '투어 예정';
+        hint.textContent = '투어 날짜를 먼저 선택해주세요';
+        hint.style.color = '#94a3b8';
+        return;
+    }
+
+    checkbox.disabled = false;
+
+    if (checkbox.checked) {
+        label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#15803d;cursor:pointer;padding:0 16px;background:#f0fdf4;border:1px solid #86efac;border-radius:10px;white-space:nowrap;transition:all .2s;';
+        text.textContent = '투어 완료됨';
+        hint.textContent = '✓ 고객이 투어를 다녀왔습니다';
+        hint.style.color = '#15803d';
+    } else {
+        label.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;padding:0 16px;background:#ffffff;border:1px solid #cbd5e1;border-radius:10px;white-space:nowrap;transition:all .2s;';
+        text.textContent = '투어 다녀오면 체크';
+        hint.textContent = '투어 완료 후 체크박스를 눌러주세요';
+        hint.style.color = '#64748b';
+    }
+}
+
 function initTourDatePicker() {
     if (tourDatePicker) return;
     tourDatePicker = flatpickr('#ldmTourDate', {
@@ -2011,7 +2050,13 @@ function initTourDatePicker() {
         locale: (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.ko) ? flatpickr.l10ns.ko : 'ko',
         time_24hr: false,
         minuteIncrement: 15,
-        minDate: 'today'
+        minDate: 'today',
+        onChange: function(selectedDates) {
+            updateTourToggleUI(selectedDates.length > 0);
+        },
+        onClose: function(selectedDates) {
+            updateTourToggleUI(selectedDates.length > 0);
+        }
     });
 }
 
@@ -2054,7 +2099,6 @@ function openLeadDetail(lead) {
     emailBtn.style.opacity = lead.email ? '1' : '0.4';
 
     document.getElementById('ldmAdminNotes').value = lead.admin_notes || '';
-    document.getElementById('ldmTourCompleted').checked = !!lead.tour_completed;
 
     initTourDatePicker();
     if (lead.tour_date) {
@@ -2062,6 +2106,8 @@ function openLeadDetail(lead) {
     } else {
         tourDatePicker.clear();
     }
+    document.getElementById('ldmTourCompleted').checked = !!lead.tour_completed;
+    updateTourToggleUI(!!lead.tour_date);
 
     document.querySelectorAll('.ldm-section').forEach(sec => {
         sec.classList.remove('editing');
@@ -2556,17 +2602,23 @@ window.onload = async function() {
 
       <!-- 투어 + 메모 + 저장 (기존 영역 유지) -->
       <div style="margin-top:24px;border-top:1px solid #f1f5f9;padding-top:24px;">
-        <label style="display:block;font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">📅 투어 일정 관리</label>
-        <div style="display:flex;gap:10px;align-items:center;background:#f8fafc;padding:12px;border-radius:12px;border:1px solid #e2e8f0;">
-          <div style="flex:1;min-width:0;">
-            <input type="text" id="ldmTourDate" placeholder="날짜 · 시간 선택"
-              style="width:100%;padding:11px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;color:#334155;background:#ffffff;outline:none;box-sizing:border-box;cursor:pointer;font-family:inherit;">
-          </div>
-          <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;padding:11px 14px;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;white-space:nowrap;">
-            <input type="checkbox" id="ldmTourCompleted" style="width:16px;height:16px;cursor:pointer;accent-color:#0f172a;">
-            완료
+        <label style="display:block;font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">📅 투어 일정</label>
+
+        <div style="display:flex;gap:10px;align-items:stretch;">
+          <input type="text" id="ldmTourDate" placeholder="날짜 · 시간 선택"
+            style="flex:1;min-width:0;padding:12px 14px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;color:#334155;background:#ffffff;outline:none;box-sizing:border-box;cursor:pointer;font-family:inherit;">
+
+          <label id="ldmTourToggleLabel"
+            style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#94a3b8;cursor:not-allowed;padding:0 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;white-space:nowrap;transition:all .2s;">
+            <input type="checkbox" id="ldmTourCompleted" disabled
+              style="width:16px;height:16px;cursor:pointer;accent-color:#16a34a;">
+            <span id="ldmTourToggleText">투어 예정</span>
           </label>
         </div>
+
+        <p id="ldmTourHint" style="margin:8px 4px 0;font-size:12px;color:#94a3b8;">
+          투어 날짜를 먼저 선택해주세요
+        </p>
       </div>
 
       <div style="margin-top:24px;">
