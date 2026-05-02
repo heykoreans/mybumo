@@ -754,39 +754,36 @@ function matchFacilities(facilities, userNeeds) {
     '비벌리힐스': 'CA', 'beverly hills': 'CA',
   };
 
-  return facilities.map(f => {
-    let score = 0;
+  let filtered = facilities;
+  let regionFilterHit = false;
+
+  const userLoc = (userNeeds.location || '').toLowerCase().trim();
+  if (userLoc && userLoc !== '기타 지역' && userLoc !== 'other') {
+    const targetState = stateMap[userLoc] || cityMap[userLoc];
+    const isNyNj = (userLoc.includes('뉴욕') && userLoc.includes('뉴저지'))
+                || (userLoc.includes('new york') && userLoc.includes('new jersey'));
+
+    filtered = facilities.filter(f => {
+      if (isNyNj) return f.state === 'NY' || f.state === 'NJ';
+      if (targetState && f.state === targetState) return true;
+      if (f.city && f.city.toLowerCase().includes(userLoc)) return true;
+      return false;
+    });
+
+    if (filtered.length === 0) {
+      console.log('해당 지역 시설 없음 - 전체 시설에서 추천');
+      filtered = facilities;
+    } else {
+      regionFilterHit = true;
+    }
+  }
+
+  return filtered.map(f => {
+    let score = regionFilterHit ? 30 : 0;
 
     if (userNeeds.careType && f.care_type) {
       if (f.care_type.includes(userNeeds.careType) ||
           userNeeds.careType.includes(f.care_type)) score += 40;
-    }
-
-    if (userNeeds.location && f.state) {
-      const locLower = userNeeds.location.toLowerCase().trim();
-      if (locLower === '기타 지역' || locLower === 'other') {
-        // 지역 미고정 — 주 기준 보너스 없음
-      } else {
-        const mappedFromState = stateMap[locLower];
-        const mappedFromCity = cityMap[locLower];
-        const mappedState = mappedFromState || mappedFromCity || userNeeds.location.toUpperCase();
-        const nyNjCombo =
-          locLower === '뉴욕/뉴저지' ||
-          locLower === '뉴욕 / 뉴저지' ||
-          locLower === 'new york/new jersey' ||
-          locLower === 'new york / new jersey';
-
-        if (mappedState === 'NY' && nyNjCombo && (f.state === 'NY' || f.state === 'NJ')) {
-          score += 30;
-        } else if (f.state === mappedState) {
-          score += 30;
-        } else if (f.city && f.city.toLowerCase().includes(locLower)) {
-          score += 30;
-        } else if (locLower.includes(f.state.toLowerCase()) ||
-                   (f.city && locLower.includes(f.city.toLowerCase()))) {
-          score += 20;
-        }
-      }
     }
 
     if (userNeeds.budget && f.fee_min != null && f.fee_max != null) {
@@ -861,25 +858,6 @@ function matchFacilities(facilities, userNeeds) {
         }
       }
       score += Math.min(tagScore, 30);
-    }
-
-    // 지역 미스매치 시 점수 절반으로 (지역이 가장 중요)
-    const userLoc = (userNeeds.location || '').toLowerCase().trim();
-    if (userLoc && userLoc !== '기타 지역' && userLoc !== 'other') {
-      const mappedFromState = stateMap[userLoc];
-      const mappedFromCity = cityMap[userLoc];
-      const targetState = mappedFromState || mappedFromCity;
-      const isNyNj = userLoc.includes('뉴욕') && userLoc.includes('뉴저지')
-                  || userLoc.includes('new york') && userLoc.includes('new jersey');
-
-      let locationMatched = false;
-      if (isNyNj && (f.state === 'NY' || f.state === 'NJ')) locationMatched = true;
-      else if (targetState && f.state === targetState) locationMatched = true;
-      else if (f.city && f.city.toLowerCase().includes(userLoc)) locationMatched = true;
-
-      if (!locationMatched) {
-        score = Math.floor(score * 0.3);  // 지역 안 맞으면 30%로 감점
-      }
     }
 
     return { ...f, matchScore: score };
