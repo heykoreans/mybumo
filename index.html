@@ -737,7 +737,7 @@
                 </div>
             </div>
             <div class="fg"><label class="kr">추가 요청사항 (선택)</label><label class="en">Additional Notes (Optional)</label>
-                <textarea rows="3" placeholder="예: 파킨슨병 진단, 한식 필수, LA 또는 OC 지역 선호..." style="resize:none;"></textarea>
+                <textarea id="leadNoteText" rows="3" placeholder="예: 파킨슨병 진단, 한식 필수, LA 또는 OC 지역 선호..." style="resize:none;"></textarea>
             </div>
             <button class="sbtn" onclick="submitLead()"><span class="kr">상담 신청 완료 →</span><span class="en">Complete Request →</span></button>
         </div>
@@ -1309,7 +1309,11 @@ async function submitLead() {
   const name  = document.querySelector('#lstep2 input[type=text]')?.value || '';
   const phone = document.querySelector('#lstep2 input[type=tel]')?.value  || '';
   const age   = document.querySelector('#lstep2 input[type=number]')?.value || '';
-  const note  = document.getElementById('addNoteText')?.value || window.capturedNote || '';
+  const matchNote = document.getElementById('addNoteText')?.value || window.capturedNote || '';
+  const leadNote  = document.getElementById('leadNoteText')?.value || '';
+  const note = leadNote && matchNote && leadNote !== matchNote
+    ? `${matchNote} | ${leadNote}`
+    : (leadNote || matchNote || '');
   
   const care_type = window.selectedCareType || selectedCare || '';
   const location  = window.selectedLocation || selectedLocation || '';
