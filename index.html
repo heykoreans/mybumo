@@ -47,14 +47,21 @@
         /* ══ LEFT PANEL ══ */
         .left-panel {
             position: sticky; top: 0; height: 100vh; flex: 1;
-            background: linear-gradient(160deg,rgba(7,21,37,.82) 0%,rgba(20,90,80,.45) 100%),
+            background: linear-gradient(180deg, rgba(13,33,55,.65), rgba(13,33,55,.9)),
                         url('https://images.unsplash.com/photo-1576765608622-067973a79f53?auto=format&fit=crop&w=2000&q=85') center/cover no-repeat;
             display: flex; flex-direction: column; justify-content: center;
             padding: 60px 56px; color: white; overflow: hidden; position: relative;
         }
-        .left-panel::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 20% 80%,rgba(46,158,152,.2) 0%,transparent 55%); pointer-events:none; }
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(13,33,55,.7) 0%, rgba(13,33,55,.85) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
 
-        .top-nav { position:absolute; top:28px; left:56px; right:56px; display:flex; align-items:center; }
+        .top-nav { position:absolute; top:28px; left:56px; right:56px; display:flex; align-items:center; z-index:2; }
         .brand { font-family:'DM Sans',sans-serif; font-size:24px; font-weight:800; color:var(--sage-lt); letter-spacing:-.5px; text-decoration:none; margin-right:auto; display:flex; align-items:center; gap:8px; }
         .brand-icon { width:32px; height:32px; background:rgba(46,158,152,.3); border:1.5px solid rgba(125,212,207,.5); border-radius:9px; display:flex; justify-content:center; align-items:center; font-size:16px; }
         .nav-links { display:flex; gap:4px; align-items:center; }
@@ -310,9 +317,27 @@
                 padding: 40px 24px !important;
             }
             .top-nav { left: 24px; right: 24px; }
-            .trust-bar { position: relative; bottom: auto; left: auto; right: auto; margin-top: 28px; flex-wrap: wrap; gap: 12px; }
+            .hero-text h1 { font-size: 32px; line-height: 1.2; }
+            .hero-text p { font-size: 14px; }
+            .trust-bar.stats-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            .trust-bar { position: relative; bottom: auto; left: auto; right: auto; margin-top: 28px; }
             .trust-div { display: none; }
-            .trust-item { min-width: 45%; }
+            .trust-item { min-width: 0; }
+            .trust-item strong { font-size: 24px; }
+            .trust-item .tl { font-size: 13px; }
+            #mobileChatBtn {
+                padding: 16px 24px !important;
+                box-shadow: 0 12px 32px rgba(31,122,117,.5) !important;
+                transition: transform .15s ease, box-shadow .2s ease;
+            }
+            #mobileChatBtn:hover,
+            #mobileChatBtn:active {
+                transform: scale(0.98);
+            }
         }
         @media(max-width:600px) { .pkg-modal,.ag-modal,.how-modal,.lead-modal,.partner-modal { width:calc(100vw - 40px); } }
     </style>
@@ -357,15 +382,17 @@
         </p>
 
         <button type="button" id="mobileChatBtn" onclick="startMobileChat()"
-          style="display:none;width:100%;max-width:340px;padding:18px;background:#1f7a75;color:white;border:none;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;margin-top:24px;box-shadow:0 8px 24px rgba(31,122,117,.35);">
-          🔍 무료 매칭 시작하기 →
+          style="display:none;width:100%;max-width:340px;background:#1f7a75;color:white;border:none;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;margin-top:24px;">
+          <span class="kr">🔍 무료 매칭 시작하기 →</span>
+          <span class="en" style="display:none">🔍 Start Free Matching →</span>
         </button>
-        <p style="display:none;font-size:12px;color:rgba(255,255,255,.7);margin-top:10px;" id="mobileChatSub">
-          1분 안에 맞춤 시설 추천 · 가족 비용 $0
-        </p>
+        <div style="display:none;margin-top:10px;" id="mobileChatSub">
+          <p class="kr" style="margin:0;font-size:12px;color:rgba(255,255,255,.7);">1분 안에 맞춤 시설 추천 · 가족 비용 $0</p>
+          <p class="en" style="display:none;margin:0;font-size:12px;color:rgba(255,255,255,.7);">Custom matches in 60 seconds · $0 family fee</p>
+        </div>
     </div>
 
-    <div class="trust-bar">
+    <div class="trust-bar stats-grid">
         <div class="trust-item">
             <strong>1,200+</strong>
             <div class="tl kr">연결된 한인 가족</div>
