@@ -714,58 +714,46 @@
 
 <!-- ══ LEAD OVERLAY ══ -->
 <div class="overlay" id="leadOverlay">
-    <div class="modal lead-modal">
-<button onclick="hideOverlay('leadOverlay')" style="position:absolute;top:14px;right:14px;background:#f1f5f9;border:none;width:30px;height:30px;border-radius:50%;font-size:14px;cursor:pointer;color:#64748b;z-index:10;">×</button>
+<div style="background:white;border-radius:20px;padding:40px;width:100%;max-width:480px;position:relative;max-height:90vh;overflow-y:auto;">
 
-<div style="text-align:center;margin-bottom:16px;">
-  <span style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:30px;padding:7px 14px;color:#16a34a;font-size:12px;font-weight:700;display:inline-block;">
-    <span class="kr">🎉 방문 투어 및 매칭 상담 100% 무료</span>
-    <span class="en" style="display:none">🎉 Free Tours & Consultations</span>
-  </span>
-</div>
+  <button onclick="closeOverlay('leadOverlay')" style="position:absolute;top:20px;right:20px;background:#f1f5f9;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:16px;color:#64748b;display:flex;align-items:center;justify-content:center;">✕</button>
 
-<h2 style="font-size:21px;font-weight:800;color:#0d2137;margin:0 0 8px;line-height:1.35;">
-  <span class="kr">요청하신 조건에 딱 맞는<br>시설을 찾았습니다</span>
-  <span class="en" style="display:none">We found the perfect<br>match for your needs</span>
-</h2>
-
-<p style="font-size:13px;color:#64748b;line-height:1.6;margin:0 0 16px;">
-  <span class="kr">회원님께 정보를 보내드릴 수 있도록 <strong style="color:#0d2137;">이메일 주소를 입력해주세요.</strong></span>
-  <span class="en" style="display:none">Please <strong style="color:#0d2137;">enter your email</strong> so we can send you the details.</span>
-</p>
-
-<div style="background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border-radius:12px;padding:12px 14px;margin-bottom:16px;border:1px solid #fcd34d;">
-  <div style="font-size:10px;color:#78350f;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;">
-    <span class="kr">📋 나의 맞춤 조건</span>
-    <span class="en" style="display:none">📋 My Preferences</span>
+  <div style="text-align:center;margin-bottom:20px;">
+    <span style="display:inline-block;padding:6px 16px;border-radius:20px;background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;font-size:12px;font-weight:700;">🎉 방문 투어 및 매칭 상담 100% 무료</span>
   </div>
-  <div id="leadSummaryContent" style="font-size:13px;color:#451a03;line-height:1.5;font-weight:600;"></div>
-</div>
 
-<label style="display:block;font-size:12px;color:#64748b;margin-bottom:6px;line-height:1.5;">
-  <span class="kr">이메일로 맞춤 시설 정보와 방문 일정을 안내해 드립니다.</span>
-  <span class="en" style="display:none">We'll send you matched facilities and tour schedules via email.</span>
-</label>
-
-<div style="position:relative;margin-bottom:12px;">
-  <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;">✉️</span>
-  <input type="email" id="leadEmailInput" placeholder="name@example.com" 
-    style="width:100%;padding:13px 14px 13px 40px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;box-sizing:border-box;outline:none;">
-</div>
-
-<button onclick="submitLead()" 
-  style="width:100%;padding:15px;background:#0d2137;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(13,33,55,.3);margin-bottom:14px;">
-  <span class="kr">무료 맞춤 상담 받아보기 →</span>
-  <span class="en" style="display:none">Get Free Personalized Consultation →</span>
-</button>
-
-<div style="background:#f0f9ff;border-left:3px solid #0ea5e9;border-radius:6px;padding:10px 12px;">
-  <div style="font-size:11px;color:#075985;line-height:1.6;">
-    <span class="kr"><strong>💡 가족 비용 $0.</strong> 저희 서비스는 케어 시설에서 수수료를 받는 구조이므로, 가족분께는 어떠한 비용도 청구되지 않습니다. <strong>안심하고 이용하세요.</strong></span>
-    <span class="en" style="display:none"><strong>💡 $0 Family Cost.</strong> We're paid by care facilities — never by families. <strong>You can use this with peace of mind.</strong></span>
+  <div style="text-align:center;margin-bottom:24px;">
+    <h2 style="font-size:22px;font-weight:800;color:#0d2137;line-height:1.4;margin-bottom:10px;">요청하신 조건에 딱 맞는<br>시설을 찾았습니다</h2>
+    <p style="font-size:13px;color:#64748b;line-height:1.6;">회원님께 정보를 보내드릴 수 있도록<br><strong style="color:#1e293b;">이메일 주소</strong>를 입력해주세요.</p>
   </div>
+
+  <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:16px;margin-bottom:20px;">
+    <div style="font-size:12px;font-weight:700;color:#0d2137;margin-bottom:8px;">📋 나의 맞춤 조건</div>
+    <p id="leadSummaryContent" style="font-size:13px;color:#92400e;font-weight:500;line-height:1.6;word-break:keep-all;"></p>
+  </div>
+
+  <p style="font-size:11px;color:#94a3b8;text-align:center;margin-bottom:10px;">이메일로 맞춤 시설 정보와 방문 일정을 안내해 드립니다.</p>
+
+  <div style="position:relative;margin-bottom:12px;">
+    <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:16px;">✉️</span>
+    <input type="email" id="leadEmailInput"
+      placeholder="결과를 받아보실 이메일을 입력해 주세요"
+      style="width:100%;height:52px;padding:0 16px 0 42px;border:1.5px solid #cbd5e1;border-radius:12px;background:#f8fafc;font-size:13px;color:#1e293b;outline:none;box-sizing:border-box;transition:border-color .2s,box-shadow .2s;"
+      onfocus="this.style.borderColor='#0d2137';this.style.boxShadow='0 0 0 3px rgba(13,33,55,0.1)'"
+      onblur="this.style.borderColor='#cbd5e1';this.style.boxShadow='none'">
+  </div>
+
+  <button onclick="submitLead()" style="width:100%;height:52px;background:#0d2137;color:white;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:16px;transition:opacity .2s;" onmouseover="this.style.opacity='.9'" onmouseout="this.style.opacity='1'">
+    무료 맞춤 상담 받아보기 →
+  </button>
+
+  <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:14px;">
+    <p style="font-size:12px;color:#1e40af;line-height:1.6;margin:0;word-break:keep-all;">
+      💡 <strong>가족 비용 $0.</strong> 저희 서비스는 케어 시설에서 수수료를 받는 구조이므로, 가족분께는 어떠한 비용도 청구되지 않습니다. 안심하고 이용하세요.
+    </p>
+  </div>
+
 </div>
-    </div>
 </div>
 
 <!-- ══ HOW IT WORKS ══ -->
