@@ -2604,23 +2604,22 @@ document.addEventListener('change', function(e) {
 
       <!-- 투어 + 메모 + 저장 (기존 영역 유지) -->
       <div style="margin-top:24px;border-top:1px solid #f1f5f9;padding-top:24px;">
-        <label style="display:block;font-size:14px;font-weight:700;color:#0f172a;margin-bottom:12px;">📅 투어 일정</label>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <label style="font-size:14px;font-weight:700;color:#0f172a;">📅 투어 일정</label>
+          <span id="ldmTourHint" style="font-size:12px;color:#64748b;">투어 날짜를 먼저 선택해주세요</span>
+        </div>
 
         <div style="display:flex;gap:10px;align-items:stretch;">
           <input type="text" id="ldmTourDate" placeholder="날짜 · 시간 선택"
-            style="flex:1;min-width:0;padding:12px 14px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;color:#334155;background:#ffffff;outline:none;box-sizing:border-box;cursor:pointer;font-family:inherit;">
+            style="flex:1;min-width:0;padding:14px 16px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;color:#334155;background:#ffffff;outline:none;box-sizing:border-box;cursor:pointer;font-family:inherit;">
 
           <label id="ldmTourToggleLabel"
-            style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#94a3b8;cursor:not-allowed;padding:0 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;white-space:nowrap;transition:all .2s;">
+            style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#94a3b8;cursor:not-allowed;padding:0 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;white-space:nowrap;transition:all .2s;">
             <input type="checkbox" id="ldmTourCompleted" disabled
-              style="width:16px;height:16px;cursor:pointer;accent-color:#16a34a;">
+              style="width:16px;height:16px;cursor:pointer;accent-color:#16a34a;margin:0;">
             <span id="ldmTourToggleText">투어 예정</span>
           </label>
         </div>
-
-        <p id="ldmTourHint" style="margin:8px 4px 0;font-size:12px;color:#94a3b8;">
-          투어 날짜를 먼저 선택해주세요
-        </p>
       </div>
 
       <div style="margin-top:24px;">
