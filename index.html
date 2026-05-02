@@ -461,18 +461,6 @@
             }
         }
         @media(max-width:600px) { .pkg-modal,.ag-modal,.how-modal,.lead-modal,.partner-modal { width:calc(100vw - 40px); } }
-
-        @media (max-width: 768px) {
-            .options {
-                flex-direction: column;
-                margin-left: 0;
-                width: 100%;
-            }
-            .btn-opt {
-                width: 100%;
-                text-align: left;
-            }
-        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1387,7 +1375,9 @@ function startMobileChat() {
         rightPanel.style.top = '0';
         rightPanel.style.left = '0';
         rightPanel.style.height = '100vh';
+        rightPanel.style.height = '100dvh';
         rightPanel.style.maxHeight = '100vh';
+        rightPanel.style.maxHeight = '100dvh';
         rightPanel.style.zIndex = '9999';
         rightPanel.style.borderRadius = '0';
         rightPanel.style.overflow = 'hidden';
@@ -1398,6 +1388,7 @@ function startMobileChat() {
             chatBody.style.overflowY = 'auto';
             chatBody.style.minHeight = '0';
             chatBody.style.maxHeight = 'none';
+            chatBody.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
         }
 
         document.body.style.overflow = 'hidden';
@@ -1425,6 +1416,7 @@ function resetChatPanelLayout() {
         chatBody.style.overflowY = '';
         chatBody.style.minHeight = '';
         chatBody.style.maxHeight = '';
+        chatBody.style.paddingBottom = '';
     }
     document.body.style.overflow = '';
 }
@@ -1455,7 +1447,9 @@ function checkMobile() {
         right.style.top = '0';
         right.style.left = '0';
         right.style.height = '100vh';
+        right.style.height = '100dvh';
         right.style.maxHeight = '100vh';
+        right.style.maxHeight = '100dvh';
         right.style.zIndex = '9999';
         right.style.borderRadius = '0';
         right.style.overflow = 'hidden';
@@ -1465,6 +1459,7 @@ function checkMobile() {
             chatBody.style.overflowY = 'auto';
             chatBody.style.minHeight = '0';
             chatBody.style.maxHeight = 'none';
+            chatBody.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
         }
         document.body.style.overflow = 'hidden';
         if (btn) btn.style.display = 'none';
