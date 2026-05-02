@@ -1369,17 +1369,26 @@ async function sendNote() {
   loadingEl.id = 'loadingBubble';
   loadingEl.innerHTML = `
     <div class="ai-av">🤝</div>
-    <div class="bubble" style="display:flex;gap:5px;align-items:center;">
-      <span style="animation:blink 1s infinite 0s">●</span>
-      <span style="animation:blink 1s infinite .2s">●</span>
-      <span style="animation:blink 1s infinite .4s">●</span>
-    </div>`;
+    <div class="bubble" id="loadingText" style="min-width:200px;"></div>`;
   document.getElementById('chatBody').appendChild(loadingEl);
   scrollBottom();
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  const steps = [
+    '🔍 한인 시설 데이터 분석 중...',
+    '📍 지역 · 예산 조건 필터링 중...',
+    '✅ 최적 시설을 찾았습니다!'
+  ];
 
-  // 로딩 제거 후 결과 표시
+  const textEl = document.getElementById('loadingText');
+  for (let i = 0; i < steps.length - 1; i++) {
+    textEl.textContent = steps[i];
+    scrollBottom();
+    await new Promise(r => setTimeout(r, 600));
+  }
+  textEl.textContent = steps[steps.length - 1];
+  scrollBottom();
+  await new Promise(r => setTimeout(r, 400));
+
   document.getElementById('loadingBubble')?.remove();
   await showMatchedFacilities(userNeeds);
   setTimeout(() => showOverlay('leadOverlay'), 10000);
@@ -1393,20 +1402,31 @@ async function skipNote() {
     specialNote: (window.capturedNote = document.getElementById('addNoteText')?.value || '')
   };
 
+  // 로딩 말풍선 추가
   const loadingEl = document.createElement('div');
   loadingEl.className = 'msg-row ai-row';
   loadingEl.id = 'loadingBubble';
   loadingEl.innerHTML = `
     <div class="ai-av">🤝</div>
-    <div class="bubble" style="display:flex;gap:5px;align-items:center;">
-      <span style="animation:blink 1s infinite 0s">●</span>
-      <span style="animation:blink 1s infinite .2s">●</span>
-      <span style="animation:blink 1s infinite .4s">●</span>
-    </div>`;
+    <div class="bubble" id="loadingText" style="min-width:200px;"></div>`;
   document.getElementById('chatBody').appendChild(loadingEl);
   scrollBottom();
 
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  const steps = [
+    '🔍 한인 시설 데이터 분석 중...',
+    '📍 지역 · 예산 조건 필터링 중...',
+    '✅ 최적 시설을 찾았습니다!'
+  ];
+
+  const textEl = document.getElementById('loadingText');
+  for (let i = 0; i < steps.length - 1; i++) {
+    textEl.textContent = steps[i];
+    scrollBottom();
+    await new Promise(r => setTimeout(r, 600));
+  }
+  textEl.textContent = steps[steps.length - 1];
+  scrollBottom();
+  await new Promise(r => setTimeout(r, 400));
 
   document.getElementById('loadingBubble')?.remove();
   await showMatchedFacilities(userNeeds);
