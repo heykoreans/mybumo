@@ -230,8 +230,9 @@
 
         /* FACILITY DETAIL MODAL */
         .pkg-modal { width:680px; }
-        .pkg-modal-img { height:280px; background-size:cover; background-position:center; border-radius:20px 20px 0 0; position:relative; }
-        .pkg-modal-img .pb { position:absolute; top:16px; left:16px; background:var(--amber); color:#2a1a00; font-size:12px; font-weight:700; padding:5px 12px; border-radius:20px; }
+        .pkg-modal-img { height:280px; border-radius:20px 20px 0 0; position:relative; overflow:hidden; background:#e8eef2; }
+        .pkg-modal-img .fac-modal-photo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; z-index:0; }
+        .pkg-modal-img .pb { position:absolute; top:16px; left:16px; background:var(--amber); color:#2a1a00; font-size:12px; font-weight:700; padding:5px 12px; border-radius:20px; z-index:2; }
         .pkg-modal-body { padding:28px 32px 32px; }
         .pkg-modal-body h2 { font-size:24px; font-weight:800; color:var(--navy); margin-bottom:6px; }
         .pkg-meta { display:flex; gap:16px; align-items:center; margin-bottom:22px; flex-wrap:wrap; }
@@ -677,6 +678,7 @@
     <div class="modal pkg-modal">
         <button class="modal-close" onclick="closeOverlay('facDetailOverlay')">✕</button>
         <div class="pkg-modal-img" id="facModalImg">
+            <img class="fac-modal-photo" id="facModalPhoto" alt="" width="680" height="280" loading="lazy" decoding="async" />
             <div class="pb" id="facModalBadge"></div>
         </div>
         <div class="pkg-modal-body">
@@ -1082,7 +1084,42 @@ const FALLBACK_PHOTOS = {
   ]
 };
 
+/** 너싱홈 fallback 첫 URL — 카드/모달 img onerror 기본값과 동일 */
+const DEFAULT_FACILITY_PHOTO = FALLBACK_PHOTOS['너싱홈'][0];
+
 const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1581579438747-104c53e7e896?w=800&q=80';
+
+function isLikelyImageUrl(s) {
+  if (s == null) return false;
+  const t = String(s).trim();
+  if (!t) return false;
+  const lower = t.toLowerCase();
+  return lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('data:') || lower.startsWith('blob:') || lower.startsWith('/');
+}
+
+/** photo_url 컬럼: 문자열 URL, JSON 배열 문자열, 배열 등에서 첫 유효 URL */
+function firstValidPhotoFromField(val) {
+  if (val == null || val === '') return null;
+  if (Array.isArray(val)) {
+    for (const u of val) {
+      if (isLikelyImageUrl(u)) return String(u).trim();
+    }
+    return null;
+  }
+  const s = String(val).trim();
+  if (!s) return null;
+  if (s.startsWith('[')) {
+    try {
+      const parsed = JSON.parse(s);
+      if (Array.isArray(parsed)) {
+        for (const u of parsed) {
+          if (isLikelyImageUrl(u)) return String(u).trim();
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
+  return isLikelyImageUrl(s) ? s : null;
+}
 
 function getFallbackPhoto(careType, facilityId) {
   if (!careType) return DEFAULT_FALLBACK;
@@ -1106,25 +1143,40 @@ function getFallbackPhoto(careType, facilityId) {
 }
 
 function partnerPhotoUrl(f) {
-  if (!f) return DEFAULT_FALLBACK;
+  if (!f) return DEFAULT_FACILITY_PHOTO;
 
-  // 1순위: photo_url 직접 사용
-  if (f.photo_url) {
-    const pu = Array.isArray(f.photo_url) ? f.photo_url[0] : f.photo_url;
-    if (pu && String(pu).trim()) return String(pu).trim();
-  }
+  // 1순위: photo_url (문자열·배열·JSON 배열 문자열, http(s) 등 유효 URL만)
+  const fromPrimary = firstValidPhotoFromField(f.photo_url);
+  if (fromPrimary) return fromPrimary;
 
-  // 2순위: photo_urls 배열 첫 번째
-  if (f.photo_urls) {
+  // 2순위: photo_urls 첫 유효 항목
+  if (f.photo_urls != null && f.photo_urls !== '') {
     let urls = f.photo_urls;
     if (typeof urls === 'string') {
-      try { urls = JSON.parse(urls); } catch (e) { urls = []; }
+      const t = urls.trim();
+      if (t.startsWith('[')) {
+        try { urls = JSON.parse(urls); } catch (e) { urls = []; }
+      } else if (isLikelyImageUrl(t)) {
+        return t;
+      } else {
+        urls = [];
+      }
     }
-    if (Array.isArray(urls) && urls.length > 0 && urls[0]) return urls[0];
+    if (Array.isArray(urls)) {
+      for (const u of urls) {
+        if (isLikelyImageUrl(u)) return String(u).trim();
+      }
+    }
   }
 
-  // 3순위: care_type 기반 fallback
+  // 3순위: care_type + 시설 ID 해시 기반 Unsplash
   return getFallbackPhoto(f.care_type, f.id);
+}
+
+function facilityImgOnError(el) {
+  if (!el) return;
+  el.onerror = null;
+  el.src = DEFAULT_FACILITY_PHOTO;
 }
 
 async function loadFacilities() {
@@ -1326,6 +1378,11 @@ async function showMatchedFacilities(userNeeds) {
 
   displayedFacilities = matched;
 
+  // TEMP DEBUG: remove after verifying facility photos from DB
+  matched.forEach((x) => {
+    console.log('[facility photo]', x.facility_name_kr || x.facility_name_en, 'photo_url:', x.photo_url, 'photo_urls:', x.photo_urls, 'care_type:', x.care_type);
+  });
+
   const html = `
     ${(() => {
       const koreanOpCount = matched.filter(f => f.tier === 'korean_operated').length;
@@ -1336,11 +1393,12 @@ async function showMatchedFacilities(userNeeds) {
     })()}
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
       ${matched.map((f, i) => {
-        const img = partnerPhotoUrl(f);
+        const imgSrc = partnerPhotoUrl(f).replace(/"/g, '&quot;');
+        const altText = String(f.facility_name_kr || f.facility_name_en || '시설').replace(/"/g, '&quot;').replace(/</g, '&lt;');
         const feeLine = formatFeeRange(f.fee_min, f.fee_max, lang === 'en' ? 'en' : 'kr');
         return `
         <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:14px;cursor:pointer;" onclick="openFacDetail(${i})">
-          ${img ? `<img src="${img.replace(/"/g, '&quot;')}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:10px;">` : ''}
+          <img src="${imgSrc}" onerror="facilityImgOnError(this)" alt="${altText}" loading="lazy" decoding="async" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:10px;" />
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
             ${i === 0 ? '<span style="background:#fef3c7;color:#d97706;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">베스트 매칭</span>' : ''}
             ${f.tier === 'korean_operated' ? '<span style="background:#fee2e2;color:#b91c1c;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">🇰🇷 한인 운영</span>' : ''}
@@ -1492,13 +1550,18 @@ function openFacDetail(idx) {
     const f = displayedFacilities[idx];
     if (!f) return;
     const isEn = lang === 'en';
-    const img = partnerPhotoUrl(f);
+    const photoUrl = partnerPhotoUrl(f);
     const nameKr = f.facility_name_kr || '';
     const nameEn = f.facility_name_en || nameKr;
     const feeLine = formatFeeRange(f.fee_min, f.fee_max, isEn ? 'en' : 'kr');
-    document.getElementById('facModalImg').style.backgroundImage = img
-        ? `url('${img.replace(/'/g, "\\'")}')`
-        : 'none';
+    const imgEl = document.getElementById('facModalPhoto');
+    if (imgEl) {
+      imgEl.alt = nameKr || nameEn || '시설';
+      imgEl.onerror = function () {
+        facilityImgOnError(this);
+      };
+      imgEl.src = photoUrl;
+    }
     document.getElementById('facModalBadge').textContent = f.care_type || (isEn ? 'Partner' : '파트너');
     document.getElementById('facModalName').textContent = isEn ? nameEn : nameKr;
     document.getElementById('facModalFee').innerHTML = `${feeLine} <span style="font-size:14px;font-weight:400;color:var(--muted);">${f.care_type || ''}</span>`;
