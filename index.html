@@ -1102,6 +1102,10 @@ function matchFacilities(facilities, userNeeds) {
   return filtered.map(f => {
     let score = regionFilterHit ? 30 : 0;
 
+    // 한인 운영 시설 우선 정책
+    if (f.tier === 'korean_operated') score += 25;
+    else if (f.tier === 'korean_friendly') score += 15;
+
     if (userNeeds.careType && f.care_type) {
       if (f.care_type.includes(userNeeds.careType) ||
           userNeeds.careType.includes(f.care_type)) score += 40;
@@ -1227,7 +1231,13 @@ async function showMatchedFacilities(userNeeds) {
   displayedFacilities = matched;
 
   const html = `
-    <p>✨ <strong>${matched.length}곳</strong>의 한인 케어 시설을 찾았습니다!</p>
+    ${(() => {
+      const koreanOpCount = matched.filter(f => f.tier === 'korean_operated').length;
+      if (koreanOpCount > 0) {
+        return `<p>✨ <strong>${matched.length}곳</strong>의 케어 시설을 찾았습니다! <strong style="color:#b91c1c;">(한인 운영 ${koreanOpCount}곳 포함)</strong></p>`;
+      }
+      return `<p>✨ <strong>${matched.length}곳</strong>의 한인 케어 시설을 찾았습니다!</p>`;
+    })()}
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
       ${matched.map((f, i) => {
         const img = partnerPhotoUrl(f);
@@ -1236,8 +1246,10 @@ async function showMatchedFacilities(userNeeds) {
         return `
         <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:14px;cursor:pointer;" onclick="openFacDetail(${i})">
           ${img ? `<img src="${img.replace(/"/g, '&quot;')}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:10px;">` : ''}
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
             ${i === 0 ? '<span style="background:#fef3c7;color:#d97706;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">베스트 매칭</span>' : ''}
+            ${f.tier === 'korean_operated' ? '<span style="background:#fee2e2;color:#b91c1c;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">🇰🇷 한인 운영</span>' : ''}
+            ${f.tier === 'korean_friendly' ? '<span style="background:#fef3c7;color:#92400e;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;">🇰🇷 한인 친화</span>' : ''}
             <span style="background:#e0f2fe;color:#0369a1;font-size:10px;padding:2px 8px;border-radius:10px;">${(f.care_type || '').replace(/</g, '&lt;')}</span>
           </div>
           <div style="font-weight:700;font-size:14px;">${(f.facility_name_kr || f.facility_name_en || '').replace(/</g, '&lt;')}</div>
