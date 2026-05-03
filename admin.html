@@ -1425,6 +1425,22 @@ function firstFacilityPhotoUrl(pu) {
   return pu;
 }
 
+function formatFeeRange(min, max, lang) {
+  const en = lang === 'en';
+  const cleanMin = (min === null || min === undefined || min === '' || min === '0' || min === 0) ? null : min;
+  const cleanMax = (max === null || max === undefined || max === '' || max === '0' || max === 0) ? null : max;
+  const toNum = (v) => {
+    const n = parseInt(String(v).replace(/[^0-9]/g, ''), 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const nMin = cleanMin != null ? toNum(cleanMin) : null;
+  const nMax = cleanMax != null ? toNum(cleanMax) : null;
+  if (!nMin && !nMax) return en ? 'Pricing on consultation' : '상담 시 안내';
+  if (nMin && !nMax) return en ? `From $${nMin.toLocaleString()}/mo` : `월 $${nMin.toLocaleString()}부터`;
+  if (!nMin && nMax) return en ? `Up to $${nMax.toLocaleString()}/mo` : `월 $${nMax.toLocaleString()}까지`;
+  return en ? `$${nMin.toLocaleString()} – $${nMax.toLocaleString()}/mo` : `월 $${nMin.toLocaleString()} ~ $${nMax.toLocaleString()}`;
+}
+
 // ─── DATA ───
 const LEADS = [
     { id:1, nameKr:'박정수 (어르신: 박영희, 82세)', nameEn:'Jung-soo Park (Senior: Young-hee P., 82)', care:'어시스티드 리빙', careEn:'Assisted Living', loc:'LA/OC', urgency:'high', budget:'$5,500~$7,000', fee:'$6,200', status:'new', date:'2026.01.15', notes:'파킨슨 초기 증상, 한식 필수, 토런스 선호. 딸이 영어 불편.' },
@@ -1704,6 +1720,7 @@ async function renderFacilities() {
         </div>
         <div style="font-size:16px;font-weight:700;margin-bottom:4px;">${f.facility_name_kr || f.facility_name_en || '-'}</div>
         <div style="font-size:13px;color:#64748b;margin-bottom:12px;">📍 ${f.city || '-'}${f.state ? ', ' + f.state : ''}</div>
+        <div style="font-size:14px;font-weight:700;color:#1f7a75;margin-bottom:10px;">${formatFeeRange(f.fee_min, f.fee_max)}</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
           <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${f.vacancies || 0}/${f.capacity_total || f.capacity || '-'}</div><div style="font-size:11px;color:#64748b;">입주가능</div></div>
           <div style="text-align:center;"><div style="font-size:18px;font-weight:800;">${f.monthly_leads || 0}</div><div style="font-size:11px;color:#64748b;">월리드</div></div>
@@ -1912,8 +1929,7 @@ function openPreviewModal(f) {
   document.getElementById('previewNameEn').textContent = f.facility_name_en || '';
   document.getElementById('previewLocation').textContent = '📍 ' + (f.city || '') + (f.state ? ', ' + f.state : '');
   document.getElementById('previewVacancy').textContent = (f.vacancies || 0) + '/' + (f.capacity_total || f.capacity || '-');
-  document.getElementById('previewFeeMin').textContent = f.fee_min ? '$' + f.fee_min : '-';
-  document.getElementById('previewFeeMax').textContent = f.fee_max ? '$' + f.fee_max : '-';
+  document.getElementById('previewFeeRange').textContent = formatFeeRange(f.fee_min, f.fee_max);
   document.getElementById('previewContact').textContent = '👤 ' + (f.contact_name || '-');
   document.getElementById('previewPhone').textContent = '📞 ' + (f.contact_phone || '-');
   document.getElementById('previewEmail').textContent = '✉️ ' + (f.contact_email || '-');
@@ -2492,10 +2508,9 @@ document.addEventListener('change', function(e) {
       <div id="previewNameKr" style="font-size:22px;font-weight:800;margin-bottom:4px;"></div>
       <div id="previewNameEn" style="font-size:14px;color:#64748b;margin-bottom:4px;"></div>
       <div id="previewLocation" style="font-size:13px;color:#64748b;margin-bottom:20px;">📍</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;padding:16px;background:#f8fafc;border-radius:12px;">
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;padding:16px;background:#f8fafc;border-radius:12px;">
         <div style="text-align:center;"><div id="previewVacancy" style="font-size:22px;font-weight:800;"></div><div style="font-size:11px;color:#64748b;">입주가능</div></div>
-        <div style="text-align:center;"><div id="previewFeeMin" style="font-size:22px;font-weight:800;"></div><div style="font-size:11px;color:#64748b;">월 최저</div></div>
-        <div style="text-align:center;"><div id="previewFeeMax" style="font-size:22px;font-weight:800;"></div><div style="font-size:11px;color:#64748b;">월 최고</div></div>
+        <div style="text-align:center;"><div id="previewFeeRange" style="font-size:15px;font-weight:800;line-height:1.35;"></div><div style="font-size:11px;color:#64748b;">월 비용</div></div>
       </div>
       <div style="padding:16px;background:#f0fdf4;border-radius:12px;margin-bottom:20px;">
         <div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:8px;">담당자 정보</div>

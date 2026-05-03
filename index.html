@@ -1003,6 +1003,22 @@ function parseFeeNum(v) {
   return isNaN(n) ? 0 : n;
 }
 
+function formatFeeRange(min, max, lang) {
+  const en = lang === 'en';
+  const cleanMin = (min === null || min === undefined || min === '' || min === '0' || min === 0) ? null : min;
+  const cleanMax = (max === null || max === undefined || max === '' || max === '0' || max === 0) ? null : max;
+  const toNum = (v) => {
+    const n = parseInt(String(v).replace(/[^0-9]/g, ''), 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const nMin = cleanMin != null ? toNum(cleanMin) : null;
+  const nMax = cleanMax != null ? toNum(cleanMax) : null;
+  if (!nMin && !nMax) return en ? 'Pricing on consultation' : '상담 시 안내';
+  if (nMin && !nMax) return en ? `From $${nMin.toLocaleString()}/mo` : `월 $${nMin.toLocaleString()}부터`;
+  if (!nMin && nMax) return en ? `Up to $${nMax.toLocaleString()}/mo` : `월 $${nMax.toLocaleString()}까지`;
+  return en ? `$${nMin.toLocaleString()} – $${nMax.toLocaleString()}/mo` : `월 $${nMin.toLocaleString()} ~ $${nMax.toLocaleString()}`;
+}
+
 function mapCareTypeToFacility(userChoice) {
   const choice = (userChoice || '').toLowerCase();
   if (choice.includes('일상') || choice.includes('daily')) return '어시스티드 리빙';
@@ -1187,22 +1203,26 @@ function matchFacilities(facilities, userNeeds) {
           userNeeds.careType.includes(f.care_type)) score += 40;
     }
 
-    if (userNeeds.budget && f.fee_min != null && f.fee_max != null) {
-      const budgetMap = {
-        '$5,000 이하': 5000, '$5,000~$7,000': 6000,
-        '$7,000~$10,000': 8500,
-        '$10,000~$15,000': 12000,
-        '$15,000 이상': 18000,
-        '💰 $4,000~$5,500': 4750, '💳 $5,500~$7,500': 6500,
-        '✨ $7,500~$10,000': 8750, '🔍 예산 미정 / 최적 추천': 7000,
-        '🔍 No budget set / best match': 7000,
-        '$15,000+': 18000
-      };
-      const userBudget = budgetMap[userNeeds.budget] || 7000;
+    if (userNeeds.budget) {
       const feeMin = parseFeeNum(f.fee_min);
-      const feeMax = parseFeeNum(f.fee_max) || 99999;
-      if (userBudget >= feeMin && userBudget <= feeMax) score += 20;
-      else if (userBudget >= feeMin - 1000) score += 10;
+      const feeMax = parseFeeNum(f.fee_max);
+      if (feeMin > 0 || feeMax > 0) {
+        const budgetMap = {
+          '$5,000 이하': 5000, '$5,000~$7,000': 6000,
+          '$7,000~$10,000': 8500,
+          '$10,000~$15,000': 12000,
+          '$15,000 이상': 18000,
+          '💰 $4,000~$5,500': 4750, '💳 $5,500~$7,500': 6500,
+          '✨ $7,500~$10,000': 8750, '🔍 예산 미정 / 최적 추천': 7000,
+          '🔍 No budget set / best match': 7000,
+          '$15,000+': 18000
+        };
+        const userBudget = budgetMap[userNeeds.budget] || 7000;
+        const lo = feeMin > 0 ? feeMin : 0;
+        const hi = feeMax > 0 ? feeMax : 99999;
+        if (userBudget >= lo && userBudget <= hi) score += 20;
+        else if (feeMin > 0 && userBudget >= feeMin - 1000) score += 10;
+      }
     }
 
     const vac = parseInt(f.vacancies, 10) || 0;
@@ -1317,8 +1337,7 @@ async function showMatchedFacilities(userNeeds) {
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
       ${matched.map((f, i) => {
         const img = partnerPhotoUrl(f);
-        const feeMin = f.fee_min != null ? String(f.fee_min).replace(/\$/g, '') : '';
-        const feeMax = f.fee_max != null ? String(f.fee_max).replace(/\$/g, '') : '';
+        const feeLine = formatFeeRange(f.fee_min, f.fee_max, lang === 'en' ? 'en' : 'kr');
         return `
         <div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:14px;cursor:pointer;" onclick="openFacDetail(${i})">
           ${img ? `<img src="${img.replace(/"/g, '&quot;')}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:10px;">` : ''}
@@ -1338,8 +1357,9 @@ async function showMatchedFacilities(userNeeds) {
               ${t.slice(0, 3).map(tag => `<span style="background:#f0fdf4;color:#16a34a;font-size:10px;padding:2px 6px;border-radius:10px;">${String(tag).replace(/</g, '&lt;')}</span>`).join('')}
             </div>`;
           })()}
-          <div style="font-size:13px;font-weight:600;color:#1f7a75;margin-top:4px;">$${feeMin}~$${feeMax}/월</div>
-          <div style="font-size:11px;color:#94a3b8;margin-top:2px;">매칭 점수: ${f.matchScore}점 · 공실 ${f.vacancies != null ? f.vacancies : 0}개</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:4px;line-height:1.45;">${lang === 'en'
+            ? `Match score: ${f.matchScore != null ? f.matchScore : '-'} · <span style="color:#1f7a75;font-weight:600;">${feeLine}</span> · Vacancies: ${f.vacancies != null ? f.vacancies : 0}`
+            : `매칭 점수: ${f.matchScore != null ? f.matchScore : '-'}점 · <span style="color:#1f7a75;font-weight:600;">${feeLine}</span> · 공실 ${f.vacancies != null ? f.vacancies : 0}개`}</div>
         </div>`;
       }).join('')}
     </div>
@@ -1475,14 +1495,13 @@ function openFacDetail(idx) {
     const img = partnerPhotoUrl(f);
     const nameKr = f.facility_name_kr || '';
     const nameEn = f.facility_name_en || nameKr;
-    const feeMin = f.fee_min != null ? String(f.fee_min) : '';
-    const feeMax = f.fee_max != null ? String(f.fee_max) : '';
+    const feeLine = formatFeeRange(f.fee_min, f.fee_max, isEn ? 'en' : 'kr');
     document.getElementById('facModalImg').style.backgroundImage = img
         ? `url('${img.replace(/'/g, "\\'")}')`
         : 'none';
     document.getElementById('facModalBadge').textContent = f.care_type || (isEn ? 'Partner' : '파트너');
     document.getElementById('facModalName').textContent = isEn ? nameEn : nameKr;
-    document.getElementById('facModalFee').innerHTML = `$${feeMin}~$${feeMax}/월 <span style="font-size:14px;font-weight:400;color:var(--muted);">${f.care_type || ''}</span>`;
+    document.getElementById('facModalFee').innerHTML = `${feeLine} <span style="font-size:14px;font-weight:400;color:var(--muted);">${f.care_type || ''}</span>`;
     document.getElementById('facModalType').textContent = f.care_type || '';
     document.getElementById('facModalLoc').textContent = [f.city, f.state].filter(Boolean).join(', ');
     const incKr = [
@@ -1499,8 +1518,8 @@ function openFacDetail(idx) {
     document.getElementById('facModalIncludes').innerHTML = inc.map(x =>
         `<div class="pkg-inc-item"><span class="ico">${x.ico}</span>${x.t}</div>`).join('');
     const hlText = isEn
-        ? `Match score ${f.matchScore != null ? f.matchScore : '-'} · Monthly range $${feeMin}–$${feeMax}`
-        : `매칭 점수 ${f.matchScore != null ? f.matchScore : '-'}점 · 월 $${feeMin}~$${feeMax}`;
+        ? `Match score ${f.matchScore != null ? f.matchScore : '-'} · ${feeLine}`
+        : `매칭 점수 ${f.matchScore != null ? f.matchScore : '-'}점 · ${feeLine}`;
     document.getElementById('facModalHighlights').innerHTML =
         `<div class="pkg-hl"><div class="num">1</div><div>${hlText}</div></div>`;
     const brief = isEn
