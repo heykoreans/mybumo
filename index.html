@@ -1028,11 +1028,87 @@ function inferCareTypeForMatch(need) {
   return '어시스티드 리빙';
 }
 
+const FALLBACK_PHOTOS = {
+  '너싱홈': [
+    'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=800&q=80',
+    'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800&q=80',
+    'https://images.unsplash.com/photo-1631815589968-fdb09a223b1e?w=800&q=80',
+    'https://images.unsplash.com/photo-1666214280391-8ff5bd3c0bf0?w=800&q=80',
+    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800&q=80'
+  ],
+  '어시스티드 리빙': [
+    'https://images.unsplash.com/photo-1559131397-f94da358f7ca?w=800&q=80',
+    'https://images.unsplash.com/photo-1581579438747-104c53e7e896?w=800&q=80',
+    'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=80',
+    'https://images.unsplash.com/photo-1568910748155-01ca989dbdd6?w=800&q=80',
+    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&q=80'
+  ],
+  '메모리 케어': [
+    'https://images.unsplash.com/photo-1584931423298-c576fda54bd2?w=800&q=80',
+    'https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&q=80',
+    'https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&q=80',
+    'https://images.unsplash.com/photo-1518733057094-95b53143d2a7?w=800&q=80',
+    'https://images.unsplash.com/photo-1507120410856-1f35574c3b45?w=800&q=80'
+  ],
+  '재활 센터': [
+    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800&q=80',
+    'https://images.unsplash.com/photo-1571772996211-2f02c9727629?w=800&q=80',
+    'https://images.unsplash.com/photo-1666214280557-f1b5022eb634?w=800&q=80',
+    'https://images.unsplash.com/photo-1666214280391-8ff5bd3c0bf0?w=800&q=80',
+    'https://images.unsplash.com/photo-1612531385446-f7e6d131e1d0?w=800&q=80'
+  ],
+  '독립 생활': [
+    'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80',
+    'https://images.unsplash.com/photo-1574607383476-f517f260d30b?w=800&q=80',
+    'https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=800&q=80',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80',
+    'https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=800&q=80'
+  ]
+};
+
+const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1581579438747-104c53e7e896?w=800&q=80';
+
+function getFallbackPhoto(careType, facilityId) {
+  if (!careType) return DEFAULT_FALLBACK;
+
+  // care_type 안에 포함된 첫 키워드 찾기
+  for (const [type, photos] of Object.entries(FALLBACK_PHOTOS)) {
+    if (careType.includes(type)) {
+      // 시설 ID 기반으로 일관된 사진 선택 (랜덤 X, 같은 시설은 항상 같은 사진)
+      const idStr = String(facilityId || '');
+      let hash = 0;
+      for (let i = 0; i < idStr.length; i++) {
+        hash = ((hash << 5) - hash) + idStr.charCodeAt(i);
+        hash = hash & hash;
+      }
+      const index = Math.abs(hash) % photos.length;
+      return photos[index];
+    }
+  }
+
+  return DEFAULT_FALLBACK;
+}
+
 function partnerPhotoUrl(f) {
-  if (!f) return '';
-  if (f.photo_urls && Array.isArray(f.photo_urls) && f.photo_urls.length) return f.photo_urls[0];
-  if (f.photo_url) return Array.isArray(f.photo_url) ? f.photo_url[0] : f.photo_url;
-  return '';
+  if (!f) return DEFAULT_FALLBACK;
+
+  // 1순위: photo_url 직접 사용
+  if (f.photo_url) {
+    const pu = Array.isArray(f.photo_url) ? f.photo_url[0] : f.photo_url;
+    if (pu && String(pu).trim()) return String(pu).trim();
+  }
+
+  // 2순위: photo_urls 배열 첫 번째
+  if (f.photo_urls) {
+    let urls = f.photo_urls;
+    if (typeof urls === 'string') {
+      try { urls = JSON.parse(urls); } catch (e) { urls = []; }
+    }
+    if (Array.isArray(urls) && urls.length > 0 && urls[0]) return urls[0];
+  }
+
+  // 3순위: care_type 기반 fallback
+  return getFallbackPhoto(f.care_type, f.id);
 }
 
 async function loadFacilities() {
